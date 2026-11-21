@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 
 from django.core.management.utils import get_random_secret_key
@@ -129,6 +130,10 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'oceny:moje_sprawy'
 LOGOUT_REDIRECT_URL = 'login'
 
+# Poczta: domyślnie konsola. Urząd podaje serwer SMTP (OKRES_SMTP_HOST) i włącza powiadomienia e-mail.
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "okres@localhost")
+OKRES_POWIADOMIENIA_EMAIL = os.environ.get("OKRES_POWIADOMIENIA_EMAIL", "0") == "1"
+
 # Tryb demonstracyjny: zegar, dane syntetyczne i szybkie logowanie. Nigdy w profilu urzędu.
 OKRES_DEMO = os.environ.get("OKRES_DEMO", "1" if DEBUG else "0") == "1"
 
@@ -138,6 +143,13 @@ OKRES_DEMO = os.environ.get("OKRES_DEMO", "1" if DEBUG else "0") == "1"
 
 MAILERS = {
     'default': {
+        'BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
+        'OPTIONS': {'host': os.environ["OKRES_SMTP_HOST"], 'port': int(os.environ.get("OKRES_SMTP_PORT", "25"))},
+    } if os.environ.get("OKRES_SMTP_HOST") else {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+# Testy: szybkie hashowanie haseł (tylko w procesie testów).
+if "test" in sys.argv[1:2]:
+    PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]

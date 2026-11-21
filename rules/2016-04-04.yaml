@@ -143,3 +143,8 @@ terminy:
   sprzeciw_dni: 7  # art. 83 ust. 1 ustawy, od zapoznania
   ponowna_po_negatywnej_miesiace: 6  # art. 81 ust. 9, od zapoznania
   nieobecnosc_przedluza_powyzej_miesiecy: 1  # art. 81 ust. 7: usprawiedliwiona, ciągła, dłuższa niż miesiąc
+
+przypomnienia:  # ile dni przed terminem scheduler przypomina (0 = w dniu terminu); UC-02, UC-06
+  kryteria: [7, 2, 0]
+  ocena: [60, 30, 7, 0]
+  sprzeciw: [2, 0]

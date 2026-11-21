@@ -17,4 +17,7 @@ urlpatterns = [
     path("<int:pk>/sprzeciw/", views.zloz_sprzeciw, name="zloz_sprzeciw"),
     path("<int:pk>/obserwacje/", views.dodaj_obserwacje, name="dodaj_obserwacje"),
     path("<int:pk>/wydruk/", views.wydruk, name="wydruk"),
+    path("powiadomienia/<int:pk>/przeczytane/", views.przeczytane, name="przeczytane"),
+    path("scheduler/", views.uruchom_scheduler, name="uruchom_scheduler"),
+    path("<int:pk>/zaproszenie.ics", views.zaproszenie_ics, name="zaproszenie_ics"),
 ]

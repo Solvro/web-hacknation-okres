@@ -598,3 +598,19 @@ class Obserwacja(models.Model):
             raise ValidationError({"data": "Obserwacja sprzed początku okresu oceny."})
         if self.data and self.data > zegar.dzis():
             raise ValidationError({"data": "Obserwacja nie może mieć daty z przyszłości."})
+
+
+class Przypomnienie(models.Model):
+    """Powiadomienie od schedulera. Klucz zapobiega zdublowaniu przy ponownym uruchomieniu."""
+
+    ocena = models.ForeignKey(Ocena, on_delete=models.CASCADE, related_name="przypomnienia")
+    odbiorca = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="przypomnienia")
+    klucz = models.CharField(max_length=120, unique=True)
+    tresc = models.CharField(max_length=300)
+    termin = models.DateField(null=True, blank=True)
+    utworzone = models.DateField()
+    przeczytane = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name_plural = "przypomnienia"
+        ordering = ["przeczytane", "termin"]

@@ -1,10 +1,11 @@
-from datetime import date
+from datetime import date, datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import Q
-from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from . import rules
@@ -36,7 +37,56 @@ def moje_sprawy(request):
     if request.GET.get("filtr") == "moje":
         wiersze = [w for w in wiersze if w["krok"] and w["krok"]["moj"]]
     wiersze.sort(key=lambda w: (not (w["krok"] and w["krok"]["moj"]), (w["krok"] or {}).get("termin") or date.max))
-    return render(request, "oceny/moje_sprawy.html", {"wiersze": wiersze, "filtr": request.GET.get("filtr", "")})
+    return render(request, "oceny/moje_sprawy.html", {
+        "wiersze": wiersze, "filtr": request.GET.get("filtr", ""),
+        "powiadomienia": request.user.przypomnienia.filter(przeczytane=False).select_related("ocena")[:20],
+        "wynik_schedulera": request.session.pop("wynik_schedulera", None),
+    })
+
+
+@login_required
+@require_POST
+def przeczytane(request, pk):
+    request.user.przypomnienia.filter(pk=pk).update(przeczytane=True)
+    return HttpResponse("")
+
+
+@login_required
+@require_POST
+def uruchom_scheduler(request):
+    """Na pokaz: kadry uruchamiają scheduler ręcznie (w urzędzie robi to cron raz dziennie)."""
+    if not (settings.OKRES_DEMO and request.user.is_staff):
+        raise PermissionDenied("Ręczne uruchomienie schedulera jest dostępne tylko w trybie demo dla kadr.")
+    from . import scheduler
+
+    request.session["wynik_schedulera"] = scheduler.uruchom()
+    return redirect("oceny:moje_sprawy")
+
+
+@login_required
+def zaproszenie_ics(request, pk):
+    """UC-03/UC-07: zaproszenie na rozmowę do kalendarza poczty. Tytuł bez informacji kadrowych."""
+    ocena = _ocena_dla(request, pk)
+    if ocena.oceniajacy_id != request.user.id:
+        raise PermissionDenied("Zaproszenie wysyła oceniający.")
+    try:
+        start = datetime.fromisoformat(f"{request.GET['data']}T{request.GET.get('godzina', '10:00')}")
+    except (KeyError, ValueError):
+        return HttpResponse("Podaj datę i godzinę spotkania.", status=400)
+    koniec = start + timedelta(minutes=int(request.GET.get("minuty", 60)))
+    fmt = "%Y%m%dT%H%M%S"
+    uid = f"okres-{ocena.pk}-{request.GET.get('rodzaj', 'rozmowa')}-{start:{fmt}}@okres.local"
+    adresy = [u.email for u in (ocena.oceniany, ocena.oceniajacy) if u.email]
+    linie = [
+        "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//OKRES//PL", "METHOD:REQUEST", "BEGIN:VEVENT",
+        f"UID:{uid}", f"DTSTAMP:{datetime.now():{fmt}}", f"DTSTART;TZID=Europe/Warsaw:{start:{fmt}}",
+        f"DTEND;TZID=Europe/Warsaw:{koniec:{fmt}}", "SUMMARY:Spotkanie z przełożonym",
+        "DESCRIPTION:Szczegóły w systemie OKRES po zalogowaniu.",
+        *[f"ATTENDEE;RSVP=TRUE:mailto:{a}" for a in adresy], "END:VEVENT", "END:VCALENDAR",
+    ]
+    odp = HttpResponse("\r\n".join(linie) + "\r\n", content_type="text/calendar; charset=utf-8")
+    odp["Content-Disposition"] = 'attachment; filename="spotkanie.ics"'
+    return odp
 
 
 @login_required

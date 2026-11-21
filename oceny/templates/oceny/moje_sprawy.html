@@ -2,6 +2,20 @@
 {% block tytul %}Moje sprawy{% endblock %}
 {% block tresc %}
 <h1>Moje sprawy</h1>
+{% if wynik_schedulera %}<p class="potwierdzone" role="status">Scheduler: nowe przypomnienia {{ wynik_schedulera.przypomnienia }}, nowe sprawy {{ wynik_schedulera.nowe_sprawy }}.</p>{% endif %}
+{% if powiadomienia %}
+  <section aria-labelledby="powiadomienia-tytul">
+    <h2 id="powiadomienia-tytul">Przypomnienia</h2>
+    <ul>{% for p in powiadomienia %}
+      <li id="przypomnienie-{{ p.pk }}"><a href="{% url 'oceny:szczegoly' p.ocena_id %}">{{ p.tresc }}</a>
+        <button class="drugorzedny" hx-post="{% url 'oceny:przeczytane' p.pk %}" hx-target="#przypomnienie-{{ p.pk }}" hx-swap="outerHTML">Oznacz jako przeczytane</button></li>
+    {% endfor %}</ul>
+  </section>
+{% endif %}
+{% if okres_demo and user.is_staff %}
+  <form method="post" action="{% url 'oceny:uruchom_scheduler' %}">{% csrf_token %}
+    <button class="drugorzedny" type="submit">Uruchom scheduler teraz (pokaz; w urzędzie codziennie z cron)</button></form>
+{% endif %}
 <p>
   {% if filtr == "moje" %}<a href="?">Pokaż wszystkie</a> · <strong>Wymaga mojego działania</strong>
   {% else %}<strong>Wszystkie</strong> · <a href="?filtr=moje">Wymaga mojego działania</a>{% endif %}
