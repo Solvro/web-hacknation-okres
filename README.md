@@ -76,12 +76,13 @@ Przy pustej bazie kontener wczytuje dane syntetyczne (`seed_demo`). Pasek „DAN
 |---|---|---|
 | Arkusze A/B/C: kryteria obowiązkowe, wykaz 14 kryteriów z Załącznika nr 1, 0–3 dodatkowe bez powtórzeń i bez powielania obowiązkowych | działa | część I sprawy; `oceny/tests.py` |
 | Arkusz wyznaczany ze stanowiska (§ 3) | działa | panel kadr → Pracownicy |
-| Część I: rozmowa (§ 5), potwierdzenie oceniającego i ocenianego (§ 6), blokada pól, korekta administratora z powodem i śladem | działa | sprawa Jana; `Korekta` w panelu |
-| Terminy z rachunkiem „Jak obliczono termin?”: miesiące, koniec miesiąca, dni wolne i święta, ciągłość nieobecności, przedłużenie o nieobecność (art. 81 ust. 7) | działa, przykłady KPRM jako testy | nagłówek sprawy; `oceny/test_terminy.py` |
+| Część I: rozmowa (§ 5), oczekiwania i cele (§ 5 ust. 1 pkt 3–4) wracające w rozmowie oceniającej (§ 10 pkt 2), potwierdzenie oceniającego i ocenianego (§ 6), blokada pól, korekta administratora z powodem i śladem | działa | sprawa Jana; `Korekta` w panelu; `oceny/test_obieg.py` |
+| Terminy z rachunkiem „Jak obliczono termin?”: miesiące, koniec miesiąca, dni wolne i święta, ciągłość nieobecności, 24 miesiące (art. 81 ust. 4), przedłużenie o nieobecność (art. 81 ust. 7) z powiadomieniem stron o nowym terminie | działa, przykłady KPRM jako testy | nagłówek sprawy; `oceny/test_terminy.py`, `oceny/test_obieg.py` |
 | Obserwacje z okresu oceny: prywatne notatki przełożonego, osiągnięcia zgłaszane przez pracownika, grupowanie według kryteriów | działa | sekcja „Obserwacje” |
 | Przygotowanie do rozmowy rozpoczynającej i oceniającej: agenda z przepisów, wskaźniki kryteriów, karty trudnych sytuacji | działa | link w sprawie |
 | Część II: oceny cząstkowe, średnia, poziom i wynik na żywo (§ 11), strażnik formalny z podstawą prawną, okres podlegania ocenie, poprzednia ocena urzędnika | działa | formularz części II |
-| Część III: wniosek o kolejny stopień (art. 89 ust. 1), blokada przy 9. stopniu | działa | Jan jako urzędnik |
+| Część rozwojowa: katalog 2–3 działań rozwojowych dla każdego z 14 kryteriów (`rules/rozwoj.yaml`, walidowany), przy ocenie 1/3 propozycje do wniosków IPRZ wstawiane tylko kliknięciem oceniającego, przy 7/9 wskazówki „mocna strona” | działa | część II; `oceny/test_rozwoj.py` |
+| Część III: wniosek o kolejny stopień (art. 89 ust. 1), blokada przy 9. stopniu, powiadomienie DG i kadr o złożonym wniosku | działa | Jan jako urzędnik; `oceny/test_obieg.py` |
 | Zapoznanie (§ 12), fikcja zapoznania (kadry, z datą doręczenia), pouczenie | działa | sekcja zapoznania |
 | Sprzeciw (7 dni), rozpatrzenie przez DG (14 dni): nieuwzględnienie, zmiana oceny, sporządzenie po raz drugi, drugi sprzeciw, pouczenie o sądzie pracy, historia wersji | działa | konto `dyrektor` |
 | Po ocenie negatywnej: kryteria w 7 dni od sporządzenia, ponowna ocena po 6 miesiącach od zapoznania | działa | `oceny/test_scheduler.py` |
@@ -91,11 +92,12 @@ Przy pustej bazie kontener wczytuje dane syntetyczne (`seed_demo`). Pasek „DAN
 | Scheduler: przypomnienia o kryteriach, ocenie, zapoznaniu, sprzeciwie i rozpatrzeniu, kolejne sprawy, idempotentny | działa | `manage.py scheduler` |
 | Poczta i kalendarz: zaproszenie `.ics` bez danych kadrowych w tytule, powiadomienia e-mail przez SMTP urzędu | działa (e-mail domyślnie w konsoli) | sprawa → zaproszenie |
 | EZD: paczka sprawy ZIP (arkusz, `dane.json`, historia) do ręcznego przekazania | działa; brak API EZD | link „Paczka do akt / EZD” |
-| Wirtualny HR partner: dziennik zadań, sygnały z progami i źródłami, pytanie do rozmowy, katalog działań, uzgodnienie z datą sprawdzenia i wynikiem, perspektywa pracownika, docenienia | działa | konto `oceniajaca` → Zespół |
+| Wirtualny HR partner: dziennik zadań, sygnały z progami i źródłami (zmiany priorytetu, przyrost zadań, powrót po nieobecności, osiągnięcie bez docenienia, możliwy spadek zaangażowania), pytanie do rozmowy, katalog działań (w tym szkolenie), uzgodnienie z datą sprawdzenia i wynikiem, perspektywa pracownika, docenienia | działa | konto `oceniajaca` → Zespół; `partner/tests.py` |
 | Statystyki zbiorcze dla DG i kadr z eksportem CSV (bez notatek i danych HR) | działa | Statystyki |
 | Wersje przepisów: dziedziczenie pakietów, walidacja przykładami przed aktywacją, porównanie terminów | działa | sprawa → „porównaj wersje”; `manage.py sprawdz_reguly` |
 | Import pracowników z CSV | działa | `manage.py import_pracownikow plik.csv` |
-| Asystent porządkujący obserwacje: bez AI albo z modelem lokalnym (Ollama), z cytowaniem notatek | działa; model lokalny opcjonalny | część II → „Uporządkuj moje obserwacje” |
+| Asystent porządkujący obserwacje: bez AI albo z modelem lokalnym (Ollama, Gemma 4 12B), z cytowaniem notatek, odporny na niepoprawne odpowiedzi modelu | działa; model lokalny opcjonalny | część II → „Uporządkuj moje obserwacje”; `oceny/test_asystent.py` |
+| Wdrożenie: jeden obraz, `docker compose up` bez konfiguracji (klucz generowany na wolumenie), `check --deploy` bez błędów, profil urzędu bez danych demo | działa | „Pierwsze uruchomienie w urzędzie”; [DEPLOY.md](DEPLOY.md) |
 
 ## Jak zaktualizować przepisy
 
@@ -136,10 +138,11 @@ W pakiecie można zmienić bez kodu: kryteria i ich opisy, przypisanie do arkusz
 
 - **Dane:** wszystkie osoby, urząd i treści są syntetyczne. Materiały partnera służyły tylko do sprawdzenia zgodności pól i nie są w repozytorium.
 - **Zegar demo:** w trybie demo kadry mogą przesunąć datę systemową, a interfejs pokazuje to wyraźnym paskiem. W profilu urzędu (`OKRES_DEMO=0`) zegar, dane demo i szybkie logowanie są wyłączone.
-- **Podpisy:** potwierdzenie zalogowanej osoby zapisuje datę i autora czynności. Na wydruku widnieje „potwierdzono w systemie”. Formę podpisu i przekazania do akt urząd uzgadnia przy wdrożeniu.
+- **Podpisy:** potwierdzenie zalogowanej osoby zapisuje datę i autora czynności. Na wydruku widnieje „potwierdzono w systemie”. To nie jest podpis w rozumieniu przepisów. Urząd wybiera jedną z dwóch ścieżek: wydruk arkusza do podpisów odręcznych albo przekazanie pliku do EZD i podpis kwalifikowany lub zaufany w EZD.
 - **Logowanie:** konta Django. SSO i integracja z katalogiem urzędu to plan pilotażu.
-- **EZD:** paczka ZIP do ręcznego przekazania, bez API.
-- **Poczta:** domyślnie wiadomości trafiają do konsoli. Po podaniu `OKRES_SMTP_HOST` i `OKRES_POWIADOMIENIA_EMAIL=1` idą przez SMTP urzędu.
+- **EZD:** brak API EZD. Paczka ZIP (arkusz, `dane.json`, historia) do ręcznego przekazania.
+- **Poczta:** bez SMTP wiadomości e-mail trafiają tylko do logu kontenera z ostrzeżeniem (`okres.W001`), a powiadomienia działają w aplikacji. Po podaniu `OKRES_SMTP_HOST` i `OKRES_POWIADOMIENIA_EMAIL=1` idą przez SMTP urzędu.
+- **Plan pilotażu (nie ma w prototypie):** zastępstwa oceniającego (dziś tylko zmiana oceniającego przez kadry), import ocen historycznych z poprzednich lat (poprzednią ocenę urzędnika wpisuje się ręcznie), wniosek ocenianego o zmianę terminu składany w systemie (dziś oceniający wpisuje zmianę z podstawą art. 81 ust. 8 pkt 4), automatyczne usuwanie danych HR po okresie retencji, SSO.
 - **PDF:** druk i zapis PDF z przeglądarki z szablonu A4. Przypisy na wydruku mają własną numerację, krótszą niż we wzorze.
 - **Pakiet `symulacja-12m`:** ilustracja techniczna zmiany parametru, bez przypisywania przyszłej ustawie treści ani daty.
 
@@ -152,7 +155,7 @@ W pakiecie można zmienić bez kodu: kryteria i ich opisy, przypisanie do arkusz
 
 ## Licencje
 
-Kod zespołu jest przeznaczony do przekazania KPRM zgodnie z regulaminem konkursu. Zależności mają wyłącznie licencje permisywne:
+Kod zespołu jest przeznaczony do przekazania KPRM zgodnie z regulaminem konkursu (plik [LICENSE](LICENSE): wszelkie prawa zastrzeżone, to nie jest licencja open source). Zależności mają wyłącznie licencje permisywne:
 
 | Składnik | Licencja |
 |---|---|
@@ -170,7 +173,7 @@ Bez płatnych licencji i bez usług zewnętrznych wymaganych do działania.
 ## Gdzie użyto AI
 
 - **W wytwarzaniu:** kod, testy i dokumentację pisaliśmy z asystentami AI do programowania (Claude Code, Codex) pod nadzorem zespołu. Każdą zmianę sprawdzały testy automatyczne, a kluczowe reguły porównaliśmy ręcznie z tekstem ustawy, rozporządzenia, schematami pól i dokumentem KPRM o liczeniu terminów. Kod przejrzał też osobny agent AI. Wynik przeglądu i wprowadzone poprawki są w `PROGRESS.md`.
-- **W produkcie:** AI jest opcjonalne i domyślnie wyłączone (`OKRES_AI=wylaczone`). Po włączeniu (`OKRES_AI=ollama`) model lokalny, domyślnie Gemma 4 12B (`OKRES_AI_MODEL=gemma4:12b`) przez Ollamę z wyłączonym trybem rozumowania (`OKRES_AI_THINK=0`), porządkuje wyłącznie notatki przełożonego według kryteriów:
+- **W produkcie:** AI jest opcjonalne i domyślnie wyłączone (`OKRES_AI=wylaczone`). Model: **Gemma 4 12B** (`gemma4:12b`) uruchamiana lokalnie w Ollamie, w sieci urzędu, bez wysyłki danych na zewnątrz; alternatywa `hf.co/speakleash/Bielik-11B-v3.1-Instruct-GGUF:Q4_K_M`. Propozycje działań rozwojowych i sygnały HR partnera pochodzą z edytowalnych katalogów YAML, nie z modelu. Po włączeniu (`OKRES_AI=ollama`) model lokalny, domyślnie Gemma 4 12B (`OKRES_AI_MODEL=gemma4:12b`) przez Ollamę z wyłączonym trybem rozumowania (`OKRES_AI_THINK=0`), porządkuje wyłącznie notatki przełożonego według kryteriów:
   - każde zdanie odsyła do notatki źródłowej, a zdania bez źródła są odrzucane;
   - imiona i nazwiska stron są pseudonimizowane przed wysłaniem;
   - awaria modelu jest jawnie oznaczona;
