@@ -96,11 +96,11 @@ def _z_przesunieciem(kroki: list[Krok], koniec: date) -> Rachunek:
 
 def rachunek_terminu_oceny(poczatek: date, nieobecnosci: list[Okres] = (), version: str = rules.DOMYSLNA_WERSJA,
                            opis_poczatku: str = "Początek okresu oceny") -> Rachunek:
-    """Termin oceny okresowej z przedłużeniem o długotrwałe nieobecności (art. 81 ust. 1 i 7)."""
+    """Termin oceny okresowej z przedłużeniem o długotrwałe nieobecności (art. 81 ust. 4 i 7)."""
     cfg = rules.load(version)["terminy"]
     miesiace = cfg["okres_oceny_miesiace"]
     koniec = dodaj_miesiace(poczatek, miesiace)
-    kroki = [Krok(opis_poczatku, poczatek), Krok(f"+ {miesiace} miesięcy", koniec, "art. 81 ust. 1 ustawy")]
+    kroki = [Krok(opis_poczatku, poczatek), Krok(f"+ {miesiace} miesięcy", koniec, "art. 81 ust. 4 ustawy")]
     prog = cfg["nieobecnosc_przedluza_powyzej_miesiecy"]
     # Liczy się tylko część nieobecności przypadająca w okresie oceny.
     przyciete = [Okres(max(o.od, poczatek), o.do) for o in nieobecnosci if o.do >= poczatek]

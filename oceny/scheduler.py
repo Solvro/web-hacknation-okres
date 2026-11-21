@@ -82,7 +82,7 @@ def przypomnienie_o_stopniu(ocena) -> int:
 
 def zaloz_kolejna(ocena) -> Ocena | None:
     """UC-01 / UC-27: po sporządzeniu oceny zakłada kolejny okres oceny. Od razu, bo po ocenie negatywnej
-    kryteria wyznacza się w 7 dni od sporządzenia (§ 7 ust. 2), a więc jeszcze w trakcie terminu na sprzeciw."""
+    kryteria wyznacza się w 7 dni od sporządzenia (§ 7 pkt 2), a więc jeszcze w trakcie terminu na sprzeciw."""
     if not ocena.sporzadzona or Ocena.objects.filter(poprzednia=ocena).exists():
         return None
     pracownik = getattr(ocena.oceniany, "pracownik", None)

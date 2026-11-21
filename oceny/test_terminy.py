@@ -2,6 +2,7 @@ from datetime import date
 
 from django.test import SimpleTestCase
 
+from . import terminy
 from .terminy import Okres, dluzsza_niz, dodaj_miesiace, scal_nieobecnosci, termin_dniowy, termin_miesieczny, termin_oceny
 
 
@@ -55,3 +56,13 @@ class TerminyTest(SimpleTestCase):
         start = date(2024, 2, 1)
         r = termin_oceny(start, [Okres(date(2023, 12, 1), date(2024, 3, 31))])
         self.assertEqual(r, date(2026, 4, 2))  # 01.02.2026 + 60 dni = 02.04.2026 (czwartek)
+
+
+class PodstawyPrawneTest(SimpleTestCase):
+    def test_rachunek_cytuje_wlasciwe_przepisy(self):
+        r = terminy.rachunek_terminu_oceny(date(2025, 3, 16), [terminy.Okres(date(2026, 10, 5), date(2026, 10, 16)),
+                                                                terminy.Okres(date(2026, 10, 19), date(2026, 11, 6))])
+        podstawy = [k.podstawa for k in r.kroki]
+        self.assertIn("art. 81 ust. 4 ustawy", podstawy)  # ocena co 24 miesiące
+        self.assertIn("art. 81 ust. 7 ustawy", podstawy)  # przedłużenie o nieobecność
+        self.assertNotIn("art. 81 ust. 1 ustawy", podstawy)

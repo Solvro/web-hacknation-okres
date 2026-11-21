@@ -63,7 +63,7 @@
       {% endif %}
     {% endwith %}
   {% with t=ocena.terminy_po_negatywnej %}{% if t %}
-    <p>Po ocenie negatywnej: kryteria nowego okresu do {{ t.kryteria_nowego_okresu|date:"d.m.Y" }} (§ 7 ust. 2){% if t.ponowna_ocena %}, ponowna ocena {{ t.ponowna_ocena|date:"d.m.Y" }} (art. 81 ust. 9){% endif %}.</p>
+    <p>Po ocenie negatywnej: kryteria nowego okresu do {{ t.kryteria_nowego_okresu|date:"d.m.Y" }} (§ 7 pkt 2){% if t.ponowna_ocena %}, ponowna ocena {{ t.ponowna_ocena|date:"d.m.Y" }} (art. 81 ust. 9){% endif %}.</p>
   {% endif %}{% endwith %}
   {% if ocena.wersje.exists %}
     <details><summary>Historia wersji oceny</summary><ul>

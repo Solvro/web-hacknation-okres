@@ -185,11 +185,11 @@ class Ocena(models.Model):
         cfg = rules.load(self.wersja_regul)["terminy"]
         if self.po_negatywnej:
             return terminy.rachunek_dniowy(self.poprzednia.data_sporzadzenia, cfg["kryteria_po_negatywnej_dni"],
-                                           "Sporządzenie oceny negatywnej", "§ 7 ust. 2 rozporządzenia")
+                                           "Sporządzenie oceny negatywnej", "§ 7 pkt 2 rozporządzenia")
         if not self.poczatek_okresu:
             return None
         return terminy.rachunek_dniowy(self.poczatek_okresu, cfg["kryteria_dni"],
-                                       f"Początek okresu oceny ({self.get_podstawa_poczatku_display()})", "§ 7 ust. 1 rozporządzenia")
+                                       f"Początek okresu oceny ({self.get_podstawa_poczatku_display()})", "§ 7 pkt 1 rozporządzenia")
 
     def rachunek_oceny(self) -> terminy.Rachunek | None:
         if self.termin_oceny_zmieniony:
@@ -564,7 +564,7 @@ class Ocena(models.Model):
         return terminy.termin_dniowy(self.data_zapoznania, rules.load(self.wersja_regul)["terminy"]["sprzeciw_dni"])
 
     def terminy_po_negatywnej(self) -> dict:
-        """Kryteria w 7 dni od sporządzenia (§ 7 ust. 2), ponowna ocena po 6 mies. od zapoznania (art. 81 ust. 9)."""
+        """Kryteria w 7 dni od sporządzenia (§ 7 pkt 2), ponowna ocena po 6 mies. od zapoznania (art. 81 ust. 9)."""
         if self.pozytywna is not False:
             return {}
         cfg = rules.load(self.wersja_regul)["terminy"]
