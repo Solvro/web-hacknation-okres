@@ -69,6 +69,20 @@ def _zapytaj_ollama(prompt: str) -> str:
         return json.loads(odp.read())["message"]["content"]
 
 
+def _zrodla(surowe, widoczne) -> list[int]:
+    """Identyfikatory notatek z odpowiedzi modelu: 12, "12", "N12", "[N12]", "[12]". Inne i nieistniejące odrzucamy."""
+    if not isinstance(surowe, list):
+        surowe = [surowe]
+    wynik = []
+    for z in surowe:
+        if isinstance(z, bool):
+            continue
+        tekst = str(z).strip().strip("[]").strip().upper().removeprefix("N").strip()
+        if tekst.isdigit() and int(tekst) in widoczne and int(tekst) not in wynik:
+            wynik.append(int(tekst))
+    return wynik
+
+
 def zestaw(ocena, user) -> Zestawienie:
     widoczne = {o.pk: o for o in ocena.obserwacje_dla(user)}
     if settings.OKRES_AI != "ollama":
@@ -98,8 +112,13 @@ def zestaw(ocena, user) -> Zestawienie:
     grupy, odrzucone = [], 0
     for kod, nazwa in kryteria.items():
         punkty = []
-        for p in (wynik.get("kryteria") or {}).get(kod, []) if isinstance(wynik, dict) else []:
-            zrodla = [int(z) for z in p.get("zrodla", []) if str(z).isdigit() and int(z) in widoczne]
+        wg_kryteriow = wynik.get("kryteria") if isinstance(wynik, dict) else None
+        elementy = wg_kryteriow.get(kod, []) if isinstance(wg_kryteriow, dict) else []
+        for p in elementy if isinstance(elementy, list) else [elementy]:
+            if not isinstance(p, dict):
+                odrzucone += 1
+                continue
+            zrodla = _zrodla(p.get("zrodla", []), widoczne)
             if not zrodla or not str(p.get("zdanie", "")).strip():
                 odrzucone += 1
                 continue
