@@ -1,0 +1,10 @@
+<span class="znacznik etap etap-{{ etap }}">
+  {% if etap == "kryteria" %}{% include "oceny/_ikona.html" with ikona="lista" %} Kryteria
+  {% elif etap == "ocena" %}{% include "oceny/_ikona.html" with ikona="lista" %} Ocena
+  {% elif etap == "zapoznanie" %}{% include "oceny/_ikona.html" with ikona="notatka" %} Zapoznanie
+  {% elif etap == "termin_sprzeciwu" %}{% include "oceny/_ikona.html" with ikona="zegarek" %} Termin sprzeciwu
+  {% elif etap == "sprzeciw" %}{% include "oceny/_ikona.html" with ikona="alert" %} Rozpatrywanie sprzeciwu
+  {% elif etap == "zakonczona" %}{% include "oceny/_ikona.html" with ikona="sprawdz" %} Zakończona
+  {% elif etap == "anulowana" %}{% include "oceny/_ikona.html" with ikona="krzyzyk" %} Anulowana
+  {% endif %}
+</span>

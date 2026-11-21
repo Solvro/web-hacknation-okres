@@ -167,3 +167,7 @@ Awaria hostingu oznacza przejście na gotowy obraz lokalny. Awaria laptopa oznac
 4. Które działania HR są użyteczne dla małego urzędu i jaki minimalny eksport wystarcza kadrom? Odpowiedzi zapisujemy w PROGRESS.md z wpływem na zakres.
 
 Źródłami wymagań są oba dokumenty w `materials/zadanie/`, opis i warunki brzegowe z `materials/2. Przypadki użycia/`, opis procesu, trzy mapy pól i urzędowe wzory, przykłady z `liczenie terminów.docx` oraz akty i standardy ZZL z materiałów KPRM. W sprawach rozbieżnych odnotowujemy przepis, interpretację i decyzję mentora. [Rozporządzenie i załączniki A/B/C](https://eli.gov.pl/eli/DU/2016/470/ogl) · [Ustawa wskazana w zadaniu](https://eli.gov.pl/eli/DU/2026/590/ogl) · [Strona wydarzenia](https://hacknation.pl/)
+
+## Widok spraw
+
+Lista grupuje dane pracownika, etap, kolejną czynność i termin. Krótkie etykiety etapów oraz wyróżnienie własnych zadań i opóźnień ułatwiają skanowanie. Szczegóły sprawy otwierają bieżący etap, a informacje pomocnicze i pozostałe części są dostępne w rozwijanych sekcjach. Przejścia uwzględniają systemową preferencję ograniczenia ruchu.

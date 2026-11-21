@@ -148,12 +148,28 @@ th { background: #eaf0f8; color: var(--granat); font-size: .84rem; }
 td { border-top: 1px solid var(--ramka); }
 tbody tr:hover { background: #f3f8fc; }
 table + table { margin-top: .75rem; }
+.ikona { width: 1.15em; height: 1.15em; flex: none; vertical-align: -.18em; }
+.wprowadzenie-spraw h1 { margin: 0; }
+.narzedzia-spraw { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0 1rem; }
+.narzedzia-spraw .filtry { margin: .65rem 0 1rem; }
+.przypomnienia { padding: .65rem 1rem; border: 1px solid #e9d1a4; border-radius: .75rem; background: #fff9ee; }
 .lista-spraw { box-shadow: var(--cien); }
-.lista-spraw th:first-child { width: 23%; }
+.lista-spraw thead th { background: #e8eef7; }
+.lista-spraw :is(th, td) { overflow-wrap: break-word; padding: .9rem 1rem; }
+.lista-spraw thead th:first-child { width: 30%; }
+.lista-spraw thead th:nth-child(2) { width: 18%; }
+.lista-spraw thead th:last-child { width: 1%; }
+.lista-spraw tbody th { background: transparent; border-top: 1px solid var(--ramka); font-size: inherit; }
+.lista-spraw tbody tr:is(:hover, :focus-within) { background: #eef5ff; }
+.sprawa-moja th { box-shadow: inset 3px 0 #3877be; }
 .etykieta-mobilna { display: none; }
-.sprawa-link { font-weight: 750; }
-.arkusz-znacznik { display: inline-block; padding: .17rem .6rem; border-radius: .45rem; background: #e5eff9; color: var(--glowny); font-weight: 750; }
-.data { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sprawa-link { color: var(--granat); font-weight: 750; text-decoration: none; }
+.sprawa-link:hover { color: var(--link); text-decoration: underline; }
+.sprawa-osoba-meta, .sprawa-odpowiada { display: block; margin-top: .25rem; color: var(--potw-tekst); font-size: .82rem; font-weight: 450; }
+.arkusz-znacznik { display: inline-block; margin-right: .35rem; padding: .05rem .45rem; border: 1px solid #cad8eb; border-radius: .35rem; background: #eef4fb; color: var(--glowny); font-size: .75rem; font-weight: 700; white-space: nowrap; }
+.nastepny-krok { display: block; font-weight: 600; }
+.nastepny-krok + .znacznik, .data + .znacznik { margin-top: .25rem; }
+.data { display: inline-flex; align-items: center; gap: .35rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .pusta-tabela { padding: 1.5rem .9rem; color: var(--potw-tekst); }
 
 button, .przycisk {
@@ -198,8 +214,14 @@ legend { padding-inline: .35rem; font-weight: 700; color: var(--granat); }
 ul[role=alert] { padding-inline-start: 2rem; }
 .hr { background: var(--hr-tlo); color: var(--hr); }
 .ai { background: var(--ai-tlo); color: var(--ai); }
-.znacznik { display: inline-block; padding: .16rem .55rem; border-radius: 999px; background: var(--potw-tlo); color: var(--potw-tekst); font-size: .8rem; font-weight: 650; }
-.znacznik.moj { background: var(--glowny); color: #fff; }
+.znacznik { display: inline-flex; align-items: center; gap: .3rem; padding: .16rem .55rem; border-radius: 999px; background: var(--potw-tlo); color: var(--potw-tekst); font-size: .8rem; font-weight: 650; }
+.znacznik.moj { background: #dfebfb; color: #153d75; }
+.etap-kryteria { background: #e2edfd; color: #1a4582; }
+.etap-ocena { background: #eee6fb; color: #533483; }
+.etap-zapoznanie, .etap-termin_sprzeciwu { background: #ffefd3; color: #764705; }
+.etap-sprzeciw, .znacznik.po-terminie { background: var(--blad-tlo); color: var(--blad); }
+.etap-zakonczona { background: #dff2e8; color: #205c40; }
+.znacznik.po-terminie { white-space: nowrap; }
 .naglowek-sprawy { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 1px; border: 1px solid var(--ramka); border-radius: var(--promien); overflow: hidden; background: var(--ramka); box-shadow: var(--cien); }
 .naglowek-sprawy > div { padding: .8rem 1rem; background: var(--tlo); }
 .naglowek-sprawy dt { color: var(--potw-tekst); font-size: .82rem; }
@@ -246,8 +268,12 @@ details > :last-child:not(summary) { margin-bottom: 0; }
     border-radius: .8rem;
     background: var(--tlo);
   }
-  .lista-spraw td:first-child { grid-column: 1 / -1; border-top: 0; }
-  .etykieta-mobilna { display: block; color: var(--potw-tekst); font-size: .8rem; font-weight: 600; }
+  .lista-spraw tbody th, .lista-spraw .pusta-tabela { grid-column: 1 / -1; border-top: 0; }
+  .sprawa-moja th { box-shadow: none; }
+  .lista-spraw tr.sprawa-moja { border-left: 3px solid #3877be; }
+  .lista-spraw :is(th, td) { padding: .65rem .4rem; }
+  .lista-spraw td:nth-child(3) { grid-column: 1 / -1; grid-row: 3; }
+  .etykieta-mobilna { display: block; margin-bottom: .15rem; color: var(--potw-tekst); font-size: .76rem; font-weight: 650; }
 }
 @media (max-width: 38rem) {
   .logowanie-uklad { grid-template-columns: minmax(0, 1fr); }
@@ -259,6 +285,7 @@ details > :last-child:not(summary) { margin-bottom: 0; }
   .htmx-added:is(section, article, [role=alert]) { animation: wejscie .23s ease-out; }
   button, .przycisk, .gora nav a, .filtry a, .skroty a { transition: background-color .16s, border-color .16s, box-shadow .16s, transform .16s; }
   button:active, .przycisk:active { transform: translateY(1px); }
+  .lista-spraw tr, .sprawa-link { transition: background-color .16s, color .16s; }
   .htmx-request { transition: opacity .2s; opacity: .72; }
   @keyframes wejscie {
     from { opacity: 0; transform: translateY(6px); }

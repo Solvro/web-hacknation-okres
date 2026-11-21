@@ -1,43 +1,56 @@
 {% extends "oceny/base.html" %}
 {% block tytul %}Moje sprawy{% endblock %}
 {% block tresc %}
-<div class="naglowek-strony wprowadzenie">
+<div class="naglowek-strony wprowadzenie wprowadzenie-spraw">
   <h1>Moje sprawy</h1>
-  <p>Sprawdź terminy i zobacz, które oceny wymagają Twojego działania.</p>
 </div>
 {% if wynik_schedulera %}<p class="potwierdzone" role="status">Scheduler: nowe przypomnienia {{ wynik_schedulera.przypomnienia }}, nowe sprawy {{ wynik_schedulera.nowe_sprawy }}.</p>{% endif %}
 {% if powiadomienia %}
-  <section class="panel" aria-labelledby="powiadomienia-tytul">
-    <h2 id="powiadomienia-tytul">Przypomnienia</h2>
+  <details class="przypomnienia">
+    <summary>{% include "oceny/_ikona.html" with ikona="dzwonek" %} Przypomnienia</summary>
     <ul class="powiadomienia">{% for p in powiadomienia %}
       <li id="przypomnienie-{{ p.pk }}"><a href="{% url 'oceny:szczegoly' p.ocena_id %}">{{ p.tresc }}</a>
         <button class="drugorzedny" hx-post="{% url 'oceny:przeczytane' p.pk %}" hx-target="#przypomnienie-{{ p.pk }}" hx-swap="outerHTML">Oznacz jako przeczytane</button></li>
     {% endfor %}</ul>
-  </section>
+  </details>
 {% endif %}
-{% if okres_demo and user.is_staff %}
-  <form class="akcja-demo" method="post" action="{% url 'oceny:uruchom_scheduler' %}">{% csrf_token %}
-    <button class="drugorzedny" type="submit">Sprawdź przypomnienia i nowe sprawy (demo)</button></form>
-{% endif %}
-<nav class="filtry" aria-label="Filtr spraw">
-  <a href="{% url 'oceny:moje_sprawy' %}"{% if filtr != "moje" %} aria-current="page"{% endif %}>Wszystkie</a>
-  <a href="?filtr=moje"{% if filtr == "moje" %} aria-current="page"{% endif %}>Wymaga mojego działania</a>
-</nav>
+<div class="narzedzia-spraw">
+  <nav class="filtry" aria-label="Filtr spraw">
+    <a href="{% url 'oceny:moje_sprawy' %}"{% if filtr != "moje" %} aria-current="page"{% endif %}>{% include "oceny/_ikona.html" with ikona="lista" %} Wszystkie</a>
+    <a href="?filtr=moje"{% if filtr == "moje" %} aria-current="page"{% endif %}>{% include "oceny/_ikona.html" with ikona="osoba" %} Do zrobienia przeze mnie</a>
+  </nav>
+  {% if okres_demo and user.is_staff %}
+    <form class="akcja-demo" method="post" action="{% url 'oceny:uruchom_scheduler' %}">{% csrf_token %}
+      <button class="drugorzedny" type="submit">Sprawdź przypomnienia (demo)</button>
+    </form>
+  {% endif %}
+</div>
 <table class="lista-spraw" role="table" aria-label="Lista spraw">
-  <thead role="rowgroup"><tr role="row"><th scope="col" role="columnheader">Oceniany</th><th scope="col" role="columnheader">Arkusz</th><th scope="col" role="columnheader">Etap</th><th scope="col" role="columnheader">Następna czynność</th><th scope="col" role="columnheader">Termin</th><th scope="col" role="columnheader">Odpowiada</th></tr></thead>
+  <thead role="rowgroup"><tr role="row"><th scope="col">Oceniany</th><th scope="col">Etap</th><th scope="col">Następny krok</th><th scope="col">Termin</th></tr></thead>
   <tbody role="rowgroup">
   {% for w in wiersze %}
-    <tr role="row">
-      <td role="cell"><a class="sprawa-link" href="{% url 'oceny:szczegoly' w.ocena.pk %}">{{ w.ocena.oceniany.get_full_name|default:w.ocena.oceniany }}</a>
-        {% if w.ocena.oceniany.pracownik %}<br><span class="cicho">{{ w.ocena.oceniany.pracownik.stanowisko }}</span>{% endif %}</td>
-      <td role="cell"><span class="etykieta-mobilna" aria-hidden="true">Arkusz</span><span class="arkusz-znacznik">{{ w.ocena.arkusz }}</span></td>
-      <td role="cell"><span class="etykieta-mobilna" aria-hidden="true">Etap</span><span class="znacznik">{{ w.ocena.etap_nazwa }}</span></td>
-      <td role="cell"><span class="etykieta-mobilna" aria-hidden="true">Następna czynność</span>{% if w.krok %}{{ w.krok.opis }}{% if w.krok.moj %} <span class="znacznik moj">Ty</span>{% endif %}{% else %}—{% endif %}</td>
-      <td role="cell"><span class="etykieta-mobilna" aria-hidden="true">Termin</span><span class="data">{{ w.krok.termin|date:"d.m.Y"|default:"—" }}</span>{% if w.ocena.po_terminie %}<br><span class="po-terminie">po terminie</span>{% endif %}</td>
-      <td role="cell"><span class="etykieta-mobilna" aria-hidden="true">Odpowiada</span>{{ w.krok.kto.get_full_name|default:"—" }}</td>
+    {% with o=w.ocena p=w.ocena.oceniany.pracownik %}
+    <tr role="row"{% if w.krok.moj %} class="sprawa-moja"{% endif %}>
+      <th scope="row" role="rowheader">
+        <a class="sprawa-link" href="{% url 'oceny:szczegoly' o.pk %}">{{ o.oceniany.get_full_name|default:o.oceniany }}</a>
+        <span class="sprawa-osoba-meta"><span class="arkusz-znacznik">Arkusz {{ o.arkusz }}</span>{% if p.stanowisko %}<span>{{ p.stanowisko }}</span>{% endif %}</span>
+      </th>
+      <td role="cell"><span class="etykieta-mobilna" aria-hidden="true">Etap</span>{% include "oceny/_etap.html" with etap=o.etap only %}</td>
+      <td role="cell"><span class="etykieta-mobilna" aria-hidden="true">Następny krok</span>
+        {% if w.krok %}<span class="nastepny-krok">{{ w.krok.opis }}</span>
+          {% if w.krok.moj %}<span class="znacznik moj">{% include "oceny/_ikona.html" with ikona="osoba" %} Twoje zadanie</span>
+          {% elif w.krok.kto %}<span class="sprawa-odpowiada">{{ w.krok.kto.get_full_name|default:w.krok.kto.username }}</span>{% endif %}
+        {% else %}<span class="cicho">Brak działań</span>{% endif %}
+      </td>
+      <td role="cell"><span class="etykieta-mobilna" aria-hidden="true">Termin</span>
+        {% if w.krok.termin %}<time class="data" datetime="{{ w.krok.termin|date:'Y-m-d' }}">{% include "oceny/_ikona.html" with ikona="kalendarz" %} {{ w.krok.termin|date:"d.m.Y" }}</time>
+        {% else %}<span class="cicho">—</span>{% endif %}
+        {% if o.po_terminie %}<span class="znacznik po-terminie">{% include "oceny/_ikona.html" with ikona="alert" %} Po terminie</span>{% endif %}
+      </td>
     </tr>
+    {% endwith %}
   {% empty %}
-    <tr role="row"><td class="pusta-tabela" colspan="6" role="cell">{% if filtr == "moje" %}Żadna sprawa nie wymaga teraz Twojego działania.{% else %}Brak spraw do wyświetlenia.{% endif %}</td></tr>
+    <tr role="row"><td class="pusta-tabela" colspan="4" role="cell">{% if filtr == "moje" %}Żadna sprawa nie wymaga teraz Twojego działania.{% else %}Brak spraw do wyświetlenia.{% endif %}</td></tr>
   {% endfor %}
   </tbody>
 </table>
