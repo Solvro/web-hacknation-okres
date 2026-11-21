@@ -14,6 +14,7 @@ import os
 import sys
 from pathlib import Path
 
+import dj_database_url
 from django.core.management.utils import get_random_secret_key
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -35,6 +36,12 @@ if not SECRET_KEY:
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
+# Za reverse proxy z TLS (np. Traefik w Coolify): pełne adresy https://..., oddzielone przecinkami.
+CSRF_TRUSTED_ORIGINS = [o for o in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",") if o]
+if os.environ.get("DJANGO_BEHIND_PROXY", "0") == "1":
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = CSRF_COOKIE_SECURE = True
+
 
 # Application definition
 
@@ -51,6 +58,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -84,11 +92,11 @@ WSGI_APPLICATION = 'okres_site.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
+# Mały urząd: SQLite w katalogu danych (OKRES_DATA_DIR, w kontenerze wolumen /app/data).
+# Duży urząd: DATABASE_URL (np. postgres://...; wymaga doinstalowania sterownika bazy).
+DATA_DIR = Path(os.environ.get("OKRES_DATA_DIR", BASE_DIR))
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(default=f"sqlite:///{DATA_DIR / 'db.sqlite3'}", conn_max_age=600),
 }
 
 
@@ -127,6 +135,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage'},
+}
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'oceny:moje_sprawy'
 LOGOUT_REDIRECT_URL = 'login'
