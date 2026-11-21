@@ -150,3 +150,5 @@ przypomnienia:  # ile dni przed terminem scheduler przypomina (0 = w dniu termin
   kryteria: [7, 2, 0]
   ocena: [60, 30, 7, 0]
   sprzeciw: [2, 0]
+  zapoznanie: [0, -3, -7]  # ujemne = dni po sporządzeniu bez zapoznania
+  rozpatrzenie: [7, 2, 0]

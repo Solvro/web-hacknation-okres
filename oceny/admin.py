@@ -19,17 +19,19 @@ class OcenaAdmin(admin.ModelAdmin):
     list_filter = ("arkusz", "pozytywna")
     inlines = [KorektaInline]
 
+    def has_delete_permission(self, request, obj=None):
+        return False  # akta osobowe; usunięcie wyłącznie po upływie retencji, poza zwykłym panelem
+
     def get_readonly_fields(self, request, obj=None):
         # Pola zablokowane zmienia się tylko metodą korekty (z powodem i śladem), nie przez zwykły zapis formularza.
+        if obj and obj.sporzadzona:
+            return [f.name for f in self.model._meta.fields]
         zawsze = ["srednia", "poziom", "pozytywna", "sporzadzona_at", "kryteria_potwierdzone_at", "wersja_regul",
-                  "kryteria_zatwierdzone_at", "data_zatwierdzenia_kryteriow", "data_potwierdzenia_kryteriow"]
+                  "kryteria_zatwierdzone_at", "data_zatwierdzenia_kryteriow", "data_potwierdzenia_kryteriow", "wersja",
+                  "anulowana_powod"]
         if obj and obj.kryteria_zatwierdzone:
             zawsze += ["arkusz", "oceniany", "kryteria_dodatkowe", "data_rozmowy_rozpoczynajacej", "miejscowosc_czesc_i",
                        "poczatek_okresu", "podstawa_poczatku", "poprzednia"]
-        if obj and obj.sporzadzona:
-            zawsze += ["oceny_czastkowe", "data_rozmowy_oceniajacej", "uzasadnienie", "wnioski_iprz", "data_sporzadzenia"]
-        if obj and obj.zapoznany:
-            zawsze += ["data_zapoznania", "sposob_zapoznania", "uwagi_zapoznania"]
         return zawsze
 
 
@@ -49,6 +51,9 @@ class KorektaAdmin(admin.ModelAdmin):
 
 @admin.register(Sprzeciw)
 class SprzeciwAdmin(admin.ModelAdmin):
+    def has_delete_permission(self, request, obj=None):
+        return False
+
     list_display = ("ocena", "wersja", "data_zlozenia", "decyzja", "data_decyzji")
     readonly_fields = ("ocena", "wersja", "data_zlozenia", "tresc", "decyzja", "data_decyzji", "uzasadnienie_decyzji",
                        "rozpatrujacy")

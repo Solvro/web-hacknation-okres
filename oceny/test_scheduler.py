@@ -31,8 +31,9 @@ class SchedulerTest(TestCase):
         zegar(date(2025, 4, 8))  # T-7
         self.assertEqual(scheduler.przypomnienia_dla(o), 1)
         self.assertEqual(scheduler.przypomnienia_dla(o), 0)  # ponowne uruchomienie
-        zegar(date(2025, 4, 15))  # T-2 i T-0
-        self.assertEqual(scheduler.przypomnienia_dla(o), 2)
+        zegar(date(2025, 4, 15))  # T-2 pominięty przy przerwie; jedno przypomnienie (T-0)
+        self.assertEqual(scheduler.przypomnienia_dla(o), 1)
+        self.assertEqual(scheduler.przypomnienia_dla(o), 0)
         p = Przypomnienie.objects.filter(ocena=o).last()
         self.assertEqual(p.odbiorca, self.anna)
         self.assertIn("15.04.2025", p.tresc)

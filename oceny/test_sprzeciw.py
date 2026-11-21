@@ -94,3 +94,37 @@ class RozpatrzenieSprzeciwuTest(TestCase):
         self.assertContains(r, "Historia wersji oceny")
         self.client.force_login(self.anna)
         self.assertEqual(self.client.post(reverse("oceny:rozpatrz_sprzeciw", args=[self.o.pk]), dane).status_code, 403)
+
+
+@override_settings(OKRES_DEMO=True)
+class PoprawkiZPrzegladuTest(RozpatrzenieSprzeciwuTest):
+    def test_dg_strona_oceny_nie_rozpatruje(self):
+        anna_ocena = Ocena.objects.get(oceniany=self.anna)  # oceniająca: dyrektor
+        with self.assertRaises(PermissionDenied):
+            anna_ocena.rozpatrz_sprzeciw(self.dg, "nieuwzgledniony", "x")
+
+    def test_zmiana_wymaga_ponownego_zapoznania(self):
+        self.o.rozpatrz_sprzeciw(self.dg, "zmiana", "Zasadny", self.komplet)
+        self.assertEqual(self.o.etap, "zapoznanie")
+        self.o.potwierdz_zapoznanie()
+        self.assertEqual(self.o.etap, "zakonczona")  # bez drugiego sprzeciwu od zmienionej oceny
+
+    def test_ponowne_anuluje_zaawansowana_kolejna_sprawe(self):
+        scheduler.uruchom()
+        nastepna = Ocena.objects.get(poprzednia=self.o)
+        nastepna.zatwierdz_kryteria(date(2026, 11, 5))
+        nastepna.dodaj_obserwacje(self.anna, date(2026, 11, 5), "Notatka w nowym okresie")
+        self.o.rozpatrz_sprzeciw(self.dg, "ponowne", "Ponownie")
+        nastepna.refresh_from_db()
+        self.assertEqual(nastepna.etap, "anulowana")
+        self.assertEqual(nastepna.obserwacje.count(), 1)  # nic nie znika po cichu
+        self.o.sporzadz(self.komplet, date(2026, 11, 5), "", "Szkolenie")
+        self.assertEqual(scheduler.uruchom()["nowe_sprawy"], 1)
+
+    def test_ponowna_po_negatywnej_nie_przed_szescioma_miesiacami(self):
+        scheduler.uruchom()
+        nastepna = Ocena.objects.get(poprzednia=self.o)
+        nastepna.zatwierdz_kryteria(date(2026, 11, 5))
+        nastepna.potwierdz_kryteria()
+        komplet = {k: 5 for k in nastepna.wszystkie_kryteria()}
+        self.assertIn("termin", nastepna.bledy_formalne(komplet, date(2026, 11, 5), "", "Szkolenie"))

@@ -49,3 +49,9 @@ class TerminyTest(SimpleTestCase):
         dluga = [Okres(date(2026, 10, 5), date(2026, 10, 16)), Okres(date(2026, 10, 19), date(2026, 11, 6))]
         # 33 dni nieobecności: 16.03.2027 + 33 dni = 18.04.2027 (niedziela) → 19.04.2027
         self.assertEqual(termin_oceny(start, dluga), date(2027, 4, 19))
+
+    def test_nieobecnosc_sprzed_okresu_liczona_od_poczatku(self):
+        # 01.12.2023–31.03.2024 przy początku okresu 01.02.2024: liczy się 60 dni (01.02–31.03), nie 122
+        start = date(2024, 2, 1)
+        r = termin_oceny(start, [Okres(date(2023, 12, 1), date(2024, 3, 31))])
+        self.assertEqual(r, date(2026, 4, 2))  # 01.02.2026 + 60 dni = 02.04.2026 (czwartek)

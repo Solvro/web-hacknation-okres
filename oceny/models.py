@@ -99,6 +99,7 @@ class Ocena(models.Model):
                                       help_text="Poprzednia ocena, od której liczy się ten okres.")
     kryteria_dodatkowe = models.JSONField(default=list, blank=True)
     wersja = models.PositiveSmallIntegerField(default=1, help_text="2 = ocena sporządzona po raz drugi po sprzeciwie.")
+    anulowana_powod = models.CharField(max_length=300, blank=True)
     # Część I: rozmowa z § 5 ust. 1, potwierdzenie oceniającego, potem ocenianego (§ 6)
     data_rozmowy_rozpoczynajacej = models.DateField(null=True, blank=True)
     kryteria_zatwierdzone_at = models.DateTimeField(null=True, blank=True)
@@ -190,6 +191,8 @@ class Ocena(models.Model):
 
     @property
     def etap(self) -> str:
+        if self.anulowana_powod:
+            return "anulowana"
         if not self.kryteria_zablokowane:
             return "kryteria"
         if not self.sporzadzona:
@@ -210,6 +213,7 @@ class Ocena(models.Model):
         "termin_sprzeciwu": "biegnie termin na sprzeciw",
         "sprzeciw": "sprzeciw w rozpatrzeniu",
         "zakonczona": "zakończona",
+        "anulowana": "anulowana",
     }
 
     @property
@@ -375,6 +379,11 @@ class Ocena(models.Model):
             bledy["okres"] = "Podaj okres, w którym oceniany podlegał ocenie."
         elif od > do or do > zegar.dzis():
             bledy["okres"] = "Okres podlegania ocenie: data „od” nie może być późniejsza niż „do”, a „do” nie może być z przyszłości."
+        elif self.poczatek_okresu and od < self.poczatek_okresu:
+            bledy["okres"] = "Okres podlegania ocenie nie może zaczynać się przed początkiem okresu oceny."
+        if self.po_negatywnej and (r := self.rachunek_oceny()) and zegar.dzis() < r.termin:
+            bledy["termin"] = (f"Ponowną ocenę po ocenie negatywnej sporządza się po upływie 6 miesięcy od zapoznania "
+                               f"(art. 81 ust. 9), tj. od {r.termin:%d.%m.%Y}.")
         wynik = self.podglad_wyniku(czastkowe)
         if wynik and not wynik.pozytywna and not uzasadnienie.strip():
             bledy["uzasadnienie"] = "Uzupełnij uzasadnienie oceny negatywnej (§ 11 ust. 3)."
@@ -480,12 +489,12 @@ class Ocena(models.Model):
     def zapoznany(self) -> bool:
         return self.data_zapoznania is not None
 
-    def _zapoznaj(self, sposob: str, uwagi: str = ""):
+    def _zapoznaj(self, sposob: str, uwagi: str = "", data=None):
         if not self.sporzadzona:
             raise PermissionDenied("Ocena nie została jeszcze sporządzona.")
         if self.zapoznany:
             raise PermissionDenied("Zapoznanie zostało już odnotowane.")
-        self.data_zapoznania = zegar.dzis()
+        self.data_zapoznania = data or zegar.dzis()
         self.sposob_zapoznania = sposob
         self.uwagi_zapoznania = uwagi
         self.save(update_fields=["data_zapoznania", "sposob_zapoznania", "uwagi_zapoznania", "miejscowosc_zapoznania"])
@@ -494,10 +503,16 @@ class Ocena(models.Model):
         self.miejscowosc_zapoznania = miejscowosc.strip()
         self._zapoznaj("potwierdzenie")
 
-    def odnotuj_fikcje_zapoznania(self, uwagi: str):
+    def odnotuj_fikcje_zapoznania(self, kto, uwagi: str, data_doreczenia):
+        """Kadry dokumentują, że informacja o ocenie dotarła, a oceniany nie mógł lub nie chciał potwierdzić.
+        Sam upływ czasu nie wystarcza; datą zapoznania jest udokumentowana data doręczenia."""
+        if not kto.is_staff:
+            raise PermissionDenied("Fikcję zapoznania dokumentuje komórka kadrowa.")
         if not uwagi.strip():
             raise ValidationError({"uwagi": "Opisz, jak informacja o ocenie dotarła do ocenianego i dlaczego nie potwierdził zapoznania."})
-        self._zapoznaj("fikcja", uwagi.strip())
+        if not data_doreczenia or data_doreczenia > zegar.dzis() or (self.data_sporzadzenia and data_doreczenia < self.data_sporzadzenia):
+            raise ValidationError({"data_doreczenia": "Podaj datę doręczenia: nie wcześniejszą niż sporządzenie i nie z przyszłości."})
+        self._zapoznaj("fikcja", uwagi.strip(), data_doreczenia)
 
     @property
     def termin_sprzeciwu(self):
@@ -544,6 +559,8 @@ class Ocena(models.Model):
         """Decyzja dyrektora generalnego (art. 83 ust. 3-4)."""
         if not (getattr(kto, "pracownik", None) and kto.pracownik.dyrektor_generalny):
             raise PermissionDenied("Sprzeciw rozpatruje dyrektor generalny urzędu.")
+        if kto.id in (self.oceniany_id, self.oceniajacy_id):
+            raise PermissionDenied("Dyrektor generalny będący stroną oceny nie rozpatruje sprzeciwu w tej sprawie.")
         sprzeciw = self.sprzeciw_biezacy
         if not sprzeciw or sprzeciw.decyzja:
             raise PermissionDenied("Brak sprzeciwu oczekującego na rozpatrzenie.")
@@ -567,6 +584,9 @@ class Ocena(models.Model):
             if not wynik.pozytywna:
                 self.wniosek_stopien = "nie" if self.oceniany_urzednik else "nie_dotyczy"
                 self.umotywowanie_wniosku = ""
+            # Zmienioną ocenę oceniany poznaje ponownie (nowa data zapoznania); kolejny sprzeciw nie przysługuje.
+            self.data_zapoznania, self.sposob_zapoznania = None, ""
+            self.uwagi_zapoznania = self.miejscowosc_zapoznania = ""
             self.save()
         elif decyzja == "ponowne":
             self._archiwizuj(f"sporządzenie po raz drugi po uwzględnieniu sprzeciwu z {sprzeciw.data_zlozenia:%d.%m.%Y}")
@@ -578,8 +598,13 @@ class Ocena(models.Model):
             self.uwagi_zapoznania = self.miejscowosc_zapoznania = ""
             self.wersja += 1
             self.save()
-            # Kolejny okres liczony od tej oceny założy scheduler po ponownym sporządzeniu.
-            Ocena.objects.filter(poprzednia=self, kryteria_zatwierdzone_at__isnull=True).delete()
+            # Kolejna sprawa liczona od uchylonej oceny traci podstawę: anulujemy ją (z historią i obserwacjami),
+            # a scheduler założy nową po ponownym sporządzeniu.
+            for nastepna in Ocena.objects.filter(poprzednia=self):
+                nastepna.anulowana_powod = (f"Anulowana {zegar.dzis():%d.%m.%Y}: ocenę z {sprzeciw.data_zlozenia:%d.%m.%Y} "
+                                            f"sporządza się po raz drugi (sprawa {self.pk}).")
+                nastepna.poprzednia = None
+                nastepna.save(update_fields=["anulowana_powod", "poprzednia"])
         sprzeciw.decyzja, sprzeciw.data_decyzji = decyzja, zegar.dzis()
         sprzeciw.uzasadnienie_decyzji, sprzeciw.rozpatrujacy = uzasadnienie.strip(), kto
         sprzeciw.save()

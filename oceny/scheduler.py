@@ -44,18 +44,26 @@ def przypomnienia_dla(ocena) -> int:
         rodzaj, termin, opis = "kryteria", r and r.termin, "Wyznaczenie kryteriów i rozmowa (§ 7)"
     elif etap == "ocena":
         kto, rodzaj, termin, opis = ocena.oceniajacy, "ocena", ocena.termin_oceny, "Sporządzenie oceny okresowej"
+    elif etap == "zapoznanie":
+        # § 12: niezwłocznie po sporządzeniu; przypomnienie dla ocenianego, a po tygodniu także dla kadr
+        kto, rodzaj, termin, opis = ocena.oceniany, "zapoznanie", ocena.data_sporzadzenia, "Zapoznanie z oceną okresową (§ 12)"
     elif etap == "termin_sprzeciwu":
         kto, rodzaj, termin, opis = ocena.oceniany, "sprzeciw", ocena.termin_sprzeciwu, "Upływ terminu na sprzeciw (art. 83 ust. 1)"
+    elif etap == "sprzeciw":
+        krok = ocena.nastepny_krok(ocena.oceniany)
+        kto, rodzaj, termin, opis = krok["kto"], "rozpatrzenie", krok["termin"], "Rozpatrzenie sprzeciwu (art. 83 ust. 3)"
     else:
         return 0
-    if not termin:
+    if not (termin and kto):
         return 0
-    for dni in _progi(ocena, rodzaj):
-        if dzis >= termin - timedelta(days=dni):
-            napis = f"{opis}: {ocena.oceniany.get_full_name()} — termin {termin:%d.%m.%Y}"
-            if dzis > termin:
-                napis += " (PO TERMINIE)"
-            utworzone += _przypomnij(ocena, kto, rodzaj, termin, napis, dni)
+    # Jedno przypomnienie na uruchomienie: najbliższy już osiągnięty próg (bez zalewu po przerwie w działaniu).
+    osiagniete = [d for d in _progi(ocena, rodzaj) if dzis >= termin - timedelta(days=d)]
+    if osiagniete:
+        dni = min(osiagniete)
+        napis = f"{opis}: {ocena.oceniany.get_full_name()} — termin {termin:%d.%m.%Y}"
+        if dzis > termin:
+            napis += " (PO TERMINIE)"
+        utworzone += _przypomnij(ocena, kto, rodzaj, termin, napis, dni)
     return utworzone
 
 
@@ -66,14 +74,18 @@ def zaloz_kolejna(ocena) -> Ocena | None:
         return None
     pracownik = getattr(ocena.oceniany, "pracownik", None)
     oceniajacy = pracownik.przelozony.user if pracownik and pracownik.przelozony else ocena.oceniajacy
-    return Ocena.objects.create(oceniany=ocena.oceniany, oceniajacy=oceniajacy, poprzednia=ocena,
-                                poczatek_okresu=ocena.data_sporzadzenia, podstawa_poczatku="poprzednia_ocena",
-                                arkusz=pracownik.arkusz if pracownik else ocena.arkusz)
+    try:
+        with transaction.atomic():
+            return Ocena.objects.create(oceniany=ocena.oceniany, oceniajacy=oceniajacy, poprzednia=ocena,
+                                        poczatek_okresu=ocena.data_sporzadzenia, podstawa_poczatku="poprzednia_ocena",
+                                        arkusz=pracownik.arkusz if pracownik else ocena.arkusz)
+    except IntegrityError:  # równoległe uruchomienie już założyło sprawę
+        return None
 
 
 def uruchom() -> dict:
     wynik = {"przypomnienia": 0, "nowe_sprawy": 0}
-    for ocena in Ocena.objects.select_related("oceniany", "oceniajacy"):
+    for ocena in Ocena.objects.filter(anulowana_powod="").select_related("oceniany", "oceniajacy"):
         wynik["przypomnienia"] += przypomnienia_dla(ocena)
         if zaloz_kolejna(ocena):
             wynik["nowe_sprawy"] += 1

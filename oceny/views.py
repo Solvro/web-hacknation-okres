@@ -80,9 +80,14 @@ def zaproszenie_ics(request, pk):
         start = datetime.fromisoformat(f"{request.GET['data']}T{request.GET.get('godzina', '10:00')}")
     except (KeyError, ValueError):
         return HttpResponse("Podaj datę i godzinę spotkania.", status=400)
-    koniec = start + timedelta(minutes=int(request.GET.get("minuty", 60)))
+    try:
+        minuty = max(15, min(240, int(request.GET.get("minuty", 60))))
+    except ValueError:
+        minuty = 60
+    koniec = start + timedelta(minutes=minuty)
     fmt = "%Y%m%dT%H%M%S"
-    uid = f"okres-{ocena.pk}-{request.GET.get('rodzaj', 'rozmowa')}-{start:{fmt}}@okres.local"
+    rodzaj = request.GET.get("rodzaj") if request.GET.get("rodzaj") in ("kryteria", "oceniajaca") else "rozmowa"
+    uid = f"okres-{ocena.pk}-{rodzaj}-{start:{fmt}}@okres.local"
     adresy = [u.email for u in (ocena.oceniany, ocena.oceniajacy) if u.email]
     linie = [
         "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//OKRES//PL", "METHOD:REQUEST", "BEGIN:VEVENT",
@@ -123,7 +128,8 @@ def _kontekst(request, ocena, bledy=()):
         "miejscowosc_domyslna": _miejscowosc(ocena.oceniajacy),
         "jest_oceniajacym": ocena.oceniajacy_id == request.user.id,
         "jest_ocenianym": ocena.oceniany_id == request.user.id,
-        "jest_dg": _jest_dg(request.user),
+        "jest_dg": _jest_dg(request.user) and request.user.id not in (ocena.oceniany_id, ocena.oceniajacy_id),
+        "jest_kadrami": request.user.is_staff,
         "bledy": bledy,
     }
 
@@ -285,9 +291,11 @@ def potwierdz_zapoznanie(request, pk):
 @login_required
 @require_POST
 def fikcja_zapoznania(request, pk):
-    ocena = _tylko_oceniajacy(request, pk)
+    ocena = _ocena_dla(request, pk)
+    if not request.user.is_staff:
+        raise PermissionDenied("Fikcję zapoznania dokumentuje komórka kadrowa.")
     try:
-        ocena.odnotuj_fikcje_zapoznania(request.POST.get("uwagi", ""))
+        ocena.odnotuj_fikcje_zapoznania(request.user, request.POST.get("uwagi", ""), _data(request.POST.get("data_doreczenia")))
     except ValidationError as e:
         return _zapoznanie(request, ocena, {k: v[0] for k, v in e.message_dict.items()})
     return _zapoznanie(request, ocena)

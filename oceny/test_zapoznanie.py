@@ -52,10 +52,16 @@ class ZapoznanieSprzeciwTest(TestCase):
 
     def test_fikcja_wymaga_opisu(self):
         self.sporzadz()
+        kadry = User.objects.create_user("kadry", is_staff=True)
+        with self.assertRaises(PermissionDenied):
+            self.o.odnotuj_fikcje_zapoznania(self.oceniajacy, "Odmowa podpisu", date(2026, 11, 2))
         with self.assertRaises(ValidationError):
-            self.o.odnotuj_fikcje_zapoznania("  ")
-        self.o.odnotuj_fikcje_zapoznania("Przekazano osobiście, odmowa podpisu")
+            self.o.odnotuj_fikcje_zapoznania(kadry, "  ", date(2026, 11, 2))
+        with self.assertRaises(ValidationError):
+            self.o.odnotuj_fikcje_zapoznania(kadry, "Odmowa podpisu", date(2026, 11, 3))  # z przyszłości
+        self.o.odnotuj_fikcje_zapoznania(kadry, "Przekazano osobiście, odmowa podpisu", date(2026, 11, 2))
         self.assertEqual(self.o.sposob_zapoznania, "fikcja")
+        self.assertEqual(self.o.data_zapoznania, date(2026, 11, 2))
         with self.assertRaises(PermissionDenied):
             self.o.potwierdz_zapoznanie()
 

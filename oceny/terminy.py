@@ -102,7 +102,9 @@ def rachunek_terminu_oceny(poczatek: date, nieobecnosci: list[Okres] = (), versi
     koniec = dodaj_miesiace(poczatek, miesiace)
     kroki = [Krok(opis_poczatku, poczatek), Krok(f"+ {miesiace} miesięcy", koniec, "art. 81 ust. 1 ustawy")]
     prog = cfg["nieobecnosc_przedluza_powyzej_miesiecy"]
-    for o in scal_nieobecnosci([o for o in nieobecnosci if o.do >= poczatek]):
+    # Liczy się tylko część nieobecności przypadająca w okresie oceny.
+    przyciete = [Okres(max(o.od, poczatek), o.do) for o in nieobecnosci if o.do >= poczatek]
+    for o in scal_nieobecnosci(przyciete):
         if o.od > koniec:
             continue
         if dluzsza_niz(o, prog):
