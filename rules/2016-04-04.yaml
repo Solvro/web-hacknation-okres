@@ -1,0 +1,52 @@
+# Rozporządzenie PRM z 4.04.2016 w sprawie warunków i sposobu przeprowadzania ocen okresowych (Dz. U. poz. 470)
+wersja: "2016-04-04"
+obowiazuje_od: 2016-04-04
+
+arkusze:  # § 4 ust. 1, wzory arkuszy w załącznikach nr 2-4
+  A:
+    - zarzadzanie_ludzmi: Zarządzanie ludźmi
+    - podejmowanie_decyzji: Podejmowanie decyzji i odpowiedzialność
+    - organizacja_pracy_cele: Organizacja pracy i orientacja na cele
+    - wspolpraca: Współpraca
+    - komunikacja: Komunikacja
+    - zarzadzanie_strategiczne: Zarządzanie strategiczne
+  B:
+    - zarzadzanie_ludzmi: Zarządzanie ludźmi
+    - podejmowanie_decyzji: Podejmowanie decyzji i odpowiedzialność
+    - organizacja_pracy_cele: Organizacja pracy i orientacja na cele
+    - wspolpraca: Współpraca
+    - komunikacja: Komunikacja
+  C:
+    - wykorzystywanie_wiedzy: Wykorzystywanie wiedzy i doskonalenie zawodowe
+    - rzetelnosc: Rzetelność
+    - organizacja_pracy: Organizacja pracy
+    - wspolpraca: Współpraca
+    - komunikacja: Komunikacja
+
+kryteria_dodatkowe:
+  max: 3  # § 4 ust. 2
+  wykaz:  # Załącznik nr 1 (fragment, TODO: pełny wykaz)
+    - analiza_informacji: Analiza informacji
+    - myslenie_analityczne: Myślenie analityczne
+    - kreatywnosc: Kreatywność
+    - negocjowanie: Negocjowanie
+    - orientacja_na_klienta: Orientacja na klienta
+    - radzenie_sobie_w_sytuacjach_kryzysowych: Radzenie sobie w sytuacjach kryzysowych
+
+punktacja:  # § 11 ust. 1
+  skala_czastkowa:  # pkt 1
+    1: znacznie poniżej oczekiwań
+    3: poniżej oczekiwań
+    5: na poziomie oczekiwań
+    7: powyżej oczekiwań
+    9: znacznie powyżej oczekiwań
+  poziomy:  # pkt 2: średnia arytmetyczna, górna granica włącznie, dolna wyłącznie (poza pierwszym)
+    - {kod: znacznie_ponizej, nazwa: znacznie poniżej oczekiwań, do: 2}
+    - {kod: ponizej, nazwa: poniżej oczekiwań, do: 4}
+    - {kod: na_poziomie, nazwa: na poziomie oczekiwań, do: 6}
+    - {kod: powyzej, nazwa: powyżej oczekiwań, do: 8}
+    - {kod: znacznie_powyzej, nazwa: znacznie powyżej oczekiwań, do: 9}
+  poziomy_pozytywne: [na_poziomie, powyzej, znacznie_powyzej]  # pkt 3
+  czastkowa_wykluczajaca: 1  # pkt 3-4: choć jedna taka cząstkowa daje ocenę negatywną
+  uzasadnienie_obowiazkowe_przy: negatywna  # § 11 ust. 3
+  wnioski_iprz_obowiazkowe: true  # pkt 5

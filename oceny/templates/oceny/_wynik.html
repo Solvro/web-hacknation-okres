@@ -1,0 +1,10 @@
+<output id="wynik" aria-live="polite">
+  {% if wynik %}
+    Średnia {{ wynik.srednia_wyswietlana }} · poziom: {{ wynik.poziom_nazwa }} ·
+    <strong>ocena {% if wynik.pozytywna %}pozytywna{% else %}negatywna{% endif %}</strong>
+    {% if not wynik.pozytywna %}<br>Ocena negatywna wymaga uzasadnienia (§ 11 ust. 3).{% endif %}
+  {% else %}
+    Wynik pojawi się po przyznaniu wszystkich ocen cząstkowych.
+  {% endif %}
+  <br><small>Wyliczono z pakietu reguł {{ ocena.wersja_regul }} (§ 11 ust. 1), bez udziału AI.</small>
+</output>

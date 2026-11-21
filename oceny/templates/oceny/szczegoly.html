@@ -1,0 +1,14 @@
+{% load static %}<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <title>Ocena okresowa · arkusz {{ ocena.arkusz }}</title>
+  <script src="{% static 'oceny/htmx.min.js' %}" defer></script>
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <h1>Ocena okresowa · arkusz {{ ocena.arkusz }}</h1>
+  <p>Oceniany: {{ ocena.oceniany.get_full_name|default:ocena.oceniany }} · Oceniający: {{ ocena.oceniajacy.get_full_name|default:ocena.oceniajacy }}</p>
+  {% include "oceny/_kryteria.html" %}
+  {% include "oceny/_ocena.html" %}
+</body>
+</html>

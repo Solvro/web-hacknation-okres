@@ -1,0 +1,24 @@
+<section id="kryteria">
+  <h2>Kryteria dodatkowe (0–{{ maks }})</h2>
+  {% if bledy %}<ul role="alert">{% for b in bledy %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
+  {% if ocena.kryteria_zablokowane %}
+    <p>Potwierdzone przez ocenianego {{ ocena.kryteria_potwierdzone_at|date:"d.m.Y H:i" }}. Zmiana tylko w trybie korekty administratora.</p>
+    <ul>{% for k in ocena.kryteria_dodatkowe %}<li>{% for kod, nazwa in wykaz.items %}{% if kod == k %}{{ nazwa }}{% endif %}{% endfor %}</li>{% empty %}<li>Bez kryteriów dodatkowych</li>{% endfor %}</ul>
+  {% elif jest_oceniajacym %}
+    <form hx-post="{% url 'oceny:ustaw_kryteria' ocena.pk %}" hx-target="#kryteria" hx-swap="outerHTML">
+      <fieldset>
+        <legend>Wybierz maksymalnie {{ maks }} kryteria z wykazu</legend>
+        {% for kod, nazwa in wykaz.items %}
+          <label><input type="checkbox" name="kryteria" value="{{ kod }}" {% if kod in ocena.kryteria_dodatkowe %}checked{% endif %}> {{ nazwa }}</label><br>
+        {% endfor %}
+      </fieldset>
+      <button type="submit">Zapisz kryteria</button>
+    </form>
+  {% else %}
+    <ul>{% for k in ocena.kryteria_dodatkowe %}<li>{% for kod, nazwa in wykaz.items %}{% if kod == k %}{{ nazwa }}{% endif %}{% endfor %}</li>{% empty %}<li>Bez kryteriów dodatkowych</li>{% endfor %}</ul>
+    {% if jest_ocenianym %}
+      <button hx-post="{% url 'oceny:potwierdz_kryteria' ocena.pk %}" hx-target="#kryteria" hx-swap="outerHTML">Potwierdzam zapoznanie z kryteriami</button>
+    {% endif %}
+  {% endif %}
+</section>
+{% if odswiez_ocene %}{% include "oceny/_ocena.html" with oob=True %}{% endif %}

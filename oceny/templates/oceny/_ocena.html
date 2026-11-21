@@ -1,0 +1,45 @@
+<section id="ocena"{% if oob %} hx-swap-oob="true"{% endif %}>
+  <h2>Część II · ocena</h2>
+  {% if ocena.sporzadzona %}
+    <p>Sporządzona {{ ocena.sporzadzona_at|date:"d.m.Y" }} po rozmowie oceniającej {{ ocena.data_rozmowy_oceniajacej|date:"d.m.Y" }}.</p>
+    <table>
+      <thead><tr><th>Kryterium</th><th>Ocena cząstkowa</th></tr></thead>
+      <tbody>{% for kod, nazwa, pkt in kryteria_oceny %}<tr><td>{{ nazwa }}</td><td>{{ pkt }}</td></tr>{% endfor %}</tbody>
+    </table>
+    <p>Średnia {{ ocena.srednia }} · poziom: {{ ocena.poziom }} · <strong>ocena {% if ocena.pozytywna %}pozytywna{% else %}negatywna{% endif %}</strong></p>
+    {% if ocena.uzasadnienie %}<h3>Uzasadnienie</h3><p>{{ ocena.uzasadnienie|linebreaksbr }}</p>{% endif %}
+    <h3>Wnioski do IPRZ</h3><p>{{ ocena.wnioski_iprz|linebreaksbr }}</p>
+  {% elif not ocena.kryteria_zablokowane %}
+    <p>Ocenę można sporządzić po potwierdzeniu kryteriów przez ocenianego.</p>
+  {% elif jest_oceniajacym %}
+    {% if bledy_pol %}
+      <div role="alert"><p>Przed sporządzeniem oceny popraw:</p>
+        <ul>{% for pole, komunikat in bledy_pol.items %}<li><a href="#pole-{{ pole }}">{{ komunikat }}</a></li>{% endfor %}</ul>
+      </div>
+    {% endif %}
+    <form hx-post="{% url 'oceny:sporzadz' ocena.pk %}" hx-target="#ocena" hx-swap="outerHTML">
+      <label id="pole-data_rozmowy">Data rozmowy oceniającej (§ 10)
+        <input type="date" name="data_rozmowy" value="{{ pola.data_rozmowy }}"></label>
+      <table hx-post="{% url 'oceny:podglad_wyniku' ocena.pk %}" hx-trigger="change" hx-include="closest form" hx-target="#wynik" hx-swap="outerHTML">
+        <thead><tr><th>Kryterium</th>{% for pkt, opis in skala.items %}<th title="{{ opis }}">{{ pkt }}</th>{% endfor %}</tr></thead>
+        <tbody>
+          {% for kod, nazwa, wybrane in kryteria_oceny %}
+            <tr id="pole-kryterium_{{ kod }}"><td>{{ nazwa }}</td>
+              {% for pkt, opis in skala.items %}
+                <td><input type="radio" name="kryterium_{{ kod }}" value="{{ pkt }}" aria-label="{{ nazwa }}: {{ opis }}" {% if wybrane == pkt %}checked{% endif %}></td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% include "oceny/_wynik.html" %}
+      <label id="pole-uzasadnienie">Uzasadnienie (obowiązkowe przy ocenie negatywnej)
+        <textarea name="uzasadnienie" rows="4">{{ pola.uzasadnienie }}</textarea></label>
+      <label id="pole-wnioski_iprz">Wnioski do indywidualnego programu rozwoju zawodowego
+        <textarea name="wnioski_iprz" rows="4">{{ pola.wnioski_iprz }}</textarea></label>
+      <button type="submit">Sporządź ocenę</button>
+    </form>
+  {% else %}
+    <p>Ocena jest w przygotowaniu.</p>
+  {% endif %}
+</section>
