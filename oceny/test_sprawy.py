@@ -1,5 +1,6 @@
 from io import StringIO
 from datetime import date
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -7,7 +8,8 @@ from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from .models import Nieobecnosc, Ocena, Pracownik, ZegarDemo
+from .management.commands import seed_demo
+from .models import Nieobecnosc, Ocena, Pracownik, Urzad, ZegarDemo
 
 
 @override_settings(OKRES_DEMO=True)
@@ -99,3 +101,47 @@ class PoTerminieTest(TestCase):
         self.assertFalse(o.po_terminie)
         ZegarDemo(data=date(2025, 4, 17)).save()
         self.assertTrue(o.po_terminie)
+
+
+@override_settings(OKRES_DEMO=True)
+class AktualizacjaDemoTest(TestCase):
+    def test_start_uzupelnia_starszy_zestaw_bez_nadpisywania_danych(self):
+        with (
+            patch.object(seed_demo, "OSOBY", seed_demo.OSOBY[:5]),
+            patch.object(seed_demo.Command, "_przygotowane_sprawy"),
+            patch.object(seed_demo.Command, "_hr_partner"),
+        ):
+            call_command("seed_demo", stdout=StringIO())
+        self.assertEqual(Ocena.objects.count(), 3)
+
+        Urzad.objects.update(nazwa="Urząd Testowy w Bydgoszczy (DEMO)")
+        jan = User.objects.get(username="oceniany")
+        jan.last_name = "Testowy"
+        jan.set_password("zmienione-haslo-testowe")
+        jan.save()
+        Pracownik.objects.filter(user=jan).update(stanowisko="Zmodyfikowane stanowisko")
+        ZegarDemo(data=date(2026, 11, 19)).save()
+        sprawa = Ocena.objects.get(oceniany=jan)
+        sprawa.zatwierdz_kryteria(date(2026, 11, 18), "Bydgoszcz", "Zapisane ustalenia")
+        for _ in range(2):
+            call_command("seed_demo", na_starcie=True, stdout=StringIO())
+
+        self.assertEqual(Pracownik.objects.count(), 13)
+        self.assertEqual(Ocena.objects.count(), 14)
+        self.assertEqual(ZegarDemo.objects.get().data, date(2026, 11, 19))
+        self.assertIn("A", Ocena.objects.values_list("arkusz", flat=True))
+        self.assertIn("zapoznanie", {o.etap for o in Ocena.objects.filter(oceniany__username="natalia")})
+        self.assertIn("sprzeciw", {o.etap for o in Ocena.objects.filter(oceniany__username="joanna")})
+        self.assertIn("zakonczona", {o.etap for o in Ocena.objects.filter(oceniany__username="rafal")})
+        sprawa.refresh_from_db()
+        self.assertEqual(sprawa.cele_i_oczekiwania, "Zapisane ustalenia")
+        jan.refresh_from_db()
+        self.assertTrue(jan.check_password("zmienione-haslo-testowe"))
+        self.assertEqual(jan.last_name, "Testowy")
+        self.assertEqual(jan.pracownik.stanowisko, "Zmodyfikowane stanowisko")
+
+    def test_start_pomija_nierozpoznana_baze(self):
+        User.objects.create_user("koordynator")
+        call_command("seed_demo", na_starcie=True, stdout=StringIO())
+        self.assertEqual(list(User.objects.values_list("username", flat=True)), ["koordynator"])
+        self.assertFalse(Ocena.objects.exists())

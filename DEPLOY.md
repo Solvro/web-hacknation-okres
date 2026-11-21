@@ -9,7 +9,7 @@ cp .env.example .env   # uzupełnij DJANGO_ALLOWED_HOSTS; klucz wygeneruje się 
 docker compose up --build
 ```
 
-Aplikacja działa pod `http://localhost:8000`. Kontener przy starcie wykonuje migracje. W trybie demo (`OKRES_DEMO=1`) przy pustej bazie wczytuje też dane syntetyczne (`seed_demo`).
+Aplikacja działa pod `http://localhost:8000`. Kontener przy starcie wykonuje migracje. W trybie demo (`OKRES_DEMO=1`) wczytuje też dane syntetyczne w pustej bazie lub uzupełnia rozpoznany starszy zestaw demo (`seed_demo --na-starcie`).
 
 Scheduler (przypomnienia, nowe okresy oceny) uruchamia się raz dziennie z crona hosta:
 
@@ -38,7 +38,7 @@ docker compose exec okres python manage.py check --deploy
 | `OKRES_DATA_DIR` | katalog bazy SQLite (w obrazie `/app/data`) |
 | `DATABASE_URL` | opcjonalnie inna baza; Postgres wymaga doinstalowania sterownika |
 | `OKRES_DEMO` | `1` tylko na demo (zegar, dane syntetyczne, szybkie logowanie) |
-| `OKRES_SEED_ON_START` | `1`: w trybie demo wczytaj dane syntetyczne przy pustej bazie |
+| `OKRES_SEED_ON_START` | `1`: w trybie demo wczytaj dane syntetyczne lub uzupełnij rozpoznaną starszą bazę demo |
 | `OKRES_AI` | `wylaczone` (domyślnie) albo `ollama`: opcjonalny asystent porządkujący notatki |
 | `OKRES_OLLAMA_URL` | adres Ollamy w sieci urzędu; Ollama na hoście przy `docker compose`: `http://host.docker.internal:11434` (compose dodaje `extra_hosts: host-gateway`) |
 | `OKRES_AI_MODEL` | `gemma4:12b` (domyślnie); alternatywa `hf.co/speakleash/Bielik-11B-v3.1-Instruct-GGUF:Q4_K_M` |

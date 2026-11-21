@@ -1,5 +1,5 @@
 #!/bin/sh
-# Start kontenera: klucz sesji, migracje, (w trybie demo) dane syntetyczne przy pustej bazie, potem serwer.
+# Start kontenera: klucz sesji, migracje, (w trybie demo) dane syntetyczne, potem serwer.
 set -e
 
 # Bez DJANGO_SECRET_KEY w środowisku: klucz losowany raz i trzymany na wolumenie danych (przetrwa restart i aktualizację obrazu).
@@ -17,10 +17,7 @@ fi
 python manage.py migrate --noinput
 
 if [ "${OKRES_DEMO:-0}" = "1" ] && [ "${OKRES_SEED_ON_START:-1}" = "1" ]; then
-    if [ "$(python manage.py shell -v 0 -c 'from django.contrib.auth.models import User; print(User.objects.exists())')" = "False" ]; then
-        echo "Pusta baza w trybie demo: wczytuję dane syntetyczne (seed_demo)."
-        python manage.py seed_demo
-    fi
+    python manage.py seed_demo --na-starcie
 fi
 
 exec "$@"

@@ -58,7 +58,7 @@ W profilu urzędu nie ma danych demo, zegara ani szybkiego logowania. Kolejne kr
 
 ### Tryb demo (`OKRES_DEMO=1`)
 
-Przy pustej bazie kontener wczytuje dane syntetyczne (`seed_demo`). Pasek „Tryb demonstracyjny” pokazuje też datę systemową, gdy kadry ją przesuną. Strona logowania ma przyciski najważniejszych ról. Seed daje 13 pracowników i 14 spraw, w tym ocenę do zapoznania (Natalia Wróbel), sprzeciw do rozpatrzenia (Joanna Kurek) i zakończoną ocenę (Rafał Duda). W istniejącej bazie demo uruchom ponownie `seed_demo`, żeby dopisać sprawy. Reset danych: `docker compose down -v && docker compose up`.
+Kontener wczytuje dane syntetyczne w pustej bazie i uzupełnia rozpoznany starszy zestaw demo. Zachowuje istniejące konta, sprawy i ustawienie zegara. Pasek „Tryb demonstracyjny” pokazuje też datę systemową, gdy kadry ją przesuną. Strona logowania ma przyciski najważniejszych ról. Seed daje 13 pracowników i 14 spraw, w tym ocenę do zapoznania (Natalia Wróbel), sprzeciw do rozpatrzenia (Joanna Kurek) i zakończoną ocenę (Rafał Duda). Jeśli uruchamiasz aplikację poza kontenerem lub masz wyłączone `OKRES_SEED_ON_START`, możesz ręcznie uzupełnić rozpoznany starszy zestaw poleceniem `python manage.py seed_demo --na-starcie`. Reset danych: `docker compose down -v && docker compose up`.
 
 **Konta demo** (hasło `demo`; w trybie demo można też kliknąć rolę na stronie logowania):
 

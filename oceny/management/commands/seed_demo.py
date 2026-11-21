@@ -32,6 +32,8 @@ OSOBY = [
     ("karolina", "Karolina", "Król", "Inspektorka ds. zamówień", "Wydział Finansów", "pozostale", "finanse", False, False, None),
 ]
 LOGINY_DEMO = ["dyrektor", "kadry", "oceniajaca", "oceniany", "piotr"]
+NAZWA_URZEDU_DEMO = "Urząd Administracji Publicznej w Bydgoszczy"
+NAZWY_URZEDU_DEMO = {NAZWA_URZEDU_DEMO, "Urząd Testowy w Bydgoszczy (DEMO)"}
 
 
 # Dzień, względem którego datowane są dane HR partnera; w pokazie zegar demo ustawia się na ten dzień.
@@ -41,24 +43,33 @@ DZIEN_DEMO = date(2026, 11, 21)
 class Command(BaseCommand):
     help = "Tworzy syntetyczny urząd, pracowników i sprawy ocen do demonstracji (tylko OKRES_DEMO=1)."
 
+    def add_arguments(self, parser):
+        parser.add_argument("--na-starcie", action="store_true",
+                            help="Wczytaj pustą bazę lub uzupełnij rozpoznany starszy zestaw demo.")
+
     @transaction.atomic
     def handle(self, *args, **options):
         if not settings.OKRES_DEMO:
             raise CommandError("seed_demo działa tylko w trybie demo (OKRES_DEMO=1).")
-        urzad, _ = Urzad.objects.get_or_create(pk=1, defaults={
-            "nazwa": "Urząd Administracji Publicznej w Bydgoszczy", "miejscowosc": "Bydgoszcz",
-        })
-        if urzad.nazwa == "Urząd Testowy w Bydgoszczy (DEMO)":
-            urzad.nazwa = "Urząd Administracji Publicznej w Bydgoszczy"
-            urzad.save(update_fields=["nazwa"])
+        if options["na_starcie"] and User.objects.exists():
+            urzad = Urzad.biezacy()
+            konta = set(Pracownik.objects.values_list("user__username", flat=True))
+            if not urzad or urzad.nazwa not in NAZWY_URZEDU_DEMO or not set(LOGINY_DEMO) <= konta:
+                self.stdout.write("Pominięto seed: istniejąca baza nie jest rozpoznanym zestawem demo.")
+                return
+            if {osoba[0] for osoba in OSOBY} <= konta:
+                return
+
+        Urzad.objects.get_or_create(pk=1, defaults={"nazwa": NAZWA_URZEDU_DEMO, "miejscowosc": "Bydgoszcz"})
         prac = {}
         for login, imie, nazwisko, stanowisko, komorka, rodzaj, przel, kadry, dg, urzednik in OSOBY:
-            u, _ = User.objects.get_or_create(username=login)
-            u.first_name, u.last_name = imie, nazwisko
-            u.is_staff = u.is_superuser = kadry
-            u.set_password(HASLO)
-            u.save()
-            p, _ = Pracownik.objects.update_or_create(user=u, defaults=dict(
+            u, utworzono = User.objects.get_or_create(username=login, defaults={
+                "first_name": imie, "last_name": nazwisko, "is_staff": kadry, "is_superuser": kadry,
+            })
+            if utworzono:
+                u.set_password(HASLO)
+                u.save(update_fields=["password"])
+            p, _ = Pracownik.objects.get_or_create(user=u, defaults=dict(
                 stanowisko=stanowisko, komorka=komorka, rodzaj_stanowiska=rodzaj, przelozony=prac.get(przel),
                 dyrektor_generalny=dg, urzednik=bool(urzednik), rok_mianowania=urzednik and urzednik[0],
                 stopien_sluzbowy=urzednik and urzednik[1], data_stopnia=urzednik and urzednik[2],
@@ -69,13 +80,13 @@ class Command(BaseCommand):
         Nieobecnosc.objects.get_or_create(pracownik=jan, od=date(2026, 10, 5), do=date(2026, 10, 16))
         Nieobecnosc.objects.get_or_create(pracownik=jan, od=date(2026, 10, 19), do=date(2026, 11, 6))
         sprawy = [
-            (jan, date(2025, 3, 16), "zatrudnienie"),
-            (prac["piotr"], date(2024, 12, 2), "poprzednia_ocena"),
-            (prac["oceniajaca"], date(2025, 6, 2), "poprzednia_ocena"),
+            (jan, prac["oceniajaca"], date(2025, 3, 16), "zatrudnienie"),
+            (prac["piotr"], prac["oceniajaca"], date(2024, 12, 2), "poprzednia_ocena"),
+            (prac["oceniajaca"], prac["dyrektor"], date(2025, 6, 2), "poprzednia_ocena"),
         ]
-        for p, poczatek, podstawa in sprawy:
+        for p, przelozony, poczatek, podstawa in sprawy:
             Ocena.objects.get_or_create(oceniany=p.user, poczatek_okresu=poczatek, defaults=dict(
-                arkusz=p.arkusz, oceniajacy=p.przelozony.user, podstawa_poczatku=podstawa))
+                arkusz=p.arkusz, oceniajacy=przelozony.user, podstawa_poczatku=podstawa))
         self._przygotowane_sprawy(prac)
         self._hr_partner(prac)
         self.stdout.write(f"Konta: {', '.join(prac)} (hasło: {HASLO}). Logowanie: /logowanie/")
@@ -96,6 +107,8 @@ class Command(BaseCommand):
         ]
         for login, poczatek, etap, cele in sprawy:
             osoba = prac[login]
+            if osoba.przelozony is None:
+                continue
             ocena, utworzona = Ocena.objects.get_or_create(
                 oceniany=osoba.user, poczatek_okresu=poczatek,
                 defaults={"arkusz": osoba.arkusz, "oceniajacy": osoba.przelozony.user,
@@ -168,7 +181,9 @@ class Command(BaseCommand):
              "Wydziały mogą sprawdzić terminy w jednym miejscu."),
         ]
         for login, kryterium, tresc, skutek in notatki:
-            ocena = Ocena.objects.filter(oceniany=prac[login].user).earliest("poczatek_okresu")
+            ocena = Ocena.objects.filter(oceniany=prac[login].user).order_by("poczatek_okresu").first()
+            if not ocena:
+                continue
             Obserwacja.objects.get_or_create(
                 ocena=ocena, autor=ocena.oceniajacy, data=dzis - timedelta(days=18),
                 kryterium=kryterium, tresc=tresc, defaults={"skutek": skutek, "udostepniona": True},
