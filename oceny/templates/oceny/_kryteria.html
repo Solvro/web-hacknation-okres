@@ -8,7 +8,7 @@
     <ul>{% for kod, nazwa in obowiazkowe.items %}<li>{{ nazwa }}</li>{% endfor %}</ul>
   </details>
   {% if not ocena.kryteria_zatwierdzone and jest_oceniajacym and not ocena.anulowana_powod %}
-    <form hx-post="{% url 'oceny:zatwierdz_kryteria' ocena.pk %}" hx-target="#kryteria" hx-swap="outerHTML" hx-disabled-elt="find button">
+    <form method="post" action="{% url 'oceny:zatwierdz_kryteria' ocena.pk %}" hx-post="{% url 'oceny:zatwierdz_kryteria' ocena.pk %}" hx-target="#kryteria" hx-swap="outerHTML" hx-disabled-elt="find button">{% csrf_token %}
       <div class="formularz-z-pomoca">
         <div>
           <h3>Kryteria dodatkowe</h3>
@@ -28,7 +28,7 @@
           <h3>Przebieg rozmowy</h3>
           <div class="zakres-dat">
             <label>Data rozmowy <input type="date" name="data_rozmowy" value="{{ rozmowa_dane.data_rozmowy }}" max="{{ dzis|date:'Y-m-d' }}" required></label>
-            <label>Miejscowość <input type="text" name="miejscowosc" value="{{ rozmowa_dane.miejscowosc }}"></label>
+            <label>Miejscowość <input type="text" name="miejscowosc" value="{{ rozmowa_dane.miejscowosc }}" required></label>
           </div>
           <label>Oczekiwania i cele
             <textarea name="cele_i_oczekiwania" rows="3" placeholder="Np. skrócenie czasu obsługi wniosku do 14 dni. Sposób realizacji: lista kontrolna i przegląd co kwartał.">{{ rozmowa_dane.cele_i_oczekiwania }}</textarea>
@@ -67,7 +67,9 @@
           <p>Potwierdzasz, że odbyła się rozmowa oraz że znasz kryteria i termin oceny.</p>
           {% if ocena.termin_oceny %}<p>Termin oceny <strong>{{ ocena.termin_oceny|date:"d.m.Y" }}</strong></p>{% endif %}
         </div>
-        <button type="button" hx-post="{% url 'oceny:potwierdz_kryteria' ocena.pk %}" hx-target="#kryteria" hx-swap="outerHTML" hx-disabled-elt="this" aria-describedby="skutek-kryteriow">Potwierdź kryteria</button>
+        <form method="post" action="{% url 'oceny:potwierdz_kryteria' ocena.pk %}" hx-post="{% url 'oceny:potwierdz_kryteria' ocena.pk %}" hx-target="#kryteria" hx-swap="outerHTML" hx-disabled-elt="find button">{% csrf_token %}
+          <button type="submit" aria-describedby="skutek-kryteriow">Potwierdź kryteria</button>
+        </form>
       </div>
     {% elif not ocena.anulowana_powod %}
       <p class="potwierdzone">Oczekuje na potwierdzenie ocenianego.</p>

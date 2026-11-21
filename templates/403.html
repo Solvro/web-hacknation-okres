@@ -1,0 +1,8 @@
+{% extends "oceny/base.html" %}
+{% block tytul %}Brak uprawnień{% endblock %}
+{% block tresc %}
+  <h1>Brak uprawnień do tej czynności</h1>
+  <p role="alert">{{ komunikat }}</p>
+  <p>Jeśli uważasz, że to błąd, skontaktuj się z komórką kadrową.</p>
+  <p><a href="{% url 'oceny:moje_sprawy' %}">Wróć do listy spraw</a></p>
+{% endblock %}

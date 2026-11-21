@@ -56,6 +56,25 @@ class CeleIOczekiwaniaTest(TestCase):
         self.assertEqual(self.o.kryteria_dodatkowe, ["kreatywnosc"])
         self.assertEqual(self.o.cele_i_oczekiwania, dane["cele_i_oczekiwania"])
 
+    def test_czesc_i_wymaga_miejscowosci(self):
+        """QA M2: wzór arkusza ma pole „miejscowość, data” przy potwierdzeniu części I."""
+        self.client.force_login(self.anna)
+        url = reverse("oceny:zatwierdz_kryteria", args=[self.o.pk])
+        r = self.client.post(url, {"data_rozmowy": "2025-03-31", "miejscowosc": "  "}, headers={"HX-Request": "true"})
+        self.assertContains(r, "Podaj miejscowość")
+        self.o.refresh_from_db()
+        self.assertFalse(self.o.kryteria_zatwierdzone)
+        self.client.post(url, {"data_rozmowy": "2025-03-31", "miejscowosc": "Toruń"}, headers={"HX-Request": "true"})
+        self.o.refresh_from_db()
+        self.assertEqual(self.o.miejscowosc_czesc_i, "Toruń")
+
+    def test_czesc_i_bez_podanej_miejscowosci_bierze_siedzibe_urzedu(self):
+        from .models import Urzad
+
+        Urzad.objects.create(nazwa="Urząd Testowy", miejscowosc="Bydgoszcz")
+        self.o.zatwierdz_kryteria(date(2025, 3, 31))
+        self.assertEqual(self.o.miejscowosc_czesc_i, "Bydgoszcz")
+
     def test_bez_celow_jawna_informacja(self):
         self.o.zatwierdz_kryteria(date(2025, 3, 31))
         self.client.force_login(self.anna)

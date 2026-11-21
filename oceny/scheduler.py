@@ -81,9 +81,13 @@ def przypomnienie_o_stopniu(ocena) -> int:
 
 
 def zaloz_kolejna(ocena) -> Ocena | None:
-    """UC-01 / UC-27: po sporządzeniu oceny zakłada kolejny okres oceny. Od razu, bo po ocenie negatywnej
-    kryteria wyznacza się w 7 dni od sporządzenia (§ 7 pkt 2), a więc jeszcze w trakcie terminu na sprzeciw."""
+    """UC-01 / UC-27: po sporządzeniu oceny zakłada kolejny okres oceny. Po ocenie negatywnej od razu, bo kryteria
+    wyznacza się w 7 dni od sporządzenia (§ 7 pkt 2), a więc jeszcze w trakcie terminu na sprzeciw. W pozostałych
+    przypadkach dopiero po ocenie ostatecznej (zapoznanie i upływ terminu na sprzeciw albo jego rozstrzygnięcie),
+    żeby uwzględniony sprzeciw nie zostawiał sprawy z błędnym początkiem okresu."""
     if not ocena.sporzadzona or Ocena.objects.filter(poprzednia=ocena).exists():
+        return None
+    if ocena.pozytywna is not False and ocena.etap != "zakonczona":
         return None
     pracownik = getattr(ocena.oceniany, "pracownik", None)
     oceniajacy = pracownik.przelozony.user if pracownik and pracownik.przelozony else ocena.oceniajacy

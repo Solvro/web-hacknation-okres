@@ -7,7 +7,7 @@ from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from oceny.models import ZegarDemo
+from oceny.models import Obserwacja, ZegarDemo
 
 from . import sygnaly
 from .models import Docenienie, Uzgodnienie, ZdarzenieZadania
@@ -51,6 +51,20 @@ class HRPartnerTest(TestCase):
         Docenienie.dodaj(self.anna, self.jan, "Szkolenie nowych osób", "Ciągłość rejestru", obserwacja_id_lookup(s))
         self.assertNotIn("osiagniecie_bez_docenienia", self.rodzaje(self.jan))
 
+    def test_docenienie_nie_pyta_o_wpisany_skutek_i_ma_jeden_formularz(self):
+        s = self.rodzaje(self.jan)["osiagniecie_bez_docenienia"]
+        Obserwacja.objects.filter(pk=s.obserwacja_id).update(skutek="Ciągłość rejestru")
+        s = self.rodzaje(self.jan)["osiagniecie_bez_docenienia"]
+        self.assertNotIn("Jaki był skutek", s.pytanie)
+        self.assertEqual(s.skutek, "Ciągłość rejestru")
+        self.client.force_login(self.anna)
+        karta = self.client.get(reverse("partner:zespol")).content.decode().split(f'id="karta-{self.jan.pk}"')[1].split("</section>")[0]
+        self.assertIn("Skutek ze zgłoszenia: Ciągłość rejestru", karta)
+        self.assertNotIn("Doceń bez sygnału", karta)
+        Obserwacja.objects.filter(pk=s.obserwacja_id).update(skutek="")
+        self.assertEqual(self.rodzaje(self.jan)["osiagniecie_bez_docenienia"].pytanie,
+                         "Jaki był skutek tego działania dla zespołu lub interesantów?")
+
     def test_uzgodnienie_zamyka_sygnal_i_pracownik_widzi(self):
         s = self.rodzaje(self.piotr)["zmiany_priorytetu"]
         u = Uzgodnienie.zapisz(self.anna, self.piotr, s.klucz, "odciazenie", "Sprawozdanie przejmuje Jan do 15.12.",
@@ -82,6 +96,15 @@ class HRPartnerTest(TestCase):
                                           {"rodzaj": "nowe_zadanie", "opis": "x"}).status_code, 404)
         self.client.force_login(self.kadry)
         self.assertNotContains(self.client.get(reverse("partner:zespol")), "zmiany priorytetu")
+
+    def test_dziennik_odrzuca_nieczytelna_date(self):
+        """QA H3: nieczytelna data nie zamienia się po cichu na dzisiejszą."""
+        self.client.force_login(self.anna)
+        przed = ZdarzenieZadania.objects.count()
+        r = self.client.post(reverse("partner:dodaj_zdarzenie", args=[self.jan.pk]),
+                             {"data": "xyz", "rodzaj": "nowe_zadanie", "opis": "Test"})
+        self.assertContains(r, "Nie rozpoznano daty")
+        self.assertEqual(ZdarzenieZadania.objects.count(), przed)
 
 
 def obserwacja_id_lookup(s):
@@ -147,3 +170,4 @@ class SpadekZaangazowaniaTest(TestCase):
         Uzgodnienie.zapisz(self.anna_u, self.ewa, s.klucz, "rozmowa_wspierajaca", "Rozmowa 1:1 co dwa tygodnie.",
                            DZIS + timedelta(days=14))
         self.assertEqual(self.sygnaly(), [])
+

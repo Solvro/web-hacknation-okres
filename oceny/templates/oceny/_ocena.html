@@ -31,7 +31,7 @@
         <ul>{% for pole, komunikat in bledy_pol.items %}<li><a href="#pole-{{ pole }}">{{ komunikat }}</a></li>{% endfor %}</ul>
       </div>
     {% endif %}
-    <form hx-post="{% url 'oceny:sporzadz' ocena.pk %}" hx-target="#ocena" hx-swap="outerHTML" hx-disabled-elt="find button[type=submit]">
+    <form method="post" action="{% url 'oceny:sporzadz' ocena.pk %}" hx-post="{% url 'oceny:sporzadz' ocena.pk %}" hx-target="#ocena" hx-swap="outerHTML" hx-disabled-elt="find button[type=submit]">{% csrf_token %}
       <label id="pole-data_rozmowy">Data rozmowy oceniającej
         <input type="date" name="data_rozmowy" value="{{ pola.data_rozmowy|date:'Y-m-d' }}" max="{{ dzis|date:'Y-m-d' }}" required></label>
       <fieldset id="pole-okres"><legend>Okres podlegania ocenie</legend>

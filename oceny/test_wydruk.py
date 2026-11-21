@@ -7,6 +7,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from .models import Ocena, ZegarDemo
+from .pomoc_testow import sprawa_od_kryteriow
 
 
 @override_settings(OKRES_DEMO=True)
@@ -15,6 +16,8 @@ class WydrukTest(TestCase):
     def setUpTestData(cls):
         with override_settings(OKRES_DEMO=True):
             call_command("seed_demo", stdout=StringIO())
+        sprawa_od_kryteriow(User.objects.get(username="oceniany"))  # seed ma sprawy w toku
+        sprawa_od_kryteriow(User.objects.get(username="piotr"))  # seed ma sprawy w toku
         ZegarDemo(data=date(2026, 11, 23)).save()
         cls.jan = User.objects.get(username="oceniany")
         cls.anna = User.objects.get(username="oceniajaca")

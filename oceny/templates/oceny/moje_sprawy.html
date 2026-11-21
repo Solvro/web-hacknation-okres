@@ -1,8 +1,8 @@
 {% extends "oceny/base.html" %}
-{% block tytul %}Moje sprawy{% endblock %}
+{% block tytul %}{{ tytul_listy_spraw }}{% endblock %}
 {% block tresc %}
 <div class="naglowek-strony wprowadzenie wprowadzenie-spraw">
-  <h1>Moje sprawy</h1>
+  <h1>{{ tytul_listy_spraw }}</h1>
 </div>
 {% if wynik_schedulera %}<p class="potwierdzone" role="status">Scheduler: nowe przypomnienia {{ wynik_schedulera.przypomnienia }}, nowe sprawy {{ wynik_schedulera.nowe_sprawy }}.</p>{% endif %}
 {% include "oceny/_przypomnienia.html" %}

@@ -368,8 +368,10 @@ class Ocena(models.Model):
         self.full_clean()
         self.save()
 
-    def zatwierdz_kryteria(self, data_rozmowy, miejscowosc: str = "", cele: str = ""):
-        """Oceniający potwierdza przeprowadzenie rozmowy z § 5 ust. 1 i zapoznanie ocenianego z kryteriami."""
+    def zatwierdz_kryteria(self, data_rozmowy, miejscowosc: str | None = None, cele: str = ""):
+        """Oceniający potwierdza przeprowadzenie rozmowy z § 5 ust. 1 i zapoznanie ocenianego z kryteriami.
+        Miejscowość: pole „miejscowość, data” ze wzoru. None (wywołanie bez formularza) to miejsce pracy
+        oceniającego albo siedziba urzędu; pusty tekst z formularza jest błędem."""
         if self.kryteria_zatwierdzone:
             raise PermissionDenied("Kryteria zostały już zatwierdzone.")
         dzis = zegar.dzis()
@@ -379,12 +381,23 @@ class Ocena(models.Model):
             raise ValidationError({"data_rozmowy": "Rozmowa nie może mieć daty z przyszłości."})
         if self.poczatek_okresu and data_rozmowy < self.poczatek_okresu:
             raise ValidationError({"data_rozmowy": "Rozmowa nie może poprzedzać początku okresu oceny."})
+        if miejscowosc is None:
+            miejscowosc = self._miejscowosc_oceniajacego()
+        elif not miejscowosc.strip():
+            raise ValidationError({"miejscowosc": "Podaj miejscowość rozmowy (pole „miejscowość, data” w części I arkusza)."})
         self.data_rozmowy_rozpoczynajacej = data_rozmowy
         self.miejscowosc_czesc_i = miejscowosc.strip()
         self.cele_i_oczekiwania = cele.strip()
         self.kryteria_zatwierdzone_at = timezone.now()
         self.data_zatwierdzenia_kryteriow = dzis
         self.save()
+
+    def _miejscowosc_oceniajacego(self) -> str:
+        p = getattr(self.oceniajacy, "pracownik", None)
+        if p and p.miejscowosc_pracy:
+            return p.miejscowosc_pracy
+        urzad = Urzad.biezacy()
+        return urzad.miejscowosc if urzad else ""
 
     def potwierdz_kryteria(self):
         """Oceniany potwierdza rozmowę i zapoznanie z kryteriami oraz terminem oceny (§ 6 ust. 2)."""
@@ -667,6 +680,17 @@ class Ocena(models.Model):
         return list(odbiorcy.exclude(pk__in=(self.oceniany_id, self.oceniajacy_id)).distinct())
 
     @transaction.atomic
+    def kandydaci_na_oceniajacego(self) -> list:
+        """§ 9 ust. 3 / art. 81 ust. 1: oceniającym jest przełożony, więc kandydaci to osoby na stanowiskach
+        kierowniczych (arkusz A lub B), bez ocenianego, obecnego oceniającego i podwładnych ocenianego."""
+        from django.contrib.auth import get_user_model
+
+        return list(get_user_model().objects.filter(
+            is_active=True, pracownik__rodzaj_stanowiska__in=("kierownik_urzedu", "kierujacy"),
+        ).exclude(pk__in=[self.oceniany_id, self.oceniajacy_id]).exclude(
+            pracownik__przelozony__user_id=self.oceniany_id,
+        ).order_by("last_name", "first_name"))
+
     def zmien_oceniajacego(self, kto, nowy, data, powod: str = ""):
         if not kto.is_staff:
             raise PermissionDenied("Zmianę podległości wprowadza komórka kadrowa.")
@@ -674,6 +698,9 @@ class Ocena(models.Model):
             raise PermissionDenied("Ocena została już sporządzona.")
         if nowy.pk in (self.oceniany_id, self.oceniajacy_id):
             raise ValidationError({"nowy": "Wskaż innego oceniającego niż obecny i niż oceniany."})
+        if nowy not in self.kandydaci_na_oceniajacego():
+            raise ValidationError({"nowy": "Oceniającym może być przełożony ocenianego na stanowisku kierowniczym "
+                                           "(arkusz A lub B), który nie jest jego podwładnym."})
         poprzedni = self.oceniajacy
         z = self._zdarzenie(kto, "zmiana_oceniajacego", data or zegar.dzis(),
                             f"Zmiana oceniającego: {poprzedni.get_full_name()} → {nowy.get_full_name()}. {powod}".strip(),
@@ -954,10 +981,13 @@ class Obserwacja(models.Model):
     def clean(self):
         if self.kryterium and self.kryterium not in self.ocena.wszystkie_kryteria():
             raise ValidationError({"kryterium": "Wybierz kryterium z tej oceny."})
-        if self.data and self.ocena.poczatek_okresu and self.data < self.ocena.poczatek_okresu:
-            raise ValidationError({"data": "Obserwacja sprzed początku okresu oceny."})
+        poczatek = self.ocena.poczatek_okresu
+        if self.data and poczatek and self.data < poczatek:
+            raise ValidationError({"data": f"Data {self.data:%d.%m.%Y} jest sprzed początku okresu oceny "
+                                           f"({poczatek:%d.%m.%Y}). Podaj datę z okresu oceny."})
         if self.data and self.data > zegar.dzis():
-            raise ValidationError({"data": "Obserwacja nie może mieć daty z przyszłości."})
+            raise ValidationError({"data": f"Wpis nie może mieć daty z przyszłości ({self.data:%d.%m.%Y}). "
+                                           "Podaj datę zdarzenia, które już nastąpiło."})
 
 
 class Przypomnienie(models.Model):

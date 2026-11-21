@@ -23,19 +23,19 @@
   <ul>{% for w in k.wskazniki %}<li>{{ w }}</li>{% endfor %}</ul>
   {% if rodzaj == "oceniajaca" %}
     {% for o in k.obserwacje %}<p class="potwierdzone">{{ o.data|date:"d.m.Y" }}: {{ o.tresc }}{% if o.skutek %} — {{ o.skutek }}{% endif %}</p>
-    {% empty %}<p class="cicho">Brak obserwacji{% if jest_oceniajacym %}: zapytaj o przykład dla wskaźnika „{{ k.wskazniki.0 }}”{% endif %}.</p>{% endfor %}
+    {% empty %}<p class="cicho">{% if jest_oceniajacym %}Brak obserwacji. Zapytaj o przykład dla wskaźnika: „{{ k.wskazniki.0 }}”{% else %}Brak wpisów.{% endif %}</p>{% endfor %}
   {% endif %}
 {% endfor %}
 {% if dodatkowe_do_wyboru and jest_oceniajacym %}
   <details><summary>Kryteria dodatkowe do rozważenia ({{ dodatkowe_do_wyboru|length }})</summary><ul>{% for kod, nazwa in dodatkowe_do_wyboru.items %}<li>{{ nazwa }}</li>{% endfor %}</ul></details>
 {% endif %}
 <h2>Wskazówki</h2>
-<ul>{% for w in r.wskazowki %}<li>{{ w }}</li>{% endfor %}</ul>
+<ul>{% if jest_oceniajacym %}{% for w in r.wskazowki %}<li>{{ w }}</li>{% endfor %}{% else %}{% for w in r.wskazowki_ocenianego %}<li>{{ w }}</li>{% endfor %}{% endif %}</ul>
 {% if jest_oceniajacym %}
 <h2>Trudne sytuacje</h2>
 {% for t in trudne %}<details><summary>{{ t.tytul }}</summary><ol>{% for k in t.kroki %}<li>{{ k }}</li>{% endfor %}</ol></details>{% endfor %}
 <h2>{{ feedback.nazwa }}</h2>
 <ol>{% for k in feedback.kroki %}<li>{{ k }}</li>{% endfor %}</ol>
 {% endif %}
-<p class="cicho">Treści z pakietu <code>rules/rozmowy.yaml</code>; podpowiedzi nie zastępują decyzji oceniającego.</p>
+{% if jest_oceniajacym %}<p class="cicho">Treści z pakietu <code>rules/rozmowy.yaml</code>; podpowiedzi nie zastępują decyzji oceniającego.</p>{% endif %}
 {% endblock %}

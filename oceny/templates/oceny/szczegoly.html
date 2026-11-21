@@ -1,7 +1,7 @@
 {% extends "oceny/base.html" %}
 {% block tytul %}Ocena okresowa · {{ ocena.oceniany.get_full_name }}{% endblock %}
 {% block tresc %}
-<a class="powrot" href="{% url 'oceny:moje_sprawy' %}">{% include "oceny/_ikona.html" with ikona="wstecz" %} Moje sprawy</a>
+<a class="powrot" href="{% url 'oceny:moje_sprawy' %}">{% include "oceny/_ikona.html" with ikona="wstecz" %} {{ tytul_listy_spraw }}</a>
 {% include "oceny/_naglowek_sprawy.html" %}
 {% with etap=ocena.etap %}
 <div class="sekcje-sprawy">

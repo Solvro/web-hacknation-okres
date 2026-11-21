@@ -3,7 +3,7 @@
 {% block tresc %}
 <p><a href="{% url 'oceny:szczegoly' ocena.pk %}">← Wróć do sprawy</a></p>
 <h1>Wpływ wersji przepisów na terminy · {{ ocena.oceniany.get_full_name }}</h1>
-<p>Sprawa jest prowadzona według pakietu <strong>{{ ocena.wersja_regul }}</strong>. Nowe sprawy w urzędzie dostają pakiet <strong>{{ aktywna }}</strong> (zmiana w panelu kadr: Urząd → aktywny pakiet reguł). Każdy pakiet przed aktywacją przechodzi sprawdzenie przykładów (<code>manage.py sprawdz_reguly</code>); pakiet z błędem nie zostanie aktywowany.</p>
+<p>Sprawa jest prowadzona według pakietu <strong>{{ ocena.wersja_regul }}</strong>. Nowe sprawy w urzędzie dostają pakiet <strong>{{ aktywna }}</strong>.{% if user.is_staff %} Pakiet zmienia się w panelu kadr (Urząd → aktywny pakiet reguł). Każdy pakiet przed aktywacją przechodzi sprawdzenie przykładów (<code>manage.py sprawdz_reguly</code>); pakiet z błędem nie zostanie aktywowany.{% endif %}</p>
 <table>
   <thead><tr><th>Pakiet</th><th>Termin ustalenia kryteriów</th><th>Termin oceny</th><th>Sprawdzenie</th></tr></thead>
   <tbody>

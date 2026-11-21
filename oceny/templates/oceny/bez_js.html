@@ -1,0 +1,6 @@
+{% extends "oceny/base.html" %}
+{% block tytul %}Wynik formularza{% endblock %}
+{% block tresc %}
+  <p role="status">Strona działa bez JavaScriptu: poniżej wynik wysłania formularza. <a href="{{ powrot }}">Wróć do poprzedniej strony</a>, żeby zobaczyć całość.</p>
+  {{ fragment }}
+{% endblock %}

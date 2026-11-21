@@ -469,3 +469,10 @@ button.maly { padding: .15rem .55rem; font-size: .85em; margin-left: .35rem; }
   fieldset:has([name="decyzja"]) .zmienione-punkty { display: none; }
   fieldset:has([name="decyzja"][value="zmiana"]:checked) .zmienione-punkty { display: block; }
 }
+
+/* Komunikat o błędzie odpowiedzi HTMX (okres.js, htmx:responseError) */
+.komunikat-bledu {
+  position: fixed; inset: auto 1rem 1rem auto; max-width: min(28rem, calc(100vw - 2rem)); z-index: 50;
+  margin: 0; padding: .75rem 1rem; border-radius: .5rem; background: #8a1c1c; color: #fff;
+  box-shadow: 0 .25rem 1rem rgb(0 0 0 / .25); cursor: pointer;
+}

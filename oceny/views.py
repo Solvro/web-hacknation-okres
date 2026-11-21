@@ -5,19 +5,40 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.db.models import F, Q
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 
-from . import rozwoj, rules, zegar
+from . import daty, rozwoj, rules, zegar
 from .models import Ocena, Urzad, ZegarDemo
 
 
 def kontekst_globalny(request):
     u = request.user
     return {"okres_demo": settings.OKRES_DEMO, "urzad": Urzad.biezacy(), "demo_konta": demo_konta,
-            "moze_statystyki": u.is_authenticated and _moze_statystyki(u)}
+            "moze_statystyki": u.is_authenticated and _moze_statystyki(u),
+            "tytul_listy_spraw": _tytul_listy_spraw(u)}
+
+
+def _tytul_listy_spraw(user) -> str:
+    """Kadry widzą wszystkie sprawy urzędu, DG także sprawy do swojej decyzji, pozostali tylko własne."""
+    if not user.is_authenticated:
+        return "Moje sprawy"
+    if user.is_staff:
+        return "Sprawy w urzędzie"
+    if _jest_dg(user):
+        return "Moje sprawy i decyzje"
+    return "Moje sprawy"
+
+
+def brak_uprawnien(request, exception=None):
+    """handler403: komunikat z PermissionDenied zamiast gołego „403 Forbidden”. HTMX dostaje sam tekst,
+    który okres.js pokazuje jako komunikat (HTMX domyślnie nie podmienia treści przy błędzie)."""
+    komunikat = str(exception or "").strip() or "Nie masz uprawnień do tej czynności."
+    if request.headers.get("HX-Request") == "true":
+        return HttpResponse(komunikat, status=403, content_type="text/plain; charset=utf-8")
+    return render(request, "403.html", {"komunikat": komunikat}, status=403)
 
 
 def _jest_dg(user) -> bool:
@@ -94,6 +115,8 @@ def zaproszenie_ics(request, pk):
         start = datetime.strptime(f"{data} {godzina}", "%Y-%m-%d %H:%M")
     except ValueError:
         return HttpResponse("Podaj poprawną datę i godzinę spotkania (np. 10:00).", status=400)
+    if start.date() < zegar.dzis():
+        return HttpResponse("Data spotkania jest w przeszłości. Podaj dzisiejszą lub późniejszą datę.", status=400)
     try:
         minuty = max(15, min(240, int(request.GET.get("minuty", 60))))
     except ValueError:
@@ -101,6 +124,9 @@ def zaproszenie_ics(request, pk):
     koniec = start + timedelta(minutes=minuty)
     fmt = "%Y%m%dT%H%M%S"
     rodzaj = request.GET.get("rodzaj") if request.GET.get("rodzaj") in ("kryteria", "oceniajaca") else "rozmowa"
+    if (rodzaj == "kryteria" and ocena.kryteria_zatwierdzone) or (rodzaj == "oceniajaca" and ocena.sporzadzona):
+        return HttpResponse("Ta rozmowa już się odbyła i została zapisana w sprawie; zaproszenie nie jest potrzebne.",
+                            status=400)
     uid = f"okres-{ocena.pk}-{rodzaj}-{start:{fmt}}@okres.local"
     adresy = [u.email for u in (ocena.oceniany, ocena.oceniajacy) if u.email]
     linie = [
@@ -117,6 +143,8 @@ def zaproszenie_ics(request, pk):
 
 @login_required
 def jak_obliczono(request, pk, rodzaj):
+    if rodzaj not in ("kryteria", "ocena"):
+        raise Http404("Nieznany rodzaj terminu.")
     ocena = _ocena_dla(request, pk)
     rachunek = ocena.rachunek_kryteriow() if rodzaj == "kryteria" else ocena.rachunek_oceny()
     return render(request, "oceny/_rachunek.html", {"rachunek": rachunek})
@@ -185,7 +213,7 @@ def zatwierdz_kryteria(request, pk):
     ocena = _ocena_dla(request, pk)
     # Najpierw sprawdź widoczność, potem zablokuj wiersz na czas zapisu obu części formularza.
     dane = {"data_rozmowy": request.POST.get("data_rozmowy", ""),
-            "miejscowosc": request.POST.get("miejscowosc", ""),
+            "miejscowosc": request.POST.get("miejscowosc"),
             "cele_i_oczekiwania": request.POST.get("cele_i_oczekiwania", "")}
     sloty = request.POST.getlist("kryteria")
     try:
@@ -198,7 +226,7 @@ def zatwierdz_kryteria(request, pk):
             ocena.zatwierdz_kryteria(_data(dane["data_rozmowy"]), dane["miejscowosc"], dane["cele_i_oczekiwania"])
     except ValidationError as e:
         ocena.refresh_from_db()
-        ctx = _kontekst(request, ocena, e.messages) | {"rozmowa_dane": dane}
+        ctx = _kontekst(request, ocena, e.messages) | {"rozmowa_dane": dane | {"miejscowosc": dane["miejscowosc"] or ""}}
         if sloty:
             ctx["sloty"] = (sloty + [""] * ctx["maks"])[:ctx["maks"]]
         return render(request, "oceny/_kryteria.html", ctx)
@@ -246,8 +274,12 @@ def _dane_formularza(request, ocena):
             request.POST.get("wnioski_iprz", ""), pola)
 
 
-def _podpowiedz_pytania(ocena, kod) -> str:
-    """Pytanie do rozmowy z pierwszego wskaźnika kryterium w Załączniku nr 1."""
+def _podpowiedz_pytania(ocena, kod, user) -> str:
+    """Pusta lista obserwacji: oceniającemu pytanie z pierwszego wskaźnika (Załącznik nr 1), innym zwykły komunikat."""
+    if user.id == ocena.oceniany_id and not ocena.sporzadzona:
+        return "Brak wpisów. Możesz zgłosić własny przykład."
+    if user.id != ocena.oceniajacy_id:
+        return "Brak wpisów."
     opis = rules.criteria(ocena.wersja_regul)[kod]["opis"]
     return f"Brak obserwacji. Zapytaj w rozmowie o przykład z okresu oceny: „{opis[0]}”"
 
@@ -259,7 +291,7 @@ def _kontekst_oceny(request, ocena, czastkowe=None, bledy=None, **pola):
         "kryteria_oceny": [(kod, nazwa, czastkowe.get(kod)) for kod, nazwa in ocena.wszystkie_kryteria().items()],
         "obserwacje_kryteriow": [
             {"kod": kod, "nazwa": nazwa, "wybrane": czastkowe.get(kod), "obserwacje": grupy.get(kod, []),
-             "podpowiedz": "" if grupy.get(kod) else _podpowiedz_pytania(ocena, kod)}
+             "podpowiedz": "" if grupy.get(kod) else _podpowiedz_pytania(ocena, kod, request.user)}
             for kod, nazwa in ocena.wszystkie_kryteria().items()
         ],
         "obserwacje_bez_kryterium": grupy.get("", []),
@@ -382,12 +414,9 @@ def demo_konta():
 @require_POST
 def dodaj_obserwacje(request, pk):
     ocena = _ocena_dla(request, pk)
-    try:
-        data = date.fromisoformat(request.POST.get("data", ""))
-    except ValueError:
-        data = None
     bledy = {}
     try:
+        data = daty.z_formularza(request.POST.get("data"))
         ocena.dodaj_obserwacje(request.user, data, request.POST.get("tresc", ""), request.POST.get("kryterium", ""),
                                request.POST.get("skutek", ""), request.POST.get("udostepniona") == "1")
     except ValidationError as e:
@@ -463,6 +492,8 @@ def rozpatrz_sprzeciw(request, pk):
 @login_required
 @require_POST
 def zdarzenie_kadrowe(request, pk, rodzaj):
+    if rodzaj not in ("oceniajacy", "stanowisko", "termin"):
+        raise Http404("Nieznane zdarzenie kadrowe.")
     ocena = _ocena_dla(request, pk)
     bledy = {}
     try:
@@ -492,7 +523,7 @@ def _kontekst_kadrowe(request, ocena, bledy=None):
     baza, opis_bazy = ocena.data_bazowa_szesciu_miesiecy()
     return _kontekst(request, ocena) | {
         "bledy_kadrowe": bledy or {},
-        "kandydaci": [p.user for p in Pracownik.objects.select_related("user").exclude(user__in=[ocena.oceniany, ocena.oceniajacy])],
+        "kandydaci": ocena.kandydaci_na_oceniajacego(),
         "rodzaje_stanowisk": Pracownik.RODZAJE,
         "podstawy_terminu": ocena.PODSTAWY_ZMIANY_TERMINU,
         "baza_6m": baza, "opis_bazy_6m": opis_bazy,
@@ -512,8 +543,10 @@ def zawiadomienie(request, pk, zdarzenie_pk):
 @login_required
 def przygotowanie(request, pk, rodzaj):
     """Przygotowanie do rozmowy: agenda z przepisów, wskaźniki kryteriów, obserwacje, trudne sytuacje."""
+    if rodzaj not in ("rozpoczynajaca", "oceniajaca"):
+        raise Http404("Nieznany rodzaj rozmowy.")
     ocena = _ocena_dla(request, pk)
-    if rodzaj not in ("rozpoczynajaca", "oceniajaca") or request.user.id not in (ocena.oceniany_id, ocena.oceniajacy_id):
+    if request.user.id not in (ocena.oceniany_id, ocena.oceniajacy_id):
         raise PermissionDenied("Przygotowanie do rozmowy jest dla stron oceny.")
     wykaz = rules.criteria(ocena.wersja_regul)
     grupy = {kod: obs for kod, _, obs in ocena.obserwacje_wg_kryteriow(request.user)}

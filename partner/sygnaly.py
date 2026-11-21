@@ -24,6 +24,7 @@ class Sygnal:
     zrodla: list[str] = field(default_factory=list)
     obserwacja_id: int | None = None
     uwaga: str = ""
+    skutek: str = ""  # skutek wpisany w zgłoszonym osiągnięciu; formularz docenienia go nie odpytuje drugi raz
 
 
 def _dzialania(kody):
@@ -59,8 +60,11 @@ def _osiagniecia(pracownik, cfg, dzis):
                                           docenienia__isnull=True).order_by("data")
     for o in zgloszone:
         if o.data <= graniczna:
+            pytanie = cfg.get("pytanie_gdy_skutek", cfg["pytanie"]) if o.skutek else cfg["pytanie"]
+            zrodla = [o.tresc] + ([f"Skutek: {o.skutek}"] if o.skutek else [])
             wynik.append(Sygnal(f"docenienie:{o.pk}", "osiagniecie_bez_docenienia", cfg["tytul"].format(data=f"{o.data:%d.%m.%Y}"),
-                                cfg["pytanie"], cfg["obszar"], _dzialania(cfg["dzialania"]), [o.tresc], obserwacja_id=o.pk))
+                                pytanie, cfg["obszar"], _dzialania(cfg["dzialania"]), zrodla, obserwacja_id=o.pk,
+                                skutek=o.skutek))
     return wynik
 
 

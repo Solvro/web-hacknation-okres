@@ -52,3 +52,26 @@ class ObserwacjeTest(TestCase):
         self.client.force_login(self.jan)
         r = self.client.get(reverse("oceny:szczegoly", args=[self.o.pk]))
         self.assertNotContains(r, "Terminowe rozliczenie")
+
+    def test_widok_odrzuca_date_spoza_okresu_i_nieczytelna(self):
+        """QA H3: data sprzed okresu, z przyszłości i nieczytelna dają komunikat, nic się nie zapisuje."""
+        self.client.force_login(self.anna)
+        url = reverse("oceny:dodaj_obserwacje", args=[self.o.pk])
+        for data, komunikat in (("1999-01-01", "sprzed początku okresu"), ("2030-05-05", "z przyszłości"),
+                                ("xyz", "Nie rozpoznano daty"), ("31.02.2026", "Nie rozpoznano daty")):
+            r = self.client.post(url, {"data": data, "tresc": "Notatka testowa"})
+            self.assertContains(r, komunikat)
+        self.assertFalse(self.o.obserwacje.exists())
+
+    def test_widok_przyjmuje_date_polska_i_pusta_jako_dzis(self):
+        self.client.force_login(self.anna)
+        url = reverse("oceny:dodaj_obserwacje", args=[self.o.pk])
+        self.client.post(url, {"data": "04.05.2026", "tresc": "Format polski"})
+        self.client.post(url, {"data": "", "tresc": "Bez daty"})
+        self.assertEqual([o.data for o in self.o.obserwacje.all()], [date(2026, 5, 4), date(2026, 11, 23)])
+
+    def test_formularz_ogranicza_zakres_daty(self):
+        self.client.force_login(self.anna)
+        r = self.client.get(reverse("oceny:szczegoly", args=[self.o.pk]))
+        self.assertContains(r, 'min="2025-03-17"')
+        self.assertContains(r, 'max="2026-11-23"')

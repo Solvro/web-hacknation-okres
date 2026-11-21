@@ -16,20 +16,26 @@ rozpoczynajaca:
   wskazowki:
     - Zapisz uzgodnione oczekiwania prostym językiem; wrócicie do nich przy rozmowie oceniającej.
     - Kryteria dodatkowe wybieraj pod faktyczne zadania, nie „na zapas”.
+  wskazowki_ocenianego:
+    - Przejrzyj opis swojego stanowiska i zastanów się, które obowiązki zajmują Ci najwięcej czasu.
+    - Możesz zaproponować kryterium dodatkowe albo cel, który pasuje do Twoich zadań.
 oceniajaca:
   nazwa: Rozmowa oceniająca
   podstawa: § 10 rozporządzenia
   cel: Omówienie okresu oceny na podstawie konkretnych przykładów i ustalenie kierunku rozwoju.
   agenda:
     - temat: Główne obowiązki wykonywane w okresie oceny i sposób ich realizacji, z uwzględnieniem kryteriów
-      pytania: ["Który etap sprawy udało się skrócić i co pomogło?", "Z którego zadania jesteś najbardziej zadowolony i dlaczego?"]
+      pytania: ["Który etap sprawy udało się skrócić i co pomogło?", "Które zadanie dało Ci najwięcej satysfakcji i dlaczego?"]
     - temat: Realizacja celów wyznaczonych na okres oceny (jeżeli zostały wyznaczone)
       pytania: ["Co pomogło, a co przeszkodziło w realizacji celu?"]
     - temat: Kierunki dalszego rozwoju zawodowego i potrzeby w zakresie podnoszenia kwalifikacji
-      pytania: ["Czego chcesz się nauczyć w kolejnym okresie?", "Jakie zadanie chciałbyś przejąć?"]
+      pytania: ["Czego chcesz się nauczyć w kolejnym okresie?", "Jakie nowe zadanie chcesz przejąć?"]
   wskazowki:
     - Zaczynaj od perspektywy ocenianego, potem dodaj swoje obserwacje z datami.
     - Oceny cząstkowe przyznajesz po rozmowie, biorąc pod uwagę jej wnioski (§ 11 ust. 2).
+  wskazowki_ocenianego:
+    - Przygotuj 2–3 przykłady zadań z okresu oceny: na czym polegało zadanie, jak je wykonano i jaki był skutek.
+    - Pomyśl, czego potrzebujesz do dalszego rozwoju; to trafi do wniosków do IPRZ.
 trudne_sytuacje:
   - tytul: Oceniany nie zgadza się z obserwacją
     kroki: ["Nazwij konkretną obserwację: kiedy, co się stało, jaki był skutek.", "Poproś o perspektywę ocenianego i wysłuchaj bez przerywania.", "Ustal, które fakty są wspólne, a co jest różnicą ocen.", "Uzgodnij jeden następny krok i termin sprawdzenia."]

@@ -8,6 +8,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from .models import Ocena, ZegarDemo
+from .pomoc_testow import sprawa_od_kryteriow
 
 
 def zegar(d):
@@ -20,6 +21,7 @@ class ZdarzeniaKadroweTest(TestCase):
     def setUpTestData(cls):
         with override_settings(OKRES_DEMO=True):
             call_command("seed_demo", stdout=StringIO())
+        sprawa_od_kryteriow(User.objects.get(username="oceniany"))  # seed ma sprawy w toku
         cls.kadry = User.objects.get(username="kadry")
         cls.anna = User.objects.get(username="oceniajaca")
         cls.jan = User.objects.get(username="oceniany")
@@ -85,3 +87,18 @@ class ZdarzeniaKadroweTest(TestCase):
         r = self.client.post(reverse("oceny:zdarzenie_kadrowe", args=[self.o.pk, "termin"]),
                              {"podstawa": "3", "nowy_termin": "2027-05-04"})
         self.assertContains(r, "zawiadomienie (§ 8)")
+
+    def test_kandydaci_na_oceniajacego_tylko_przelozeni(self):
+        """QA M1: lista „Nowy oceniający” bez współpracowników, kadrowej i samego ocenianego."""
+        piotr, kadrowa = User.objects.get(username="piotr"), User.objects.get(username="kadry")
+        kandydaci = self.o.kandydaci_na_oceniajacego()
+        self.assertIn(self.dg, kandydaci)
+        self.assertIn(User.objects.get(username="finanse"), kandydaci)
+        for nie in (piotr, kadrowa, self.jan, self.anna):
+            self.assertNotIn(nie, kandydaci)
+        with self.assertRaises(ValidationError) as e:
+            self.o.zmien_oceniajacego(self.kadry, piotr, date(2025, 6, 2))
+        self.assertIn("stanowisku kierowniczym", str(e.exception))
+        self.client.force_login(self.kadry)
+        r = self.client.get(reverse("oceny:szczegoly", args=[self.o.pk]))
+        self.assertEqual(set(r.context["kandydaci"]), set(kandydaci))

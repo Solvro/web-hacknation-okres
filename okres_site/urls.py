@@ -25,6 +25,8 @@ admin.site.site_header = "OKRES · Panel kadr"
 admin.site.site_title = "OKRES"
 admin.site.index_title = "Administracja ocenami okresowymi"
 
+handler403 = "oceny.views.brak_uprawnien"
+
 urlpatterns = [
     path('', RedirectView.as_view(pattern_name='oceny:moje_sprawy')),
     path('logowanie/', auth_views.LoginView.as_view(template_name='oceny/logowanie.html'), name='login'),

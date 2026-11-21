@@ -99,3 +99,26 @@ document.addEventListener("htmx:afterSettle", function (event) {
   if (event.target.id !== "przypomnienia") return;
   event.target.querySelector("summary, [role=status]")?.focus();
 });
+
+// Błąd odpowiedzi HTMX (np. 403 z komunikatem): HTMX nie podmienia treści, więc pokazujemy komunikat.
+document.addEventListener("htmx:responseError", function (event) {
+  const xhr = event.detail.xhr;
+  const tekstowa = (xhr.getResponseHeader("Content-Type") || "").startsWith("text/plain");
+  const tresc = tekstowa && xhr.responseText.trim()
+    ? xhr.responseText.trim()
+    : "Nie udało się wykonać czynności (kod " + xhr.status + "). Odśwież stronę i spróbuj ponownie.";
+  let komunikat = document.getElementById("komunikat-bledu");
+  if (!komunikat) {
+    komunikat = document.createElement("p");
+    komunikat.id = "komunikat-bledu";
+    komunikat.className = "komunikat-bledu";
+    komunikat.setAttribute("role", "alert");
+    komunikat.tabIndex = -1;
+    komunikat.addEventListener("click", function () { komunikat.hidden = true; });
+    document.body.appendChild(komunikat);
+  }
+  komunikat.textContent = tresc;
+  komunikat.hidden = false;
+  clearTimeout(komunikat.zegar);
+  komunikat.zegar = setTimeout(function () { komunikat.hidden = true; }, 8000);
+});

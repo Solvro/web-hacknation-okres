@@ -31,6 +31,7 @@ sygnaly:
     dni_bez_reakcji: 14
     tytul: "Osiągnięcie zgłoszone {data} czeka na docenienie"
     pytanie: "Jaki był skutek tego działania dla zespołu lub interesantów?"
+    pytanie_gdy_skutek: "Co z tego doświadczenia warto przenieść na cały zespół?"  # skutek jest już wpisany w zgłoszeniu
     obszar: kultura doceniania
     dzialania: [docenienie]
   mozliwy_spadek_zaangazowania:

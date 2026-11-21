@@ -4,12 +4,12 @@
   {% if u.perspektywa_pracownika %}<br><em>Perspektywa pracownika:</em> {{ u.perspektywa_pracownika }}{% endif %}
   {% if u.wynik %}<br><em>Efekt:</em> {{ u.get_wynik_display }}{% if u.notatka_z_wyniku %} — {{ u.notatka_z_wyniku }}{% endif %}{% endif %}
   {% if moje %}
-    <form hx-post="{% url 'partner:perspektywa' u.pk %}" hx-target="#uzgodnienie-{{ u.pk }}" hx-swap="outerHTML">
+    <form method="post" action="{% url 'partner:perspektywa' u.pk %}" hx-post="{% url 'partner:perspektywa' u.pk %}" hx-target="#uzgodnienie-{{ u.pk }}" hx-swap="outerHTML">{% csrf_token %}
       <label>Twoja perspektywa <textarea name="perspektywa" rows="2">{{ u.perspektywa_pracownika }}</textarea></label>
       <button class="drugorzedny" type="submit">Zapisz</button>
     </form>
   {% elif not u.wynik %}
-    <form hx-post="{% url 'partner:wynik' u.pk %}" hx-target="#karta-{{ u.pracownik_id }}" hx-swap="outerHTML">
+    <form method="post" action="{% url 'partner:wynik' u.pk %}" hx-post="{% url 'partner:wynik' u.pk %}" hx-target="#karta-{{ u.pracownik_id }}" hx-swap="outerHTML">{% csrf_token %}
       <label>Czy pomogło? <select name="wynik">{% for kod, nazwa in u.WYNIKI %}<option value="{{ kod }}">{{ nazwa }}</option>{% endfor %}</select></label>
       <label>Notatka <input type="text" name="notatka"></label>
       <button class="drugorzedny" type="submit">Zapisz efekt</button>

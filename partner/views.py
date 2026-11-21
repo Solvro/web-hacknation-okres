@@ -1,21 +1,13 @@
-from datetime import date
-
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 
+from oceny import daty, zegar
 from oceny.models import Obserwacja, Pracownik
 
 from . import reguly, sygnaly
 from .models import Docenienie, Uzgodnienie, ZdarzenieZadania
-
-
-def _data(wartosc):
-    try:
-        return date.fromisoformat(wartosc or "")
-    except ValueError:
-        return None
 
 
 def _podwladny(request, pk) -> Pracownik:
@@ -26,15 +18,19 @@ def _podwladny(request, pk) -> Pracownik:
 
 
 def _karta(pracownik, bledy=None):
+    lista = sygnaly.dla_pracownika(pracownik)
     return {
         "p": pracownik,
-        "sygnaly": sygnaly.dla_pracownika(pracownik),
+        "sygnaly": lista,
+        # gdy sygnał ma własny formularz docenienia, drugi („bez sygnału”) tylko dubluje akcję
+        "jest_sygnal_docenienia": any(s.rodzaj == "osiagniecie_bez_docenienia" for s in lista),
         "zdarzenia": pracownik.zdarzenia_zadan.all()[:8],
         "uzgodnienia": pracownik.uzgodnienia.all()[:5],
         "docenienia": pracownik.docenienia.all()[:3],
         "rodzaje": reguly.rodzaje_zdarzen(),
         "katalog": reguly.dzialania(),
         "bledy": bledy or {},
+        "dzis": zegar.dzis(),
     }
 
 
@@ -58,7 +54,7 @@ def _bledy(e: ValidationError):
 def dodaj_zdarzenie(request, pk):
     p = _podwladny(request, pk)
     try:
-        ZdarzenieZadania.dodaj(request.user, p, _data(request.POST.get("data")), request.POST.get("rodzaj", ""),
+        ZdarzenieZadania.dodaj(request.user, p, daty.z_formularza(request.POST.get("data")), request.POST.get("rodzaj", ""),
                                request.POST.get("opis", ""))
     except ValidationError as e:
         return _odswiez(request, p, _bledy(e))
@@ -71,7 +67,7 @@ def uzgodnij(request, pk):
     p = _podwladny(request, pk)
     try:
         Uzgodnienie.zapisz(request.user, p, request.POST.get("sygnal", ""), request.POST.get("dzialanie", ""),
-                           request.POST.get("ustalenie", ""), _data(request.POST.get("data_sprawdzenia")))
+                           request.POST.get("ustalenie", ""), daty.z_formularza(request.POST.get("data_sprawdzenia"), "data_sprawdzenia"))
     except ValidationError as e:
         return _odswiez(request, p, _bledy(e))
     return _odswiez(request, p)

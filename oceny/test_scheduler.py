@@ -8,6 +8,7 @@ from django.urls import reverse
 
 from . import scheduler
 from .models import Ocena, Przypomnienie, ZegarDemo
+from .pomoc_testow import sprawa_od_kryteriow
 
 
 def zegar(d):
@@ -20,6 +21,8 @@ class SchedulerTest(TestCase):
     def setUpTestData(cls):
         with override_settings(OKRES_DEMO=True):
             call_command("seed_demo", stdout=StringIO())
+        sprawa_od_kryteriow(User.objects.get(username="oceniany"))  # seed ma sprawy w toku
+        sprawa_od_kryteriow(User.objects.get(username="piotr"))  # seed ma sprawy w toku
         cls.jan = User.objects.get(username="oceniany")
         cls.anna = User.objects.get(username="oceniajaca")
         cls.piotr = User.objects.get(username="piotr")

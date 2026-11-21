@@ -9,16 +9,17 @@
       {% if s.uwaga %}<p class="cicho">{{ s.uwaga }}</p>{% endif %}
       {% if s.rodzaj == "osiagniecie_bez_docenienia" %}
         <details class="dzialanie-hr"><summary>{% include "oceny/_ikona.html" with ikona="serce" %} Dodaj docenienie</summary>
-        <form hx-post="{% url 'partner:docen' k.p.pk %}" hx-target="#karta-{{ k.p.pk }}" hx-swap="outerHTML">
+        <form method="post" action="{% url 'partner:docen' k.p.pk %}" hx-post="{% url 'partner:docen' k.p.pk %}" hx-target="#karta-{{ k.p.pk }}" hx-swap="outerHTML">{% csrf_token %}
           <input type="hidden" name="obserwacja" value="{{ s.obserwacja_id }}">
           <label>Za co doceniasz <textarea name="za_co" rows="2" required></textarea></label>
-          <label>Jaki był skutek <input type="text" name="skutek"></label>
+          {% if s.skutek %}<p class="cicho">Skutek ze zgłoszenia: {{ s.skutek }}</p><input type="hidden" name="skutek" value="{{ s.skutek }}">
+          {% else %}<label>Jaki był skutek <input type="text" name="skutek"></label>{% endif %}
           <button type="submit">Doceń</button>
         </form>
         </details>
       {% else %}
         <details class="dzialanie-hr"><summary>{% include "oceny/_ikona.html" with ikona="sprawdz" %} Ustal działanie</summary>
-        <form hx-post="{% url 'partner:uzgodnij' k.p.pk %}" hx-target="#karta-{{ k.p.pk }}" hx-swap="outerHTML">
+        <form method="post" action="{% url 'partner:uzgodnij' k.p.pk %}" hx-post="{% url 'partner:uzgodnij' k.p.pk %}" hx-target="#karta-{{ k.p.pk }}" hx-swap="outerHTML">{% csrf_token %}
           <input type="hidden" name="sygnal" value="{{ s.klucz }}">
           <label>Uzgodnione działanie <select name="dzialanie">{% for kod, nazwa in s.dzialania %}<option value="{{ kod }}">{{ nazwa }}</option>{% endfor %}</select></label>
           <label>Co ustaliliście <textarea name="ustalenie" rows="2" required></textarea></label>
@@ -35,18 +36,20 @@
   {% if k.docenienia %}<h3>Ostatnie docenienia</h3><ul>{% for d in k.docenienia %}<li>{{ d.data|date:"d.m.Y" }}: {{ d.za_co }}{% if d.skutek %} — {{ d.skutek }}{% endif %}</li>{% endfor %}</ul>{% endif %}
   <details><summary>Dziennik zadań{% if k.zdarzenia %} <span class="znacznik">{{ k.zdarzenia|length }}</span>{% endif %}</summary>
     <ul>{% for z in k.zdarzenia %}<li>{{ z.data|date:"d.m.Y" }} · {{ z.rodzaj_nazwa }}: {{ z.opis }}</li>{% empty %}<li>Brak wpisów.</li>{% endfor %}</ul>
-    <form hx-post="{% url 'partner:dodaj_zdarzenie' k.p.pk %}" hx-target="#karta-{{ k.p.pk }}" hx-swap="outerHTML">
-      <label>Data <input type="date" name="data"></label>
+    <form method="post" action="{% url 'partner:dodaj_zdarzenie' k.p.pk %}" hx-post="{% url 'partner:dodaj_zdarzenie' k.p.pk %}" hx-target="#karta-{{ k.p.pk }}" hx-swap="outerHTML">{% csrf_token %}
+      <label>Data <input type="date" name="data" value="{{ k.dzis|date:'Y-m-d' }}" max="{{ k.dzis|date:'Y-m-d' }}"></label>
       <label>Rodzaj <select name="rodzaj">{% for kod, nazwa in k.rodzaje.items %}<option value="{{ kod }}">{{ nazwa }}</option>{% endfor %}</select></label>
       <label>Opis <input type="text" name="opis" required></label>
       <button type="submit">Dodaj do dziennika</button>
     </form>
   </details>
+  {% if not k.jest_sygnal_docenienia %}
   <details><summary>Doceń bez sygnału</summary>
-    <form hx-post="{% url 'partner:docen' k.p.pk %}" hx-target="#karta-{{ k.p.pk }}" hx-swap="outerHTML">
+    <form method="post" action="{% url 'partner:docen' k.p.pk %}" hx-post="{% url 'partner:docen' k.p.pk %}" hx-target="#karta-{{ k.p.pk }}" hx-swap="outerHTML">{% csrf_token %}
       <label>Za co doceniasz <textarea name="za_co" rows="2" required></textarea></label>
       <label>Jaki był skutek <input type="text" name="skutek"></label>
       <button type="submit">Doceń</button>
     </form>
   </details>
+  {% endif %}
 </section>

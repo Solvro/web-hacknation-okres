@@ -13,10 +13,10 @@
     {% for o in obserwacje_bez_kryterium %}{% include "oceny/_obserwacja.html" %}{% endfor %}
   {% endif %}
   {% if not ocena.sporzadzona and jest_oceniajacym or not ocena.sporzadzona and jest_ocenianym %}
-    <form hx-post="{% url 'oceny:dodaj_obserwacje' ocena.pk %}" hx-target="#obserwacje" hx-swap="outerHTML">
+    <form method="post" action="{% url 'oceny:dodaj_obserwacje' ocena.pk %}" hx-post="{% url 'oceny:dodaj_obserwacje' ocena.pk %}" hx-target="#obserwacje" hx-swap="outerHTML">{% csrf_token %}
       <fieldset>
         <legend>{% if jest_ocenianym %}Zgłoś osiągnięcie{% else %}Dodaj obserwację{% endif %}</legend>
-        <label>Data <input type="date" name="data"></label>
+        <label>Data <input type="date" name="data" value="{{ dzis|date:'Y-m-d' }}" max="{{ dzis|date:'Y-m-d' }}"{% if ocena.poczatek_okresu %} min="{{ ocena.poczatek_okresu|date:'Y-m-d' }}"{% endif %}></label>
         <label>Kryterium
           <select name="kryterium"><option value="">— bez przypisania —</option>
             {% for kod, nazwa, _ in kryteria_oceny %}<option value="{{ kod }}">{{ nazwa }}</option>{% endfor %}

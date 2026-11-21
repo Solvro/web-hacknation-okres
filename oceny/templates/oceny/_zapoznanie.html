@@ -8,7 +8,7 @@
   {% for pole, komunikat in bledy_zapoznania.items %}<p role="alert">{{ komunikat }}</p>{% endfor %}
   {% if not ocena.zapoznany %}
     {% if jest_ocenianym %}
-      <form hx-post="{% url 'oceny:potwierdz_zapoznanie' ocena.pk %}" hx-target="#zapoznanie" hx-swap="outerHTML" hx-disabled-elt="find button">
+      <form method="post" action="{% url 'oceny:potwierdz_zapoznanie' ocena.pk %}" hx-post="{% url 'oceny:potwierdz_zapoznanie' ocena.pk %}" hx-target="#zapoznanie" hx-swap="outerHTML" hx-disabled-elt="find button">{% csrf_token %}
         <label>Miejscowość <input type="text" name="miejscowosc" value="{{ miejscowosc_ocenianego }}"></label>
         <div class="akcja-sprawy">
           <p id="skutek-zapoznania">Potwierdzasz, że odbyła się rozmowa oceniająca i znasz ocenę oraz wnioski do indywidualnego programu rozwoju zawodowego.</p>
@@ -18,7 +18,7 @@
     {% else %}
       <p>Oczekuje na potwierdzenie zapoznania przez ocenianego.</p>
       {% if jest_kadrami %}
-      <form hx-post="{% url 'oceny:fikcja_zapoznania' ocena.pk %}" hx-target="#zapoznanie" hx-swap="outerHTML" hx-disabled-elt="find button">
+      <form method="post" action="{% url 'oceny:fikcja_zapoznania' ocena.pk %}" hx-post="{% url 'oceny:fikcja_zapoznania' ocena.pk %}" hx-target="#zapoznanie" hx-swap="outerHTML" hx-disabled-elt="find button">{% csrf_token %}
         <fieldset><legend>Fikcja zapoznania (komórka kadrowa)</legend>
         <p class="cicho">Tylko gdy informacja o ocenie dotarła, a oceniany nie mógł lub nie chciał potwierdzić zapoznania. Sam upływ czasu nie wystarcza.</p>
         <label>Data doręczenia informacji o ocenie <input type="date" name="data_doreczenia" required></label>
@@ -44,7 +44,7 @@
           {% endif %}
         </div>
         {% if jest_dg and not sprzeciw.decyzja %}
-          <form hx-post="{% url 'oceny:rozpatrz_sprzeciw' ocena.pk %}" hx-target="#ocena" hx-swap="outerHTML" hx-disabled-elt="find button">
+          <form method="post" action="{% url 'oceny:rozpatrz_sprzeciw' ocena.pk %}" hx-post="{% url 'oceny:rozpatrz_sprzeciw' ocena.pk %}" hx-target="#ocena" hx-swap="outerHTML" hx-disabled-elt="find button">{% csrf_token %}
             <fieldset><legend>Rozstrzygnięcie sprzeciwu (dyrektor generalny)</legend>
               <label><input type="radio" name="decyzja" value="nieuwzgledniony" required> Nie uwzględniam sprzeciwu</label>
               <label><input type="radio" name="decyzja" value="zmiana"> Uwzględniam i zmieniam ocenę</label>
@@ -66,7 +66,7 @@
         {% if jest_ocenianym and ocena.etap == "termin_sprzeciwu" %}
           <details class="sprawa-podsekcja"{% if bledy_zapoznania %} open{% endif %}>
             <summary>Złóż sprzeciw</summary>
-            <form hx-post="{% url 'oceny:zloz_sprzeciw' ocena.pk %}" hx-target="#zapoznanie" hx-swap="outerHTML" hx-disabled-elt="find button">
+            <form method="post" action="{% url 'oceny:zloz_sprzeciw' ocena.pk %}" hx-post="{% url 'oceny:zloz_sprzeciw' ocena.pk %}" hx-target="#zapoznanie" hx-swap="outerHTML" hx-disabled-elt="find button">{% csrf_token %}
               <label>Treść sprzeciwu <textarea name="tresc" rows="3" required></textarea></label>
               <p class="cicho" id="skutek-sprzeciwu">Sprzeciw trafi do dyrektora generalnego.</p>
               <button type="submit" aria-describedby="skutek-sprzeciwu">Wyślij sprzeciw</button>

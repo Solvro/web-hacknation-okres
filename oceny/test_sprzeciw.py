@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from io import StringIO
 
 from django.contrib.auth.models import User
@@ -9,6 +9,7 @@ from django.urls import reverse
 
 from . import scheduler
 from .models import Ocena, ZegarDemo
+from .pomoc_testow import sprawa_od_kryteriow
 
 
 def zegar(d):
@@ -21,6 +22,7 @@ class RozpatrzenieSprzeciwuTest(TestCase):
     def setUpTestData(cls):
         with override_settings(OKRES_DEMO=True):
             call_command("seed_demo", stdout=StringIO())
+        sprawa_od_kryteriow(User.objects.get(username="piotr"))  # seed ma sprawy w toku
         cls.piotr = User.objects.get(username="piotr")
         cls.anna = User.objects.get(username="oceniajaca")
         cls.dg = User.objects.get(username="dyrektor")
@@ -119,6 +121,10 @@ class PoprawkiZPrzegladuTest(RozpatrzenieSprzeciwuTest):
         self.assertEqual(nastepna.etap, "anulowana")
         self.assertEqual(nastepna.obserwacje.count(), 1)  # nic nie znika po cichu
         self.o.sporzadz(self.komplet, date(2026, 11, 5), "", "Szkolenie")
+        # ocena pozytywna: kolejny okres dopiero po ocenie ostatecznej (QA H5)
+        self.assertEqual(scheduler.uruchom()["nowe_sprawy"], 0)
+        self.o.potwierdz_zapoznanie()
+        zegar(self.o.termin_sprzeciwu + timedelta(days=1))
         self.assertEqual(scheduler.uruchom()["nowe_sprawy"], 1)
 
     def test_ponowna_po_negatywnej_nie_przed_szescioma_miesiacami(self):

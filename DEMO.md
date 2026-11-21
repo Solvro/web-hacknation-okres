@@ -4,11 +4,10 @@ Przygotowanie: `docker compose up` z `OKRES_DEMO=1` na czystym wolumenie (seed w
 
 | Czas | Rola | Co robimy | Co widzi jury |
 |---|---|---|---|
-| przed | kadry | Zegar demo: **01.04.2025** | pasek z przesuniętą datą |
-| 0:00–0:30 | `oceniajaca` | Moje sprawy → Jan Borkowski. „Przygotuj się do rozmowy” (agenda z § 5). Wybór 2 kryteriów dodatkowych (lista bez obowiązkowych), data rozmowy, oczekiwania i cele (§ 5 ust. 1 pkt 3–4), potwierdzenie | blokada kryteriów, informacja o korekcie administratora |
-| | `oceniany` | potwierdzenie części I, „Część I do druku / PDF” | wydruk części I według wzoru C; oczekiwania i cele z rozmowy widoczne dla obu stron |
-| 0:30–0:55 | dowolna | „Terminy, dane i dokumenty” → „Jak obliczono termin?” przy terminie oceny | 16.03.2025 + 24 mies. = 16.03.2027, + 33 dni nieobecności (przykład KPRM, bez przyczyn), 18.04.2027 to niedziela → **19.04.2027** |
-| przed 0:55 | kadry | Zegar demo: **21.11.2026** (dane HR partnera z seeda są datowane względem tego dnia) | |
+| przed | kadry | Zegar demo: **21.11.2026** (stan danych z seeda: żadna sprawa nie jest po terminie) | pasek z datą systemową |
+| 0:00–0:30 | `oceniajaca` | Moje sprawy → Piotr Wysocki (nowy okres od oceny z 04.11.2026, kryteria do 04.12.2026). „Przygotuj się do rozmowy” (agenda z § 5). Wybór 2 kryteriów dodatkowych (lista bez obowiązkowych), data rozmowy, oczekiwania i cele (§ 5 ust. 1 pkt 3–4), potwierdzenie | blokada kryteriów, informacja o korekcie administratora |
+| | `piotr` | potwierdzenie części I, „Część I do druku / PDF” | wydruk części I według wzoru C; oczekiwania i cele z rozmowy widoczne dla obu stron |
+| 0:30–0:55 | dowolna | sprawa Jana (część I uzgodniona 24.03.2025) → „Terminy, dane i dokumenty” → „Jak obliczono termin?” przy terminie oceny | 16.03.2025 + 24 mies. = 16.03.2027, + 33 dni nieobecności (przykład KPRM, bez przyczyn), 18.04.2027 to niedziela → **19.04.2027** |
 | 0:55–1:25 | `oceniajaca` | Zespół · HR partner: Piotr „3 zmiany priorytetu w 6 tygodni” → zdarzenia źródłowe → „Ustal działanie” → uzgodnienie „odciążenie” z datą sprawdzenia; u Piotra też „możliwy spadek zaangażowania” (wcześniejsze uzgodnienie nie pomogło, z zastrzeżeniem, że to nie diagnoza); u Jana „Osiągnięcie czeka na docenienie” → „Dodaj docenienie” → „Doceń” | sygnał ze źródłami, pytanie do rozmowy |
 | | `piotr` | Mój dobrostan i rozwój | te same fakty i uzgodnienie, pole na własną perspektywę |
 | przed 1:25 | kadry | Zegar demo: **12.04.2027** | |

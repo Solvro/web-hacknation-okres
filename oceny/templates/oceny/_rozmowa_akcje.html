@@ -1,11 +1,11 @@
 {% if jest_oceniajacym or jest_ocenianym %}
   <div class="rozmowa-akcje">
     <a class="przycisk drugorzedny" href="{% url 'oceny:przygotowanie' ocena.pk rozmowa %}" target="_blank" rel="noopener">{% include "oceny/_ikona.html" with ikona="notatka" %} Przygotuj się do rozmowy <small>(nowa karta)</small></a>
-    {% if jest_oceniajacym %}
+    {% if jest_oceniajacym and not ocena.kryteria_zatwierdzone or jest_oceniajacym and rozmowa == "oceniajaca" %}
       <details>
         <summary>{% include "oceny/_ikona.html" with ikona="kalendarz" %} Zaproszenie do kalendarza</summary>
         <form method="get" action="{% url 'oceny:zaproszenie_ics' ocena.pk %}">
-          <label>Data <input type="date" name="data" required></label>
+          <label>Data <input type="date" name="data" min="{{ dzis|date:'Y-m-d' }}" required></label>
           <label>Godzina <input type="time" name="godzina" value="10:00" required></label>
           <input type="hidden" name="rodzaj" value="{% if rozmowa == 'oceniajaca' %}oceniajaca{% else %}kryteria{% endif %}">
           <button type="submit">Pobierz zaproszenie (.ics)</button>
