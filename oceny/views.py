@@ -141,7 +141,16 @@ def _kontekst(request, ocena, bledy=()):
 @login_required
 def szczegoly(request, pk):
     ocena = _ocena_dla(request, pk)
-    return render(request, "oceny/szczegoly.html", _kontekst_oceny(request, ocena) | _kontekst_kadrowe(request, ocena))
+    kontekst = _kontekst_oceny(request, ocena) | _kontekst_kadrowe(request, ocena)
+    return render(request, "oceny/szczegoly.html", kontekst | {"krok": ocena.nastepny_krok(request.user)})
+
+
+def _fragment_sprawy(request, szablon, kontekst, odswiez_naglowek=True):
+    if not odswiez_naglowek or request.headers.get("HX-Request") != "true":
+        return render(request, szablon, kontekst)
+    html = render_to_string(szablon, kontekst, request)
+    naglowek = kontekst | {"naglowek_oob": True, "krok": kontekst["ocena"].nastepny_krok(request.user)}
+    return HttpResponse(html + render_to_string("oceny/_naglowek_sprawy.html", naglowek, request))
 
 
 @login_required
@@ -184,7 +193,7 @@ def potwierdz_kryteria(request, pk):
     if ocena.oceniany_id != request.user.id:
         raise PermissionDenied("Kryteria potwierdza oceniany.")
     ocena.potwierdz_kryteria()
-    return render(request, "oceny/_kryteria.html", _kontekst_oceny(request, ocena) | {"odswiez_ocene": True})
+    return _fragment_sprawy(request, "oceny/_kryteria.html", _kontekst_oceny(request, ocena) | {"odswiez_ocene": True})
 
 
 def _data(wartosc):
@@ -280,11 +289,12 @@ def sporzadz(request, pk):
             "data_rozmowy": data_rozmowy, "uzasadnienie": uzasadnienie, "wnioski_iprz": wnioski}))
         ctx["bledy_pol"] = {k: v[0] for k, v in e.message_dict.items()}
         return render(request, "oceny/_ocena.html", ctx)
-    return render(request, "oceny/_ocena.html", _kontekst_oceny(request, ocena))
+    return _fragment_sprawy(request, "oceny/_ocena.html", _kontekst_oceny(request, ocena))
 
 
 def _zapoznanie(request, ocena, bledy=None):
-    return render(request, "oceny/_zapoznanie.html", _kontekst_oceny(request, ocena) | {"bledy_zapoznania": bledy or {}})
+    return _fragment_sprawy(request, "oceny/_zapoznanie.html",
+                            _kontekst_oceny(request, ocena) | {"bledy_zapoznania": bledy or {}}, odswiez_naglowek=not bledy)
 
 
 @login_required
@@ -427,7 +437,8 @@ def rozpatrz_sprzeciw(request, pk):
     except ValidationError as e:
         bledy = {k: v[0] for k, v in e.message_dict.items()}
     ocena.refresh_from_db()
-    return render(request, "oceny/_ocena.html", _kontekst_oceny(request, ocena) | {"bledy_zapoznania": bledy})
+    return _fragment_sprawy(request, "oceny/_ocena.html",
+                            _kontekst_oceny(request, ocena) | {"bledy_zapoznania": bledy}, odswiez_naglowek=not bledy)
 
 
 @login_required
@@ -453,7 +464,8 @@ def zdarzenie_kadrowe(request, pk, rodzaj):
     ocena.refresh_from_db()
     if ocena.oceniajacy_id != request.user.id and not request.user.is_staff:
         return redirect("oceny:moje_sprawy")
-    return render(request, "oceny/_kadrowe.html", _kontekst_kadrowe(request, ocena, bledy))
+    return _fragment_sprawy(request, "oceny/_kadrowe.html", _kontekst_kadrowe(request, ocena, bledy),
+                            odswiez_naglowek=not bledy)
 
 
 def _kontekst_kadrowe(request, ocena, bledy=None):

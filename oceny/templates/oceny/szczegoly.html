@@ -1,51 +1,30 @@
 {% extends "oceny/base.html" %}
 {% block tytul %}Ocena okresowa · {{ ocena.oceniany.get_full_name }}{% endblock %}
 {% block tresc %}
-<a class="powrot" href="{% url 'oceny:moje_sprawy' %}">← Moje sprawy</a>
-<div class="naglowek-strony">
-<h1>Ocena okresowa · arkusz {{ ocena.arkusz }}</h1>
-<div class="akcje"><a class="przycisk drugorzedny" href="{% url 'oceny:wydruk' ocena.pk %}">{% if ocena.sporzadzona %}Arkusz do druku / PDF{% else %}Część I do druku / PDF{% endif %}</a>
-  {% if ocena.sporzadzona %}<a href="{% url 'oceny:wydruk' ocena.pk %}?czesc=I">Kopia części I</a>{% endif %}
-  {% if user.is_staff or jest_ocenianym %}<a href="{% url 'oceny:eksport_sprawy' ocena.pk %}">Paczka do akt / EZD (ZIP)</a>{% endif %}</div>
+<a class="powrot" href="{% url 'oceny:moje_sprawy' %}">{% include "oceny/_ikona.html" with ikona="wstecz" %} Moje sprawy</a>
+{% include "oceny/_naglowek_sprawy.html" %}
+{% with etap=ocena.etap %}
+<div class="sekcje-sprawy">
+  <details class="sekcja-sprawy"{% if etap == "kryteria" or etap == "anulowana" and not ocena.kryteria_zablokowane %} open{% endif %}>
+    <summary><span>{% include "oceny/_ikona.html" with ikona="lista" %} Kryteria <small>Część I</small></span></summary>
+    {% include "oceny/_kryteria.html" %}
+  </details>
+  {% if jest_oceniajacym or jest_ocenianym %}
+    <details class="sekcja-sprawy">
+      <summary><span>{% include "oceny/_ikona.html" with ikona="notatka" %} Obserwacje</span></summary>
+      {% include "oceny/_obserwacje.html" %}
+    </details>
+  {% endif %}
+  <details class="sekcja-sprawy"{% if etap != "kryteria" and ocena.kryteria_zablokowane %} open{% endif %}>
+    <summary><span>{% include "oceny/_ikona.html" with ikona="sprawdz" %} Ocena <small>Część II</small></span></summary>
+    {% include "oceny/_ocena.html" %}
+  </details>
+  {% if jest_kadrami or jest_oceniajacym or jest_ocenianym %}
+    <details class="sekcja-sprawy">
+      <summary><span>{% include "oceny/_ikona.html" with ikona="teczka" %} Zdarzenia kadrowe</span></summary>
+      {% include "oceny/_kadrowe.html" %}
+    </details>
+  {% endif %}
 </div>
-{% with p=ocena.oceniany.pracownik %}
-<dl class="naglowek-sprawy">
-  <div><dt>Oceniany</dt><dd>{{ ocena.oceniany.get_full_name|default:ocena.oceniany }}</dd></div>
-  <div><dt>Stanowisko</dt><dd>{{ p.stanowisko|default:"—" }}{% if p.komorka and ocena.arkusz != "A" %}, {{ p.komorka }}{% endif %}</dd></div>
-  <div><dt>Oceniający</dt><dd>{{ ocena.oceniajacy.get_full_name|default:ocena.oceniajacy }}</dd></div>
-  <div><dt>Etap</dt><dd>{{ ocena.etap_nazwa }}{% if ocena.po_terminie %} <span class="po-terminie">· po terminie</span>{% endif %}</dd></div>
-  <div><dt>Pakiet reguł</dt><dd>{{ ocena.wersja_regul }} <a class="cicho" href="{% url 'oceny:porownanie_regul' ocena.pk %}">porównaj wersje</a></dd></div>
-  <div><dt>Termin ustalenia kryteriów</dt><dd>{{ ocena.rachunek_kryteriow.termin|date:"d.m.Y"|default:"—" }}
-    <details hx-get="{% url 'oceny:jak_obliczono' ocena.pk 'kryteria' %}" hx-trigger="toggle once" hx-target="find .wyjasnienie"><summary>Jak obliczono termin?</summary><div class="wyjasnienie"></div></details></dd></div>
-  <div><dt>Termin sporządzenia oceny</dt><dd>{{ ocena.termin_oceny|date:"d.m.Y"|default:"—" }}
-    <details hx-get="{% url 'oceny:jak_obliczono' ocena.pk 'ocena' %}" hx-trigger="toggle once" hx-target="find .wyjasnienie"><summary>Jak obliczono termin?</summary><div class="wyjasnienie"></div></details></dd></div>
-</dl>
 {% endwith %}
-{% if jest_oceniajacym or jest_ocenianym %}{% if not ocena.sporzadzona %}
-<p>
-  {% if not ocena.kryteria_zablokowane %}<a class="przycisk" href="{% url 'oceny:przygotowanie' ocena.pk 'rozpoczynajaca' %}">Przygotuj się do rozmowy rozpoczynającej (§ 5) <span aria-hidden="true">→</span></a>
-  {% else %}<a class="przycisk" href="{% url 'oceny:przygotowanie' ocena.pk 'oceniajaca' %}">Przygotuj się do rozmowy oceniającej (§ 10) <span aria-hidden="true">→</span></a>{% endif %}</p>
-{% endif %}{% endif %}
-{% with st=ocena.obligatoryjny_stopien %}{% if st %}<p class="hr" role="status"><strong>Art. 89 ust. 2:</strong> obowiązek przyznania {{ st.stopien }}. stopnia służbowego do {{ st.termin|date:"d.m.Y" }} ({{ st.uzasadnienie }}).</p>{% endif %}{% endwith %}
-{% if jest_oceniajacym and not ocena.sporzadzona %}
-<details><summary>Zaproszenie na rozmowę do kalendarza (.ics)</summary>
-  <form method="get" action="{% url 'oceny:zaproszenie_ics' ocena.pk %}">
-    <label>Data <input type="date" name="data" required></label>
-    <label>Godzina <input type="text" name="godzina" value="10:00" pattern="[0-2][0-9]:[0-5][0-9]"></label>
-    <input type="hidden" name="rodzaj" value="{% if ocena.kryteria_zablokowane %}oceniajaca{% else %}kryteria{% endif %}">
-    <button type="submit">Pobierz zaproszenie</button>
-    <p class="cicho">Plik otworzy się w kalendarzu poczty (Outlook, Thunderbird). Tytuł nie zawiera informacji kadrowych.</p>
-  </form>
-</details>
-{% endif %}
-<nav class="skroty" aria-label="Sekcje sprawy">
-  <a href="#kryteria">Kryteria</a>
-  {% if jest_oceniajacym or jest_ocenianym %}<a href="#obserwacje">Obserwacje</a>{% endif %}
-  <a href="#ocena">Ocena</a>
-  {% if jest_kadrami or jest_oceniajacym or jest_ocenianym %}<a href="#kadrowe">Zdarzenia kadrowe</a>{% endif %}
-</nav>
-{% include "oceny/_kryteria.html" %}
-{% if jest_oceniajacym or jest_ocenianym %}{% include "oceny/_obserwacje.html" %}{% endif %}
-{% include "oceny/_ocena.html" %}
-{% if jest_kadrami or jest_oceniajacym or jest_ocenianym %}{% include "oceny/_kadrowe.html" %}{% endif %}
 {% endblock %}

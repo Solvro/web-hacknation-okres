@@ -1,11 +1,12 @@
 <section id="obserwacje">
-  <h2>Obserwacje z okresu oceny</h2>
   {% if jest_oceniajacym %}<p class="cicho">Twoje notatki są prywatne, dopóki ich nie udostępnisz ocenianemu. Brak notatki to brak danych, nie podstawa do obniżenia oceny.</p>
   {% elif jest_ocenianym %}<p class="cicho">Możesz zgłosić własne osiągnięcie; zobaczy je oceniający. Widzisz notatki, które oceniający Ci udostępnił.</p>{% endif %}
   {% for pole, komunikat in bledy_obserwacji.items %}<p role="alert">{{ komunikat }}</p>{% endfor %}
   {% for g in obserwacje_kryteriow %}
-    <h3>{{ g.nazwa }} <span class="znacznik">{{ g.obserwacje|length }}</span></h3>
-    {% for o in g.obserwacje %}{% include "oceny/_obserwacja.html" %}{% empty %}<p class="cicho">{{ g.podpowiedz }}</p>{% endfor %}
+    <details class="sprawa-podsekcja">
+      <summary>{{ g.nazwa }} <span class="znacznik">{{ g.obserwacje|length }}</span></summary>
+      {% for o in g.obserwacje %}{% include "oceny/_obserwacja.html" %}{% empty %}<p class="cicho">{{ g.podpowiedz }}</p>{% endfor %}
+    </details>
   {% endfor %}
   {% if obserwacje_bez_kryterium %}
     <h3>Bez przypisanego kryterium</h3>

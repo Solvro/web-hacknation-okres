@@ -1,9 +1,13 @@
 <section id="kryteria">
-  <h2>Część I · kryteria oceny i termin sporządzenia oceny</h2>
+  {% if not ocena.kryteria_zablokowane and not ocena.sporzadzona %}
+    {% include "oceny/_rozmowa_akcje.html" with rozmowa="rozpoczynajaca" %}
+  {% endif %}
   {% if bledy %}<ul role="alert">{% for b in bledy %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
-  <h3>Kryteria obowiązkowe</h3>
-  <ul>{% for kod, nazwa in obowiazkowe.items %}<li>{{ nazwa }}</li>{% endfor %}</ul>
-  <h3>Kryteria dodatkowe wybrane przez oceniającego (nie więcej niż {{ maks }})</h3>
+  <details class="sprawa-podsekcja">
+    <summary>Kryteria obowiązkowe ({{ obowiazkowe|length }})</summary>
+    <ul>{% for kod, nazwa in obowiazkowe.items %}<li>{{ nazwa }}</li>{% endfor %}</ul>
+  </details>
+  <h3>Kryteria dodatkowe (maks. {{ maks }})</h3>
   {% if not ocena.kryteria_zatwierdzone and jest_oceniajacym %}
     <form hx-post="{% url 'oceny:ustaw_kryteria' ocena.pk %}" hx-target="#kryteria" hx-swap="outerHTML" hx-trigger="change">
       {% for wybrane in sloty %}
@@ -38,7 +42,9 @@
       {% if ocena.kryteria_zablokowane %}<br>Potwierdził oceniany: {{ ocena.oceniany.get_full_name }}, {{ ocena.data_potwierdzenia_kryteriow|date:"d.m.Y" }}.{% endif %}
       <br>Zmiana kryteriów możliwa tylko w trybie korekty administratora.</p>
     <p><strong>Oczekiwania i cele na okres oceny (§ 5 ust. 1 pkt 3–4):</strong> {% if ocena.cele_i_oczekiwania %}{{ ocena.cele_i_oczekiwania|linebreaksbr }}{% else %}<span class="cicho">nie zapisano</span>{% endif %}</p>
-    {% if not ocena.kryteria_zablokowane %}
+    {% if ocena.kryteria_zablokowane %}
+      <p><a href="#ocena">Przejdź do części II {% include "oceny/_ikona.html" with ikona="strzalka" %}</a></p>
+    {% else %}
       {% if jest_ocenianym %}
         <button hx-post="{% url 'oceny:potwierdz_kryteria' ocena.pk %}" hx-target="#kryteria" hx-swap="outerHTML">Potwierdzam przeprowadzenie rozmowy i zapoznanie z kryteriami oraz terminem oceny</button>
       {% else %}

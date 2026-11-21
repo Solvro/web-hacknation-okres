@@ -1,5 +1,4 @@
 <section id="kadrowe">
-  <h2>Sytuacje kadrowe</h2>
   {% for pole, komunikat in bledy_kadrowe.items %}<p role="alert">{{ komunikat }}</p>{% endfor %}
   {% with zdarzenia=ocena.zdarzenia_kadrowe.all %}
     {% if zdarzenia %}<ul>{% for z in zdarzenia %}<li>{{ z.data|date:"d.m.Y" }} · <strong>{{ z.get_rodzaj_display }}</strong>: {{ z.opis }} <span class="cicho">({{ z.podstawa }})</span>

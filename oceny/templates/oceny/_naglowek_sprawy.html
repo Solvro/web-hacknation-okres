@@ -1,0 +1,35 @@
+<div id="podsumowanie-sprawy"{% if naglowek_oob %} hx-swap-oob="true"{% endif %}>
+  {% with p=ocena.oceniany.pracownik etap=ocena.etap %}
+  <header class="naglowek-sprawy-glowny">
+    <div>
+      <div class="sprawa-oznaczenia">
+        <span class="arkusz-znacznik">Arkusz {{ ocena.arkusz }}</span>
+        {% include "oceny/_etap.html" with etap=etap only %}
+        {% if krok.termin %}<time class="znacznik termin-sprawy" datetime="{{ krok.termin|date:'Y-m-d' }}">{% include "oceny/_ikona.html" with ikona="kalendarz" %} Termin: {{ krok.termin|date:"d.m.Y" }}</time>{% endif %}
+        {% if ocena.po_terminie %}<span class="znacznik po-terminie">{% include "oceny/_ikona.html" with ikona="alert" %} Po terminie</span>{% endif %}
+      </div>
+      <h1>{{ ocena.oceniany.get_full_name|default:ocena.oceniany }}</h1>
+      {% if p.stanowisko or p.komorka and ocena.arkusz != "A" %}<p>{{ p.stanowisko }}{% if p.komorka and ocena.arkusz != "A" %}{% if p.stanowisko %} · {% endif %}{{ p.komorka }}{% endif %}</p>{% endif %}
+    </div>
+    <a class="przycisk drugorzedny" href="{% url 'oceny:wydruk' ocena.pk %}">{% include "oceny/_ikona.html" with ikona="pobierz" %} {% if ocena.sporzadzona %}Arkusz{% else %}Część I{% endif %} do druku / PDF</a>
+  </header>
+  {% endwith %}
+  <details class="sprawa-informacje">
+    <summary>{% include "oceny/_ikona.html" with ikona="teczka" %} Terminy, dane i dokumenty</summary>
+    <dl class="naglowek-sprawy">
+      <div><dt>Oceniający</dt><dd>{{ ocena.oceniajacy.get_full_name|default:ocena.oceniajacy }}</dd></div>
+      <div><dt>Pakiet reguł</dt><dd>{{ ocena.wersja_regul }} <a class="cicho" href="{% url 'oceny:porownanie_regul' ocena.pk %}">Porównaj wersje</a></dd></div>
+      <div><dt>Termin ustalenia kryteriów</dt><dd>{{ ocena.rachunek_kryteriow.termin|date:"d.m.Y"|default:"—" }}
+        <details hx-get="{% url 'oceny:jak_obliczono' ocena.pk 'kryteria' %}" hx-trigger="toggle[target.open] once" hx-target="find .wyjasnienie"><summary>Jak obliczono termin?</summary><div class="wyjasnienie"></div></details></dd></div>
+      <div><dt>Termin sporządzenia oceny</dt><dd>{{ ocena.termin_oceny|date:"d.m.Y"|default:"—" }}
+        <details hx-get="{% url 'oceny:jak_obliczono' ocena.pk 'ocena' %}" hx-trigger="toggle[target.open] once" hx-target="find .wyjasnienie"><summary>Jak obliczono termin?</summary><div class="wyjasnienie"></div></details></dd></div>
+    </dl>
+    {% if ocena.sporzadzona or jest_kadrami or jest_ocenianym %}
+      <div class="akcje">
+        {% if ocena.sporzadzona %}<a href="{% url 'oceny:wydruk' ocena.pk %}?czesc=I">Kopia części I</a>{% endif %}
+        {% if jest_kadrami or jest_ocenianym %}<a href="{% url 'oceny:eksport_sprawy' ocena.pk %}">Paczka do akt / EZD (ZIP)</a>{% endif %}
+      </div>
+    {% endif %}
+  </details>
+  {% with st=ocena.obligatoryjny_stopien %}{% if st %}<p class="hr" role="status"><strong>Art. 89 ust. 2:</strong> obowiązek przyznania {{ st.stopien }}. stopnia służbowego do {{ st.termin|date:"d.m.Y" }} ({{ st.uzasadnienie }}).</p>{% endif %}{% endwith %}
+</div>

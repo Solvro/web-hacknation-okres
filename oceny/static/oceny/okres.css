@@ -32,8 +32,8 @@ body {
 a { color: var(--link); text-underline-offset: .17em; }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 3px solid var(--link); outline-offset: 3px; }
-.pomin { position: fixed; z-index: 2; top: .5rem; left: .5rem; padding: .6rem 1rem; background: #fff; transform: translateY(-200%); }
-.pomin:focus { transform: none; }
+.pomin { position: fixed; z-index: 2; top: .5rem; left: .5rem; padding: .6rem 1rem; background: #fff; clip-path: inset(50%); }
+.pomin:focus { clip-path: none; }
 .demo {
   background: var(--demo-tlo);
   color: var(--demo);
@@ -104,10 +104,10 @@ h3 { font-size: 1.05rem; margin-bottom: .65rem; }
 .wprowadzenie h1 { color: white; }
 .wprowadzenie p { margin: 0; }
 .powrot { display: inline-block; font-size: .9rem; font-weight: 650; margin: 0 0 .65rem; }
-.akcje, .filtry, .skroty { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem .9rem; }
+.akcje, .filtry { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem .9rem; }
 .akcje { font-size: .9rem; }
-.filtry, .skroty { gap: .3rem; margin: 1rem 0; }
-.filtry a, .skroty a {
+.filtry { gap: .3rem; margin: 1rem 0; }
+.filtry a {
   background: var(--tlo);
   color: var(--glowny);
   border: 1px solid var(--ramka);
@@ -117,14 +117,14 @@ h3 { font-size: 1.05rem; margin-bottom: .65rem; }
   font-size: .9rem;
   text-decoration: none;
 }
-.filtry a:hover, .skroty a:hover { background: #e5eff9; }
+.filtry a:hover { background: #e5eff9; }
 .filtry a[aria-current] { border-color: var(--glowny); background: var(--glowny); color: #fff; }
 .akcja-demo { margin-block: .8rem; }
 .powiadomienia { list-style: none; margin: 0; padding: 0; }
 .powiadomienia li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; padding-block: .6rem; }
 .powiadomienia li + li { border-top: 1px solid var(--ramka); }
 
-.panel, #kryteria, #obserwacje, #ocena, #kadrowe {
+.panel {
   padding: clamp(1rem, 2.5vw, 1.65rem);
   border: 1px solid var(--ramka);
   border-radius: var(--promien);
@@ -133,7 +133,6 @@ h3 { font-size: 1.05rem; margin-bottom: .65rem; }
 }
 .panel > :first-child, section[id] > h2:first-child { margin-top: 0; }
 section { margin-bottom: 1.15rem; scroll-margin-top: 1rem; }
-#kryteria:target, #obserwacje:target, #ocena:target, #kadrowe:target { border-color: var(--link); }
 table {
   width: 100%;
   border-spacing: 0;
@@ -234,8 +233,81 @@ ul[role=alert] { padding-inline-start: 2rem; }
 .statystyki-uklad { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 27rem), 1fr)); gap: 1rem; align-items: start; }
 .statystyki-uklad > section { margin: 0; }
 details { margin-block: .45rem; }
-details summary { cursor: pointer; color: var(--link); font-weight: 600; }
-details summary:hover { text-decoration: underline; }
+summary {
+  display: list-item;
+  list-style: none;
+  position: relative;
+  padding: .35rem 1.55rem .35rem .15rem;
+  cursor: pointer;
+  color: var(--link);
+  font-weight: 650;
+  border-radius: .4rem;
+  overflow-wrap: break-word;
+}
+summary::-webkit-details-marker { display: none; }
+summary::after {
+  content: "";
+  position: absolute;
+  top: .92em;
+  right: .4rem;
+  width: .48em;
+  height: .48em;
+  border: solid currentColor;
+  border-width: 0 1.8px 1.8px 0;
+  transform: rotate(45deg);
+}
+details[open]:not([data-zamykanie]) > summary::after { transform: translateY(.2em) rotate(225deg); }
+summary:hover { background: #eef4fc; }
+.naglowek-sprawy-glowny {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: .85rem 1.2rem;
+  padding: clamp(1rem, 3vw, 1.75rem);
+  border: 1px solid #cdddef;
+  border-radius: var(--promien);
+  background: linear-gradient(112deg, #fff 28%, #e9f3fc);
+  box-shadow: var(--cien);
+}
+.sprawa-oznaczenia { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; }
+.sprawa-oznaczenia .arkusz-znacznik { margin: 0; }
+.termin-sprawy { font-variant-numeric: tabular-nums; }
+.naglowek-sprawy-glowny h1 { margin: .45rem 0 .2rem; }
+.naglowek-sprawy-glowny p { margin: 0; color: var(--potw-tekst); }
+.sprawa-informacje {
+  margin: .7rem 0 1.3rem;
+  padding: .25rem .8rem;
+  border: 1px solid var(--ramka);
+  border-radius: .7rem;
+  background: var(--tlo);
+}
+.sprawa-informacje .akcje { margin-bottom: .8rem; }
+.sprawa-informacje .naglowek-sprawy { box-shadow: none; }
+.sekcje-sprawy { display: grid; gap: .65rem; }
+.sekcja-sprawy {
+  min-width: 0;
+  margin: 0;
+  border: 1px solid var(--ramka);
+  border-radius: var(--promien);
+  background: var(--tlo);
+  box-shadow: var(--cien);
+}
+.sekcja-sprawy > summary { padding: .8rem 2.15rem .8rem 1rem; border-radius: var(--promien); color: var(--granat); font-size: 1.05rem; }
+.sekcja-sprawy > summary::after { top: 1.2rem; right: 1.15rem; }
+.sekcja-sprawy > summary span { display: flex; flex-wrap: wrap; gap: .35rem .55rem; align-items: center; }
+.sekcja-sprawy > summary .ikona { color: var(--link); }
+.sekcja-sprawy > summary small { color: var(--potw-tekst); font-size: .78rem; font-weight: 550; }
+.sekcja-sprawy[open]:not([data-zamykanie]) > summary { background: #eaf2fd; border-radius: var(--promien) var(--promien) 0 0; }
+.sekcja-sprawy > section { margin: 0; padding: clamp(.85rem, 2vw, 1.35rem); }
+.sekcja-sprawy > section > :first-child { margin-top: 0; }
+.sprawa-podsekcja, .rozmowa-akcje details { padding: .2rem .65rem; background: #f5f8fc; border: 1px solid var(--ramka); border-radius: .65rem; }
+.sprawa-podsekcja { margin-block: .7rem; }
+.rozmowa-akcje { display: grid; justify-items: start; gap: .4rem; margin-bottom: .85rem; }
+.rozmowa-akcje details { margin: 0; max-width: 100%; }
+.tabela-punktacji :is(td, th) { overflow-wrap: break-word; }
+.tabela-punktacji :is(td, th):not(:first-child) { text-align: center; width: clamp(1.8rem, 5vw, 3.25rem); padding-inline: .15rem; }
+.tabela-punktacji input { margin-inline: 0; }
 details > :last-child:not(summary) { margin-bottom: 0; }
 .rachunek li { margin: .2rem 0; }
 .cicho { color: var(--potw-tekst); font-size: .875rem; }
@@ -281,18 +353,22 @@ details > :last-child:not(summary) { margin-bottom: 0; }
   th, td { padding: .55rem; }
 }
 @media (prefers-reduced-motion: no-preference) {
-  main { animation: wejscie .28s ease-out both; }
+  main { animation: wejscie .22s ease-out; }
   .htmx-added:is(section, article, [role=alert]) { animation: wejscie .23s ease-out; }
-  button, .przycisk, .gora nav a, .filtry a, .skroty a { transition: background-color .16s, border-color .16s, box-shadow .16s, transform .16s; }
+  button, .przycisk, .gora nav a, .filtry a, summary { transition: background-color .16s, border-color .16s, box-shadow .16s, transform .16s; }
   button:active, .przycisk:active { transform: translateY(1px); }
+  summary::after { transition: transform .18s ease; }
+  input, textarea, select { transition: border-color .16s, box-shadow .16s; }
+  .powiadomienia li { transition: opacity .14s, transform .14s; }
+  .powiadomienia li.htmx-swapping { opacity: 0; transform: translateX(.3rem); }
   .lista-spraw tr, .sprawa-link { transition: background-color .16s, color .16s; }
   .htmx-request { transition: opacity .2s; opacity: .72; }
   @keyframes wejscie {
-    from { opacity: 0; transform: translateY(6px); }
+    from { opacity: .9; transform: translateY(4px); }
     to { opacity: 1; transform: translateY(0); }
   }
 }
-@media print { .demo, .gora, .pomin, button, form, details, .filtry, .skroty { display: none !important; } }
+@media print { .demo, .gora, .pomin, button, form, details, .filtry { display: none !important; } }
 
 /* Część rozwojowa oceny (podpowiedzi z katalogu rules/rozwoj.yaml) */
 .karta-rozwoj:empty { display: none; }

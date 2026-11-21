@@ -10,7 +10,7 @@
     <summary>{% include "oceny/_ikona.html" with ikona="dzwonek" %} Przypomnienia</summary>
     <ul class="powiadomienia">{% for p in powiadomienia %}
       <li id="przypomnienie-{{ p.pk }}"><a href="{% url 'oceny:szczegoly' p.ocena_id %}">{{ p.tresc }}</a>
-        <button class="drugorzedny" hx-post="{% url 'oceny:przeczytane' p.pk %}" hx-target="#przypomnienie-{{ p.pk }}" hx-swap="outerHTML">Oznacz jako przeczytane</button></li>
+        <button class="drugorzedny" hx-post="{% url 'oceny:przeczytane' p.pk %}" hx-target="#przypomnienie-{{ p.pk }}" hx-swap="outerHTML swap:140ms">Oznacz jako przeczytane</button></li>
     {% endfor %}</ul>
   </details>
 {% endif %}

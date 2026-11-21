@@ -1,0 +1,17 @@
+{% if jest_oceniajacym or jest_ocenianym %}
+  <div class="rozmowa-akcje">
+    <a class="przycisk drugorzedny" href="{% url 'oceny:przygotowanie' ocena.pk rozmowa %}">{% include "oceny/_ikona.html" with ikona="notatka" %} Przygotuj się do rozmowy</a>
+    {% if jest_oceniajacym %}
+      <details>
+        <summary>{% include "oceny/_ikona.html" with ikona="kalendarz" %} Zaproszenie do kalendarza</summary>
+        <form method="get" action="{% url 'oceny:zaproszenie_ics' ocena.pk %}">
+          <label>Data <input type="date" name="data" required></label>
+          <label>Godzina <input type="text" name="godzina" value="10:00" pattern="[0-2][0-9]:[0-5][0-9]"></label>
+          <input type="hidden" name="rodzaj" value="{% if rozmowa == 'oceniajaca' %}oceniajaca{% else %}kryteria{% endif %}">
+          <button type="submit">Pobierz zaproszenie (.ics)</button>
+          <p class="cicho">Plik otworzy się w kalendarzu poczty. Tytuł spotkania to „Spotkanie z przełożonym”.</p>
+        </form>
+      </details>
+    {% endif %}
+  </div>
+{% endif %}

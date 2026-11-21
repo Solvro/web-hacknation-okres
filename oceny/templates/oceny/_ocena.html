@@ -1,12 +1,15 @@
 <section id="ocena"{% if oob %} hx-swap-oob="true"{% endif %}>
-  <h2>Część II · rozmowa oceniająca i ocena</h2>
+  {% if ocena.kryteria_zablokowane and not ocena.sporzadzona %}
+    {% include "oceny/_rozmowa_akcje.html" with rozmowa="oceniajaca" %}
+  {% endif %}
   {% if ocena.sporzadzona %}
     <p class="potwierdzone">Sporządzona {{ ocena.data_sporzadzenia|date:"d.m.Y" }}{% if ocena.miejscowosc_czesc_ii %} w miejscowości {{ ocena.miejscowosc_czesc_ii }}{% endif %} po rozmowie oceniającej {{ ocena.data_rozmowy_oceniajacej|date:"d.m.Y" }}.
       Okres podlegania ocenie: {{ ocena.okres_od|date:"d.m.Y" }}–{{ ocena.okres_do|date:"d.m.Y" }}.</p>
+    <details class="sprawa-podsekcja"><summary>Oceny cząstkowe</summary>
     <table>
       <thead><tr><th>Kryterium</th><th>Ocena cząstkowa</th></tr></thead>
       <tbody>{% for kod, nazwa, pkt in kryteria_oceny %}<tr><td>{{ nazwa }}</td><td>{{ pkt }}</td></tr>{% endfor %}</tbody>
-    </table>
+    </table></details>
     <p>Średnia {{ ocena.srednia }} · poziom: {{ ocena.poziom }} · <strong>ocena {% if ocena.pozytywna %}pozytywna{% else %}negatywna{% endif %}</strong></p>
     {% if ocena.uzasadnienie %}<h3>Uzasadnienie przyznanej oceny</h3><p>{{ ocena.uzasadnienie|linebreaksbr }}</p>{% endif %}
     <h3>Wnioski dotyczące indywidualnego programu rozwoju zawodowego</h3><p>{{ ocena.wnioski_iprz|linebreaksbr }}</p>
@@ -35,12 +38,17 @@
         <label>od <input type="date" name="okres_od" value="{{ pola.okres_od|date:'Y-m-d' }}"></label>
         <label>do <input type="date" name="okres_do" value="{{ pola.okres_do|date:'Y-m-d' }}"></label>
       </fieldset>
-      <table hx-post="{% url 'oceny:podglad_wyniku' ocena.pk %}" hx-trigger="change" hx-include="closest form" hx-target="#wynik" hx-swap="outerHTML">
-        <thead><tr><th>Kryterium</th>{% for pkt, opis in skala.items %}<th title="{{ opis }}">{{ pkt }}<br><span class="cicho">{{ opis }}</span></th>{% endfor %}</tr></thead>
+      <h3>Oceny cząstkowe</h3>
+      <details class="sprawa-podsekcja">
+        <summary>Skala punktowa</summary>
+        <ul>{% for pkt, opis in skala.items %}<li><strong>{{ pkt }}</strong> · {{ opis }}</li>{% endfor %}</ul>
+      </details>
+      <table class="tabela-punktacji" hx-post="{% url 'oceny:podglad_wyniku' ocena.pk %}" hx-trigger="change" hx-include="closest form" hx-target="#wynik" hx-swap="outerHTML">
+        <thead><tr><th>Kryterium</th>{% for pkt, opis in skala.items %}<th title="{{ opis }}">{{ pkt }}</th>{% endfor %}</tr></thead>
         <tbody>
           {% for g in obserwacje_kryteriow %}
             <tr id="pole-kryterium_{{ g.kod }}"><td>{{ g.nazwa }}
-              <br><a class="cicho" href="#obserwacje">{{ g.obserwacje|length }} obserwacji</a>{% if g.podpowiedz %}<br><span class="cicho">{{ g.podpowiedz }}</span>{% endif %}</td>
+              {% if g.obserwacje %}<br><a class="cicho" href="#obserwacje">Notatki ({{ g.obserwacje|length }})</a>{% endif %}</td>
               {% for pkt, opis in skala.items %}
                 <td><input type="radio" name="kryterium_{{ g.kod }}" value="{{ pkt }}" aria-label="{{ g.nazwa }}: {{ opis }}" {% if g.wybrane == pkt %}checked{% endif %}></td>
               {% endfor %}
@@ -49,9 +57,13 @@
         </tbody>
       </table>
       {% include "oceny/_wynik.html" %}
-      {% include "oceny/_rozwoj.html" %}
-      <p><button type="button" class="drugorzedny" hx-post="{% url 'oceny:asystent' ocena.pk %}" hx-include="closest form" hx-target="#asystent" hx-swap="innerHTML">Uporządkuj moje obserwacje i pokaż wymagane elementy</button></p>
-      <div id="asystent" aria-live="polite"></div>
+      <details class="sprawa-podsekcja">
+        <summary>Podpowiedzi do uzasadnienia i wniosków</summary>
+        {% include "oceny/_rozwoj.html" %}
+        <p><button type="button" class="drugorzedny" hx-post="{% url 'oceny:asystent' ocena.pk %}" hx-include="closest form" hx-target="#asystent" hx-swap="innerHTML">Uporządkuj obserwacje</button></p>
+        <div id="asystent" aria-live="polite"></div>
+      </details>
+      <h3>Uzasadnienie i rozwój</h3>
       <label id="pole-uzasadnienie">Uzasadnienie przyznanej oceny (obowiązkowe przy ocenie negatywnej)
         <textarea name="uzasadnienie" rows="4">{{ pola.uzasadnienie }}</textarea></label>
       <label id="pole-wnioski_iprz">Wnioski dotyczące indywidualnego programu rozwoju zawodowego
@@ -85,7 +97,7 @@
         <p class="cicho">Wniosek o kolejny stopień służbowy: NIE DOTYCZY (oceniany jest pracownikiem służby cywilnej).</p>
       {% endif %}
       <label>Miejscowość <input type="text" name="miejscowosc" value="{{ pola.miejscowosc }}"></label>
-      <button type="submit">Potwierdzam dokonanie oceny i przekazuję ją do zapoznania</button>
+      <button type="submit">Przekaż ocenę do zapoznania</button>
     </form>
   {% else %}
     <p>Ocena jest w przygotowaniu.</p>
