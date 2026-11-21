@@ -1,502 +1,169 @@
-# OKRES: koncepcja (wersja 2, sob 21.11, popołudnie)
+# OKRES · Ocena Kompetencji, Rozwoju i Efektów Służby
 
-> **Proces oceny jako system, nie formularz.** Przepisy są danymi, terminy liczą się same, każdy urząd uruchamia całość jednym kontenerem, a nowelizację wgrywa się jak aktualizację, bez przebudowy systemu.
+**Koncepcja konkursowa, 21 listopada 2026.** Przełożona otwiera sprawę pracownika i widzi, z kim ma porozmawiać, do kiedy i o czym. Przez okres oceny zapisuje konkretne obserwacje. Podczas rozmowy końcowej ma przed sobą uzgodnione kryteria, przykłady z pracy i pytania o rozwój. Sama ustala oceny cząstkowe i formułuje wnioski. Pracownik dostaje arkusz, informację o swoich uprawnieniach i uzgodnione działanie rozwojowe.
 
-**OKRES** (*Ocena Kompetencji, Rozwoju i Efektów Służby*) to nasze rozwiązanie zadania „Cyfrowy Asystent Ocen Okresowych” (KPRM, Departament Służby Cywilnej).
+Dwa wyróżniki na pokaz to **termin z wyjaśnieniem rachunku** oraz **przejście od obserwacji do działania przełożonego**. Pierwszy daje kadrom możliwość sprawdzenia decyzji systemu. Drugi pokazuje, po co pracownikowi i kierownikowi cyfryzacja oceny.
 
-- „Okres” to słowo z samej domeny: okres oceny, 24-miesięczny (a po nowelizacji być może 12-miesięczny) cykl. Rozwinięcie nazwy opisuje trzy części systemu: ocenę, rozwój i efekty.
-- Na slajdach i w nagłówku: **„OKRES – Ocena Kompetencji, Rozwoju i Efektów Służby”**. W tekście: OKRES (wersalikami).
-- Hasło na pitch: **„Nowelizacja to nowy plik, nie nowy przetarg.”**
+## Co sprawdzi jury
 
-Zmiany względem wersji 1: dopasowanie do składu jury, podpisane pakiety przepisów z własnymi testami, formularz (schemat pól) też jako dane, strażnik formalny z odnośnikami do §, panel sprawozdawczy, system wizualny z kontrastem WCAG, konkretne parametry serwerów i modeli, zaktualizowane ryzyka. Wiedza o projekcie nowelizacji (UDER 102) jest wpięta w demo.
+Opis zadania mówi o ok. 123 tys. osób w ok. 1743 urzędach, o papierowym obiegu i trudnościach z konstruktywną informacją zwrotną. Jury ma zobaczyć cały proces oraz osobno ocenić wsparcie kierownika przez HR partnera. Regulamin § 2 przewiduje co najmniej trzech ekspertów. Opis zadania potwierdza wsparcie merytoryczne DSC i techniczne Biura Informatyki. Nazwiska mentorów z listy wydarzenia i przewidywania z sekcji 14 lokalnego opracowania nie potwierdzają imiennego składu jury tego zadania. Przygotowujemy pokaz dla obu grup.
 
----
+| Kryterium | Co pokazujemy | Jak juror może sprawdzić |
+|---|---|---|
+| Związek z wyzwaniem, 30% | Cały cykl na C, porównanie A/B/C, błąd formalny z podstawą i sposobem naprawy | Pracownik potwierdza część I. Przełożona widzi blokadę kryteriów. W części II juror zmienia jedną cząstkową i widzi konsekwencję w arkuszu |
+| Potencjał wdrożeniowy, 30% | Start lokalny z trwałą bazą, praca bez sieci i modelu, wymiana wersji reguł | Po restarcie nadal można pobrać arkusz. Dwie sprawy z tym samym początkiem mają różne terminy po wybraniu różnych wersji w symulacji |
+| Oryginalność, 20% | HR partner pokazuje przełożonej konkretne zmiany zadań i proponuje rozmowę | Juror otwiera zdarzenia źródłowe, wybiera działanie i sprawdza jego późniejszy wynik |
+| Kompletność, 20% | Rozmowy, obserwacje, sytuacja kadrowa, wynik, podpisy i kopie, wnioski do IPRZ, historia | Uruchamia przygotowane sprawy w rolach ocenianego, przełożonej, kadr i DG. Scheduler wykonuje te same reguły podczas pokazu i zwykłej pracy |
 
-## 1. Dla kogo gramy: jury
+## Przebieg jednej sprawy
 
-Źródło: `../hacknation-mentorzy.md`, sekcja 14 (oficjalnej listy jury nie ma, to hipoteza ze stanowisk). Pliku `../hacknation-jury.md` nie ma; ocena jury jest właśnie w `hacknation-mentorzy.md`.
+1. **Kadry** rejestrują zatrudnienie lub poprzednią ocenę, stanowisko, rodzaj zatrudnienia i podległość. Aplikacja wyznacza arkusz. A dotyczy kierownika urzędu na stanowisku pracy w służbie cywilnej, B pozostałych stanowisk z bezpośrednim kierowaniem pracownikami, C pozostałych stanowisk. Przykładowo naczelnik wydziału kierujący pracownikami dostaje B.
+2. **Oceniający** przygotowuje rozmowę na podstawie opisu stanowiska. Omawia obowiązki, kryteria, oczekiwania oraz cele i sposób ich realizacji, gdy wyznaczenie celów jest uzasadnione. Po rozmowie zapisuje termin i 0–3 różne dodatkowe kryteria z wykazu. Potwierdzenia obu stron zamykają zwykłą edycję. Do akt trafia oryginał, do pracownika kopia części I (§§ 5–7).
+3. **W toku okresu** przełożona dodaje datowaną obserwację, kryterium i skutek zaobserwowanego działania. Pracownik może udostępnić własne osiągnięcie. Przed rozmową ekran grupuje przykłady według kryteriów i wskazuje miejsca wymagające uzupełnienia. Brak notatki może uzasadniać pytanie, nigdy automatyczne obniżenie punktacji.
+4. **Rozmowa oceniająca** poprzedza sporządzenie oceny. Agenda obejmuje wykonanie obowiązków i ustalonych celów, potrzeby oraz kierunek rozwoju. Przykładowe pytanie brzmi „Który etap sprawy udało się skrócić i co pomogło?”. Karta trudnej rozmowy podpowiada, jak nazwać obserwację, wysłuchać odmiennej perspektywy i uzgodnić następny krok.
+5. **Ocena na piśmie.** Przełożona przyznaje każdą cząstkową, przegląda obliczony poziom i wynik, wpisuje uzasadnienie oraz wnioski do IPRZ zgodnie z regułami poniżej. Wnioski są wkładem do indywidualnego programu rozwoju zawodowego z art. 108. Sam program ma odrębny tryb akceptacji i zatwierdzenia. Przy spełnionych przesłankach przełożona może dołączyć umotywowany wniosek o stopień.
+6. **Zapoznanie, akta i prawa pracownika.** Przełożona niezwłocznie zapoznaje ocenionego z oceną. System rejestruje obie strony, dokument i datę czynności, przekazanie oryginału do akt i kopii pracownikowi (§ 12). Pracownik widzi pouczenie i termin sprzeciwu. Przy braku potwierdzenia kadry dokumentują okoliczności doręczenia. Sam upływ czasu nie uruchamia fikcji zapoznania.
 
-| Osoba (prawdopodobnie w jury) | Kim jest | O co zapyta | Czym go przekonujemy |
-|---|---|---|---|
-| **Joanna Skrzyńska**, naczelnik wydziału, DSC KPRM | właścicielka procedury, autorka materiałów | „czy to jest zgodne z rozporządzeniem?”, „co przy fikcji zapoznania?”, „a ocena po sprzeciwie?” | **macierz pokrycia** wszystkich przypadków użycia z ich PDF-u, każde pole z regułą edycji ze schematu pól, każde ostrzeżenie z § lub art.; wydruk 1:1 ze wzorem |
-| **Michał Włochal**, dyrektor, Zachodniopomorski UW | praktyk: prowadzi urząd, w którym to będzie działać | „ile to kosztuje mój urząd?”, „kto to zainstaluje?”, „co z kadrami, które mają 300 ocen w roku?” | **kreator pierwszego uruchomienia** (15 minut, import CSV), panel kadr z listą „co się dzieje w tym tygodniu”, zero licencji, działa bez informatyka |
-| **Kamil Kazimierczuk**, radca, DSC (sprawozdawczość; jedyny „merytoryczny i techniczny”) | zbiera dane od urzędów do sprawozdań | „skąd mam dane do sprawozdania?”, „czy dane są spójne między urzędami?” | **panel kierownictwa + eksport do sprawozdania** (wspólny format dla wszystkich instancji), audyt zmian, jednolity słownik pól z pakietu |
-| **Maciej Szczygieł**, naczelnik, Biuro Informatyki KPRM (techniczny) | będzie to utrzymywał lub odbierał | „jak aktualizujecie?”, „jak to zabezpieczacie?”, „licencje?”, „gdzie idą dane do AI?” | jeden obraz OCI, SBOM i lista licencji, **podpisane pakiety przepisów**, migracje automatyczne, AI wyłączone domyślnie i lokalne, pseudonimizacja przy zewnętrznym API |
-| mentorzy: Magdalena Pruszyńska-Gora (psycholog, asesorka AC/DC), Jacek Pawłowski, Julia Tyszko, Karolina Świszcz | merytoryka HR i procedury | „czy HR partner nie jest inwigilacją?”, „czy podpowiedzi są zgodne ze standardami ZZL?” | sygnały jawne dla pracownika, bez danych o zdrowiu, bez automatycznych decyzji; katalog działań odwołuje się do **Zarządzenia nr 6 SSC (standardy ZZL), rozdz. „System informacji zwrotnej”** |
+## Reguły, które muszą wytrzymać pytania na sali
 
-**Wnioski dla całego projektu:**
+Pakiet bazowy odwzorowuje stan wskazany **w zadaniu** (Dz.U. 2026 poz. 590 oraz Dz.U. 2016 poz. 470). Każda sprawa utrwala wersję pakietu, dane stanowiska i zatwierdzone wersje arkusza. Poniższe przykłady są kryteriami odbioru przyszłej implementacji.
 
-1. To jury **zna przepisy lepiej niż my**. Jeden błąd formalny na demo kosztuje więcej niż brak efektownej funkcji. Każdą regułę konsultujemy z mentorami w sobotę wieczorem i w nocy (są dostępni 24 h).
-2. **Potencjał wdrożeniowy (30%) ocenia praktyk i informatyk.** Pokazujemy instalację, aktualizację i zmianę przepisów **na żywo**, a nie na slajdzie.
-3. Jury nie jest zespołem ML. **AI nie jest gwiazdą**, tylko dyskretnym, wyraźnie oznaczonym pomocnikiem. Gwiazdą jest proces, który się nie myli.
-4. Słownictwo z rozporządzenia, nie z IT: „sporządzenie oceny na piśmie”, „zapoznanie”, „część I arkusza”, „akta osobowe”, a nie „workflow”, „ticket”, „submit”.
-
----
-
-## 2. Problem
-
-- Oceny w ok. **1743 urzędach** (ok. 123 tys. osób, mediana ok. 70 osób na urząd) powstają głównie **na papierze**, czasem odręcznie. Dla wielu urzędów barierą jest obieg dokumentów cyfrowych i poświadczeń.
-- Uwagę pochłaniają formalności: terminy, pola, podpisy. Brakuje jej na jakość oceny i rozwój pracownika.
-- Sytuacje kadrowe (nieobecności, zmiana przełożonego, zmiana stanowiska, sprzeciw) łatwo prowadzą do **błędów formalnych**.
-- Przełożeni mają kłopot z informacją zwrotną, doborem kryteriów dodatkowych i wnioskami do IPRZ. Sygnały przeciążenia i wypalenia giną.
-- **Nowelizacja jest w toku.** Projekt z 20.04.2026 (UDER 102) według dostępnych omówień skraca cykl do **12 miesięcy**, uchyla art. 81 i wprowadza art. 81a, obejmuje ocenami także wyższe stanowiska, a do ocen niezakończonych stosuje przepisy dotychczasowe. Przyjęcie zaplanowano na III kw. 2026. **Narzędzie z regułami wpisanymi w kod zestarzeje się przed wdrożeniem.**
-
-## 3. Użytkownicy (tory ze schematu BPMN KPRM)
-
-| Rola | Co robi w systemie |
+| Sprawdzenie | Oczekiwane zachowanie |
 |---|---|
-| **Oceniający** | wybiera arkusz (podpowiedź) i kryteria dodatkowe, prowadzi dziennik obserwacji, przygotowuje rozmowy, sporządza ocenę, korzysta z HR partnera |
-| **Oceniany** | potwierdza rozmowę i zapoznanie, prowadzi listę własnych osiągnięć, składa wniosek o zmianę terminu, widzi licznik sprzeciwu, opcjonalnie robi check-in |
-| **Kadry (admin)** | dane pracowników i podległości, nieobecności, zastępstwa, tryb korekty, pakiety przepisów, katalog działań rozwojowych, archiwizacja |
-| **Zarządzający (dyrektor generalny)** | rozpatruje sprzeciwy (14 dni) i wnioski o stopień, widzi statystyki, eksportuje dane do sprawozdania |
-| **Scheduler** | przypomnienia, przeliczenia terminów, zawiadomienia (§ 8), obowiązek przyznania stopnia (art. 89 ust. 2) |
+| Kryteria i punktacja (§§ 4–5, 11) | A ma sześć kryteriów obowiązkowych, B i C po pięć, z dokładnym brzmieniem ze wzoru. Dodatkowe nie powielają obowiązkowych. Każda wybrana pozycja wymaga jednej cząstkowej 1/3/5/7/9. Średnia wszystkich wybranych kryteriów wyznacza poziom w przedziałach [1,2], (2,4], (4,6], (6,8], (8,9]. Progi sprawdzamy przed zaokrągleniem do wyświetlenia |
+| Poziom a wynik | Przy punktach 1,7,7,7,9 średnia 6,2 daje poziom powyżej oczekiwań i wynik negatywny. Każda jedynka lub średnia ≤4 wymaga wyniku negatywnego i uzasadnienia. Przy pozytywnej uzasadnienie jest dobrowolne. Wnioski do IPRZ są obowiązkowe w obu przypadkach |
+| Dwie daty po negatywnej | Sporządzenie 02.03.2026, zapoznanie 05.03.2026. Czynności §§ 5–6 do 09.03. Liczenie sześciu miesięcy do ponownej oceny zaczyna się od zapoznania (art. 81 ust. 9). Osobno biegnie 7 dni na sprzeciw, tu do 12.03 |
+| Kalendarz | 16.03.2024 + 24 mies. = 16.03.2026. Dla 31.01.2024 + 1 mies. = 29.02.2024, + 13 mies. = 28.02.2025. Termin w dniach pomija dzień zdarzenia, a koniec przypadający w sobotę lub dzień ustawowo wolny przesuwa się na kolejny dzień roboczy |
+| Nieobecność | Okresy 5–16.10 i 19.10–6.11.2026 przy wolnym weekendzie tworzą 33 dni ciągłej usprawiedliwionej nieobecności. Próg to ponad miesiąc kalendarzowy. Testy obejmują równo miesiąc, przerwę w dniu pracy i ponowne uruchomienie schedulera bez ponownego doliczenia tych samych dni. Zapisywane są tylko okresy i fakt usprawiedliwienia |
+| Przeniesienie i zmiana terminu | Art. 81 ust. 6 i 8 stosuje próg **ponad** 6 miesięcy od poprzedniej oceny, a przy pierwszym okresie oceny uwzględnia długość okresu podlegającego ocenie. § 9 ust. 1 przy pierwszej ocenie odwołuje się do daty ustalenia kryteriów. Zachowujemy obie daty. Osobne testy dla ostatniego dnia sześciu miesięcy i dnia następnego. Przesunięcie uznaniowe wymaga decyzji oceniającego, pisma dla ocenianego i kopii do arkusza (§ 8) |
+| Sprzeciw | 7 dni od zapoznania, 14 dni na rozpatrzenie od wniesienia. Uwzględnienie prowadzi do zmiany albo ponownego sporządzenia. Od ponownie sporządzonej oceny przysługuje sprzeciw. Po nieuwzględnieniu lub bezczynności pouczenie o sądzie pracy i 14 dniach od doręczenia decyzji lub upływu terminu rozpatrzenia (art. 83) |
 
-## 4. Główna idea produktu (cztery filary)
+## Macierz przypadków użycia
 
-1. **Silnik sprawy** odwzorowujący przypadki użycia i schemat BPMN KPRM: każda ocena to sprawa z osią zdarzeń, etapami, blokadami pól i pełnym audytem.
-2. **Przepisy i formularz jako dane:** wersjonowany **pakiet przepisów** (YAML) z datą obowiązywania, odnośnikami do przepisów, **schematem pól arkusza z regułami edycji** i **własnym zestawem testów**. Nowelizacja to nowy pakiet, nie nowy kod.
-3. **Jeden kontener, zero zależności zewnętrznych:** SQLite w małym urzędzie, Postgres i SSO w dużym, AI to opcjonalny dodatek, domyślnie wyłączony.
-4. **HR partner oparty na jawnych sygnałach,** nie na czarnej skrzynce. Pracownik widzi, co system o nim bierze pod uwagę.
-
----
-
-## 5. Kryteria → jak je spełniamy
-
-| Kryterium | Waga | Jak je spełniamy | Dowód na demo / w zgłoszeniu |
-|---|---|---|---|
-| **Związek z wyzwaniem i zgodność z prawem** | 30% | macierz pokrycia **wszystkich** przypadków użycia KPRM (stałe etapy, podprocesy, ogólne, użytkowe); terminy według dokumentu „liczenie terminów” z testami na ich przykładach; reguły edycji 1:1 ze schematów pól A/B/C; **strażnik formalny** z § przy każdym komunikacie; wydruk zgodny ze wzorem z rozporządzenia | strona `/pokrycie` w aplikacji (status z testów, nie z ręki); PDF obok wzoru; próba zatwierdzenia negatywnej oceny bez uzasadnienia → blokada z „§ 11 ust. 3” |
-| **Potencjał wdrożeniowy** | **30%** | jeden obraz, `docker run` albo `docker compose up`; **kreator pierwszego uruchomienia**; import CSV; SQLite → Postgres bez zmian kodu; **podpisane pakiety przepisów** dystrybuowane centralnie przez KPRM; migracje przy starcie; licencje wyłącznie permisywne + SBOM; WCAG 2.1 AA (ustawa o dostępności cyfrowej); AI opcjonalne i lokalne | na scenie: wgranie pakietu „projekt nowelizacji (12 mies.)”, testy pakietu przechodzą, nowe sprawy liczą się po nowemu, rozpoczęte zostają przy starych regułach; slajd z wymaganiami sprzętowymi małego, średniego i dużego urzędu |
-| **Oryginalność** | 20% | pakiet przepisów **niesie własne testy** i podpis (jak aktualizacja sygnatur antywirusa); **zegar symulacji** (24 miesiące w 2 minuty); HR partner z jawnymi sygnałami i „prawem wglądu” pracownika; **tryb hybrydowy papier + cyfra** z kodem QR; przygotowanie rozmowy z flagami jakości obserwacji (luka, efekt świeżości) | alert „3 zmiany zakresu w 6 tygodni” z wyjaśnieniem i działaniem z katalogu; wydruk z QR prowadzącym do sprawy |
-| **Kompletność** | 20% | pełen cykl z podprocesami (nieobecność, zmiana terminu ×2, zmiana stanowiska, zmiana oceniającego, sprzeciw ze zmianą i ponownym sporządzeniem, stopień fakultatywny i obligatoryjny); 5 ról; arkusze A, B, C; dziennik; IPRZ; statystyki; eksporty; README, dokumentacja wdrożeniowa, film | demo od zatrudnienia do akt osobowych; macierz pokrycia z liczbą „X/Y przypadków użycia” |
-
-**Czego nie budujemy, bo jury tego nie ocenia:** aplikacji mobilnej, własnego e-podpisu, czatu jako głównego interfejsu, rozbudowanej analityki ML, ładnych animacji.
-
----
-
-## 6. Pokrycie przypadków użycia KPRM
-
-Na podstawie `materials/2. Przypadki użycia` (opis + warunki brzegowe). Ta tabela żyje także w aplikacji jako `/pokrycie`: każdy wiersz ma identyfikator (`UC-xx`), ekran i test, a status bierze się z ostatniego przebiegu testów.
+UC to nasze grupowanie czynności z opisu, warunków brzegowych i przepisów. P0 oznacza zakres podstawowy, P1 rozszerzenie według dostępnego czasu. Odbiór wymaga obsługi przez właściwą rolę oraz dowodu w działającej wersji. W prezentacji przy każdym wierszu podajemy faktyczny stan (działa, częściowo, plan) i identyfikator testu lub krok sprawdzenia ręcznego.
 
 | ID | Przypadek użycia | Warunek brzegowy / reguła | Realizacja | Prio |
 |---|---|---|---|---|
 | UC-01 | wyznaczenie kryteriów oceny | start: umowa na czas nieokreślony lub mianowanie **albo** poprzednia ocena | sprawa zakładana automatycznie przez scheduler | P0 |
 | UC-02 | (scheduler) przypomnienie o kryteriach | 30 dni, po negatywnej 7 dni (§ 7) | przypomnienia T-7, T-2, T+0 | P0 |
-| UC-03 | (opcjonalnie) zaproszenie na rozmowę | – | zaproszenie e-mail + `.ics` | P1 |
+| UC-03 | (opcjonalnie) zaproszenie na rozmowę | – | plik .ics otwierany w kalendarzu pocztowym | P0 |
 | UC-04 | informacja o kryteriach i rozmowie | wprowadza oceniający; checklista § 5 ust. 1 | część I arkusza, max 3 kryteria bez powtórzeń, termin domyślny z pakietu | P0 |
-| UC-05 | potwierdzenie rozmowy i zapoznania z kryteriami | potwierdza oceniany (§ 6 ust. 2) | blokada kryteriów i terminu; kopia części I do ocenianego | P0 |
+| UC-05 | potwierdzenie rozmowy i zapoznania z kryteriami | potwierdza oceniany (§ 6 ust. 2) | oryginał do akt, kopia części I dla ocenianego. Dalsza zmiana terminu tylko w odpowiednim podprocesie | P0 |
 | UC-06 | (scheduler) przypomnienie o terminie oceny | 24 mies. od poprzedniej oceny / zatrudnienia | T-60, T-30, T-7 dni | P0 |
-| UC-07 | (opcjonalnie) zaproszenie na rozmowę oceniającą | – | jak UC-03 | P1 |
+| UC-07 | (opcjonalnie) zaproszenie na rozmowę oceniającą | – | jak UC-03 | P0 |
 | UC-08 | rozmowa oceniająca i dokonanie oceny | checklista § 10; § 11 | część II, punktacja, poziom, wynik z pakietu; strażnik formalny | P0 |
-| UC-09 | potwierdzenie zapoznania z oceną | potwierdza oceniany (§ 12) | blokada, start licznika sprzeciwu 7 dni (art. 83 ust. 1) | P0 |
-| UC-10 | (opcjonalnie) fikcja zapoznania | informacja dotarła, oceniany nie mógł lub nie chciał potwierdzić | oświadczenie kadr/oceniającego z datą i sposobem doręczenia, adnotacja na arkuszu | P0 |
-| UC-11 | długotrwała nieobecność → zmiana terminu | usprawiedliwiona, ciągła, > 1 mies.; termin + czas nieobecności (art. 81 ust. 7) | import nieobecności, scalanie ciągłości (dni wolne nie przerywają), przeliczenie, powiadomienia | P0 |
+| UC-09 | potwierdzenie zapoznania z oceną | potwierdza oceniany (§ 12) | oryginał do akt, kopia dla ocenionego, start licznika sprzeciwu 7 dni (art. 83 ust. 1) | P0 |
+| UC-10 | (opcjonalnie) fikcja zapoznania | informacja dotarła, oceniany nie mógł lub nie chciał potwierdzić | uprawniona osoba rejestruje dowód dotarcia informacji i datę. Sprawę bez ustalonej daty kieruje do kadr | P0 |
+| UC-11 | długotrwała nieobecność → zmiana terminu | usprawiedliwiona, ciągła, > 1 mies.; termin + czas nieobecności (art. 81 ust. 7) | wpis okresów, scalanie ciągłości (dni wolne nie przerywają), przeliczenie, powiadomienia | P0 |
 | UC-12 | zmiana terminu przez oceniającego | art. 81 ust. 8 pkt 1–3; > 6 mies. od ostatniej oceny | formularz z podstawą + **zawiadomienie § 8** (PDF do arkusza) | P1 |
 | UC-13 | zmiana terminu na wniosek ocenianego | art. 81 ust. 8 pkt 4; > 6 mies. | wniosek → rozpatrzenie → zawiadomienie § 8 | P1 |
-| UC-14 | wniosek o kolejny stopień (fakultatywny) | urzędnik mianowany **i** ocena pozytywna (art. 89 ust. 1) | część III arkusza, umotywowanie obowiązkowe, powiadomienie DG | P1 |
-| UC-15 | obligatoryjny kolejny stopień | mianowany, **dwie kolejne** oceny na dwóch najwyższych poziomach od ostatniego stopnia (art. 89 ust. 2) | scheduler: przypomnienie DG, termin 30 dni od zapoznania; blokada przy 9. stopniu | P0 |
-| UC-16 | zmiana oceny po uwzględnieniu sprzeciwu | art. 83 ust. 4; sprzeciw rozpatrzony w 14 dni (ust. 3) | DG: decyzja → tryb zmiany, nowa wersja arkusza, powiadomienie | P1 |
+| UC-14 | wniosek o kolejny stopień (fakultatywny) | urzędnik mianowany **i** ocena pozytywna (art. 89 ust. 1) | część III arkusza, umotywowanie obowiązkowe, powiadomienie DG | P0 |
+| UC-15 | obligatoryjny kolejny stopień | mianowany, **dwie kolejne** oceny na dwóch najwyższych poziomach od ostatniego stopnia (art. 89 ust. 2) | scheduler: przypomnienie DG, termin 30 dni od zapoznania; blokada przy 9. stopniu | P1 |
+| UC-16 | zmiana oceny po uwzględnieniu sprzeciwu | art. 83 ust. 4, 14 dni od wniesienia (ust. 3) | DG: decyzja → tryb zmiany, nowa wersja arkusza, powiadomienie | P1 |
 | UC-17 | ponowne sporządzenie oceny po sprzeciwie | j.w.; od ponownej też sprzeciw | anulowanie, powrót do etapu „rozmowa oceniająca i dokonanie oceny”, historia wersji | P1 |
-| UC-18 | wprowadzenie danych pracownika, podległości | – | panel kadr + import CSV | P0 |
-| UC-19 | edycja danych, zmiany podległości, zastępstwa | zmiana oceniającego: kryteria bez zmian (§ 9 ust. 3) | przekazanie sprawy z notatkami (za zgodą) i informacja dla ocenianego | P1 |
-| UC-20 | aktualizacja nieobecności | tylko fakt i okres, **bez przyczyny** | CSV / ręcznie | P0 |
-| UC-21 | archiwizacja / pobranie danych | akta osobowe | paczka ZIP: PDF + JSON + audyt; eksport do EZD (opisany) | P1 |
+| UC-18 | wprowadzenie danych pracownika, podległości | – | panel kadr, opcjonalny import CSV | P0 |
+| UC-19 | edycja danych, zmiany podległości, zastępstwa | zmiana oceniającego: kryteria bez zmian (§ 9 ust. 3) | zmiana uprawnień do sprawy, historia oceniających, informacja dla ocenianego. Prywatny dziennik pozostaje u autora | P0 |
+| UC-20 | aktualizacja nieobecności | tylko fakt i okres, **bez przyczyny** | ręcznie, opcjonalny import CSV | P0 |
+| UC-21 | archiwizacja / pobranie danych | akta osobowe | paczka ZIP: PDF + JSON + audyt; ręczne przekazanie do EZD | P1 |
 | UC-22 | statystyki | – | panel DG + eksport do sprawozdania | P1 |
-| UC-23 | wgląd w historię ocen, formularz, pobranie, wydruk | wydruk zgodny ze wzorem | PDF z szablonu pakietu | P0 |
+| UC-23 | wgląd w historię ocen, formularz, pobranie, wydruk | wydruk zgodny ze wzorem | wydruk A4 i PDF dla każdego wzoru | P0 |
 | UC-24 | lista pracowników (szukanie, sortowanie) | – | tabela HTMX z filtrami „termin w 30 dni”, „po terminie” | P0 |
-| UC-25 | usunięcie danych pracownika | retencja akt osobowych | usunięcie z pozostawieniem zanonimizowanych statystyk | P1 |
-| UC-26 | **zmiana stanowiska z istotną zmianą obowiązków** (spoza listy, z art. 81 ust. 6 i § 9) | > 6 mies.: ocena (−7…+30 dni); < 6 mies.: nowe kryteria w 30 dni, termin bez zmian | kreator zdarzenia kadrowego z rozgałęzieniem | P1 |
-| UC-27 | **ponowna ocena po negatywnej** (art. 81 ust. 9) | 6 mies. od zapoznania, kryteria w 7 dni | automatyczne założenie sprawy | P0 |
+| UC-25 | usunięcie danych pracownika | retencja akt osobowych | dezaktywacja konta, osobna decyzja kadr o usunięciu po upływie właściwej retencji | P1 |
+| UC-26 | **zmiana stanowiska z istotną zmianą obowiązków** (spoza listy, z art. 81 ust. 6 i § 9) | > 6 mies.: ocena (−7…+30 dni); w okresie 6 mies. (§ 9 ust. 1, także ostatni dzień): nowe kryteria w 30 dni, termin bez zmian | kreator zdarzenia kadrowego z rozgałęzieniem | P0 |
+| UC-27 | **ponowna ocena po negatywnej** (art. 81 ust. 9) | po upływie 6 mies. od zapoznania, czynności §§ 5–6 w 7 dni od sporządzenia negatywnej na piśmie | automatyczne założenie sprawy | P0 |
 
----
+## HR partner w codziennej pracy
 
-## 7. Pakiety przepisów (serce „potencjału wdrożeniowego”)
+Na widoku „Zespół” przełożona widzi „Piotr trzy razy zmienił priorytet zadania w ciągu sześciu tygodni”. Rozwija kartę i widzi trzy datowane zdarzenia oraz pytanie „Który termin możemy wspólnie przesunąć?”. Podczas rozmowy strony wybierają przekazanie jednego zadania i ustalają datę sprawdzenia efektu. Pracownik widzi te same fakty, uzgodnienie i może dodać swoją perspektywę. Na kolejnym spotkaniu zapisują, czy zmiana pomogła. Osobna karta osiągnięcia przypomina przełożonej o docenieniu konkretnego wkładu i jego skutku dla zespołu.
 
-### Co jest w pakiecie
+W P0 wystarczą dziennik zmian zadań, osiągnięcie udostępnione przez pracownika i katalog działań (odciążenie, mentoring, szkolenie, informacja zwrotna). Reguła trzech zmian jest edytowalną wskazówką do rozmowy. Brak wpisów oznacza brak danych. Kierownik widzi fakty o organizacji pracy, pracownik widzi źródła dotyczące jego osoby. Do formalnej oceny ani raportu kadr nie przenosimy sygnałów dobrostanu. Dobrowolny check-in wymaga osobnego uzgodnienia z pracownikami i IOD przed pilotażem.
 
-```
-rules/
-  sc-2016-470/                 # rozporządzenie PRM z 4.04.2016 (Dz. U. poz. 470) + ustawa (Dz. U. 2026 poz. 590)
-    manifest.yaml              # id, wersja, obowiązuje_od, obowiązuje_do, podstawa prawna, autor, podpis
-    cycle.yaml                 # długość cyklu, terminy (kryteria 30/7 dni), ponowna ocena po negatywnej, przesunięcia
-    sheets.yaml                # arkusze A/B/C, kryteria obowiązkowe, wykaz kryteriów dodatkowych (Zał. 1) z opisami
-    scoring.yaml               # skala 1/3/5/7/9, przedziały średniej, warunki negatywnej
-    forms/                     # schemat pól A/B/C: pole → kto, na jakim etapie, kiedy blokada, źródło danych
-      sheet_b.yaml
-    templates/                 # szablony wydruku HTML zgodne ze wzorami z załączników 2–4
-    texts.yaml                 # pouczenia (art. 83), treść zawiadomienia § 8, oświadczenia
-    tests/                     # przykłady z dokumentu „liczenie terminów” + przypadki graniczne
-      deadlines.yaml
-      scoring.yaml
-  projekt-nowelizacji-demo/    # HIPOTETYCZNY pakiet: cykl 12 mies., ocena wyższych stanowisk; oznaczony jako przykład
-```
+Opcjonalna pomoc językowa działa na lokalnym modelu. Przełożona wybiera własne notatki. Model porządkuje fakty według kryterium, cytuje fragment i podaje pytanie do rozmowy. Łącze otwiera oryginalną notatkę. Treść bez pokrycia w niej można odrzucić. Uzasadnienie i wnioski wpisuje człowiek. Przy braku GPU lub odpowiedzi używamy tego samego zestawienia notatek z deterministycznym grupowaniem. W prototypie zewnętrzne API jest wyłączone. Zamiana nazwisk na tokeny pozostawia możliwość identyfikacji po stanowisku i treści sprawy. Ewentualna wersja zewnętrzna wymaga wykazania anonimizacji przed wysyłką.
 
-Przykład (`cycle.yaml`, fragment):
+## Ekrany i wydruk
+
+- **„Moje sprawy”** zaczyna się od listy najbliższych czynności. Każdy wiersz zawiera osobę, wymagany krok, termin i odpowiedzialnego. Filtr „wymaga mojego działania” pomaga kadrom i oceniającym. Pracownik po wejściu trafia do własnej sprawy.
+- **Sprawa** ma w nagłówku stanowisko, arkusz, etap i termin. Poniżej jeden główny przycisk właściwy dla roli, np. „Potwierdź rozmowę i zapoznanie z kryteriami”. Pod nim szczegóły kroku. Przycisk „Jak obliczono termin?” odsłania datę bazową, zdarzenie, liczbę dni i podstawę prawną. Po zatwierdzeniu zamiast szarego nieaktywnego formularza pokazujemy czytelny zapis z autorem i datą. Na wąskim ekranie lista kontrolna przechodzi pod formularz.
+- **Błędy** mają opis przy polu, zbiorcze podsumowanie i link do poprawy. Zapis szkicu zachowuje pozostałe dane. Przykład komunikatu po cząstkowej 1 brzmi „Uzupełnij uzasadnienie oceny negatywnej (§ 11 ust. 3)”. Dla kryterium bez obserwacji pokazujemy tylko sugestię. Brak rozmowy oceniającej albo jej data późniejsza od sporządzenia blokuje zatwierdzenie (§ 10). Obie czynności mogą mieć tę samą datę.
+- **Identyfikacja** jest własna. Znak słowny OKRES, typografia systemowa i brak zewnętrznych fontów pozwalają używać interfejsu offline. Kolor zawsze uzupełniamy słowem. Poniżej stosunki kontrastu przeliczone dla wskazanych par sRGB.
+
+| Element | Tekst / tło | Kontrast |
+|---|---|---|
+| Treść | #1A1F29 / #FFFFFF | 16,51∶1 |
+| Przycisk główny | #FFFFFF / #0B3A6E | 11,38∶1 |
+| Link z podkreśleniem | #1A5DAB / #FFFFFF | 6,57∶1 |
+| Potwierdzone dane | #4A5363 / #ECEEF2 | 6,67∶1 |
+| Błąd | #B3122E / #FDECEF | 6,05∶1 |
+| HR partner | #0F6B6B / #E6F4F3 | 5,58∶1 |
+| Pasek „Dane fikcyjne” z datą symulacji | #8A4B00 / #FFF3D6 | 6,17∶1 |
+| Pomoc AI, gdy dostępna | #5B3FA0 / #F1EDFA | 6,85∶1 |
+
+**Próba z projektorem.** Przy 1280×720 główne działanie, pracownik i termin mają być widoczne razem. Przejście klawiaturą od listy do potwierdzenia, widoczny fokus, etykiety pól, komunikat po zapisie i powiększenie 200% sprawdzamy na gotowym ekranie. Zgodność par kolorów to tylko jedno ze sprawdzeń dostępności.
+
+**Odbiór A/B/C.** Każde pole ze schematu KPRM ma odpowiednik w formularzu i wydruku oraz określoną rolę, źródło wartości, moment blokady i tryb korekty. A ma odmienny nagłówek danych i szóste kryterium. Sprawdzamy też pola poprzedniej oceny urzędnika, pouczenia, miejscowości, daty i podpisy obu stron, a w części III rok mianowania, posiadany stopień, datę jego przyznania i umotywowanie. Powtórzony opis uzasadnienia w mapach pól realizujemy jako jedno pole na wzorze (§ 11 ust. 3–4). Gotowe przykłady z materiałów służą do kontroli rozmieszczenia, dane testowe piszemy od zera.
+
+Osobne szablony A4 odtwarzają załączniki 2–4. Odbiór obejmuje porównanie każdej strony wygenerowanego PDF ze wzorem, także z trzema dodatkowymi kryteriami i długim uzasadnieniem. Podpisy, polskie znaki i dalszy ciąg treści muszą pozostać czytelne. Etykiety demo i odnośniki techniczne zostają w interfejsie lub na osobnej karcie przewodniej. W prototypie potwierdzenie zalogowanej osoby zapisuje zdarzenie. Przy wdrożeniu urząd uzgadnia formę podpisu i przekazania do akt. Dostępne ścieżki to przekazanie pliku do przyjętego w urzędzie obiegu albo wydruk do podpisów.
+
+## Wdrożenie i aktualizacja
+
+Python 3.13, Django, HTMX z lokalnego pliku, uv i jeden obraz OCI. SQLite na trwałym wolumenie jest profilem odbieranym na hackathonie. Panel Django obsługuje kadry. Warstwa HTTP i pojedynczy scheduler korzystają z tych samych funkcji reguł. Zmiana etapu z zapisem wersji arkusza i zdarzenia jest transakcją. Ponowienie kliknięcia lub zadania przypominającego nie może utworzyć drugiego zdarzenia. Uprawnienia roli, dostęp do konkretnej sprawy i stan pola sprawdza serwer także przy pobieraniu pliku. Korekta administracyjna wymaga powodu i zachowuje poprzednią wersję.
+
+**Pakiet reguł.** Wersjonowane pliki YAML zawierają okres obowiązywania, podstawy prawne, operacje na datach, progi, słownik kryteriów, schematy pól i przykłady wejście → wynik. Silnik oferuje zamknięty zbiór operacji. Szablony wydruku dostarczamy z aplikacją. W demo kadry wybierają między dwiema zainstalowanymi wersjami. Przed aktywacją sprawdzamy schemat, przykłady pakietu i niezależne testy regresji. Błąd pozostawia dotychczasową wersję aktywną. Wycofanie wersji dotyczy nowych przypisań, a historyczne arkusze nadal można odtworzyć.
+
+Przykład dwóch pozycji z `rules/sc-2016-470/cycle.yaml`. Identyfikatory zdarzeń są różne celowo.
 
 ```yaml
-review_cycle:
-  length: { months: 24 }
-  basis: "art. 81 ust. 4 ustawy o służbie cywilnej"
-criteria_setting:
-  default: { days: 30, basis: "§ 7 pkt 1 rozporządzenia" }
-  after_negative: { days: 7, basis: "§ 7 pkt 2 rozporządzenia" }
-long_absence:
-  min_length: { months: 1, strict: true }   # „dłużej niż miesiąc”
-  continuity: weekends_and_holidays_bridge  # wg „liczenie terminów” KPRM
-  effect: extend_deadline_by_absence
-  basis: "art. 81 ust. 7"
+criteria_after_negative:
+  from_event: negative_assessment_written
+  within_days: 7
+  basis: "§ 7 pkt 2"
+reassessment_after_negative:
+  from_event: employee_informed
+  after_months: 6
+  basis: "art. 81 ust. 9"
 ```
 
-### Jak to działa
+**Próba zmiany przepisów.** Pakiet „Symulacja cyklu 12 miesięcy” zmienia pojedynczy parametr. Pokazujemy nowy termin i podstawę obok starej sprawy. To ilustracja techniczna, bez przypisywania przyszłej ustawie treści lub daty wejścia w życie. Dla rzeczywistej nowelizacji reguła przejściowa decyduje, których spraw dotyczy zmiana. Przykładowo § 13 rozporządzenia wiązał przejście z zapoznaniem z kryteriami i terminem. Nowa operacja, której silnik jeszcze nie obsługuje, wymaga zmiany kodu. Import paczek z zewnątrz, podpis Ed25519, zarządzanie kluczami i dystrybucja centralna należą do planu po demonstracji.
 
-- Silnik zna **operacje** (dodaj miesiące wg kodeksu cywilnego, przesuń na dzień roboczy, policz dni od zdarzenia, scal nieobecności), a pakiet mówi, **których i z jakimi parametrami** użyć. Nowe przepisy, które da się wyrazić tymi operacjami, nie wymagają kodu. Nowy typ reguły wymaga nowej operacji: to zmiana kodu, ale lokalna i z testem.
-- **Każda sprawa zapamiętuje pakiet**, według którego się toczy (wzór: przepis przejściowy § 13 i zapowiedź z projektu nowelizacji „do ocen niezakończonych stosuje się przepisy dotychczasowe”). Reguła przejściowa też jest w manifeście.
-- **Pakiet niesie własne testy.** Przy wgraniu system uruchamia je i odrzuca pakiet, jeśli którykolwiek nie przechodzi. Panel kadr pokazuje wynik: „27/27 testów zgodnych”.
-- **Podpis:** KPRM (DSC) publikuje pakiet podpisany kluczem Ed25519 (biblioteka `cryptography`, Apache/BSD). Instancja urzędu przyjmuje tylko pakiety z zaufanym podpisem. Urząd nie musi rozumieć YAML-a: dostaje plik i klika „wgraj”, albo instancja sama pobiera nowy pakiet z publicznego adresu (opcjonalnie).
-- **Diff pakietów** w panelu: „zmienia się: długość cyklu 24 → 12 mies.; dotyczy 14 nowych spraw; 31 rozpoczętych zostaje przy dotychczasowych przepisach”.
-- Na demo: **hipotetyczny pakiet „projekt nowelizacji (demo)”**, wyraźnie opisany jako przykład oparty na publicznych omówieniach UDER 102, a nie treść ustawy.
+**Weryfikacja techniczna przed zgłoszeniem**
 
-### Formularz jako dane
+- Na czystym wolumenie wykonać polecenie startu z README, utworzyć sprawę, zrestartować kontener i odtworzyć kopię do drugiego wolumenu. Zmierzyć czas do pierwszej sprawy i zasoby podczas renderowania PDF. Do slajdów wpisać pomiary z podanym sprzętem. Przy aktualizacji obrazu zachować zgodną kopię bazy i wersję reguł.
+- PDF generować lokalnie, np. WeasyPrint po sprawdzeniu licencji pełnego zestawu zależności i fontów. Gdy dystrybucja renderera lub układ stron blokuje demo, ten sam szablon A4 ma umożliwiać druk i zapis PDF z przeglądarki. Porównać wynik **tej używanej ścieżki** z trzema wzorami. Poczta w P0 korzysta z pliku .ics. Dowodem współpracy jest otwarcie zaproszenia w kliencie, bez informacji kadrowych w tytule.
+- Wariant dla dużego urzędu zakłada PostgreSQL przez DATABASE_URL i SSO. Standardowy sterownik Django psycopg ma licencję LGPL i odpada przy przyjętej przez zespół zasadzie permissive-only. Pozostawiamy ten profil jako cel pilotażu do doboru zgodnego, utrzymywanego backendu i prób migracji oraz współbieżności. Repo i slajdy podają faktycznie sprawdzone profile. W wykazie odróżniamy kod zespołu, zależności aplikacji, składniki obrazu, fonty i ewentualne wagi modelu. [Licencja psycopg](https://www.psycopg.org/psycopg3/docs/basic/install.html#license)
+- Demo lokalne ma własny wolumen z danymi syntetycznymi, przełącznik ról i zegar z widoczną datą. Pokaz sceniczny korzysta z własnej instancji. Publiczny link w Coolify jest opcjonalny. Bez izolacji sesji publicznej udostępniamy tam tylko odczyt. Zegar, reset i przełącznik ról są niedostępne w profilu urzędu. GPU, zdalna baza, model i publiczna domena nie są potrzebne do pokazu.
+- Sprawdzić, że pracownik nie pobierze cudzego PDF, poprzedni oceniający po zmianie podległości utraci zwykły dostęp, a DG otrzyma statystyki zbiorcze bez notatek. Pobrać część I i pełny arkusz z konta właściwego pracownika. Przy wydaniu opisać ograniczenia ochrony danych, retencji i podpisów do uzgodnienia z urzędem.
 
-Schemat pól z `materials/4. Formularze ocen/.../schemat pól formularza.docx` przenosimy 1:1 do `forms/sheet_*.yaml`:
+## Plan wykonania i granice MVP
 
-```yaml
-- field: additional_criteria
-  part: I
-  editable_by: evaluator
-  editable_in: [criteria_setting]
-  lock_after: criteria_confirmed_by_employee
-  rules: [max_3, unique, from_catalog]
-  correction: admin_only
-- field: justification
-  part: II
-  required_if: "result == 'negative'"
-  block_submit_message: "Uzasadnienie jest obowiązkowe przy ocenie negatywnej (§ 11 ust. 3)."
-```
-
-Na tej podstawie generujemy formularz HTML, blokady, komunikaty strażnika **i** wydruk. Zmiana wzoru arkusza w nowelizacji = zmiana tego pliku i szablonu.
-
-> Zauważyliśmy, że w schemacie pól arkusza B pole „UZASADNIENIE PRZYZNANEJ OCENY” występuje dwukrotnie z różnymi regułami. Przyjmujemy wersję z blokadą przy ocenie negatywnej (zgodną z § 11 ust. 3) i pytamy mentorów. Takie znaleziska pokazujemy jury jako dowód, że czytaliśmy materiały dokładnie.
-
----
-
-## 8. Strażnik formalny i prowadzenie krok po kroku
-
-- **Lista kontrolna etapu** po prawej stronie każdego ekranu sprawy: co jest wymagane, co zrobione, co blokuje przejście dalej. Każdy punkt z podstawą prawną (link do treści przepisu w pakiecie).
-- **Blokady twarde** (nie da się przejść): brak uzasadnienia przy negatywnej, brak wniosków do IPRZ, powtórzone kryterium, więcej niż 3 kryteria dodatkowe, wniosek o stopień przy ocenie negatywnej lub u pracownika (nie urzędnika), wniosek przy 9. stopniu, brak umotywowania wniosku o stopień.
-- **Ostrzeżenia miękkie** (można przejść po potwierdzeniu): termin minął, okres oceny krótszy niż 6 mies., data rozmowy po dacie oceny, kryterium oceniane bez żadnej notatki.
-- **Oś sprawy:** poziomy pasek etapów (kryteria → rozmowa → obserwacje → rozmowa oceniająca → ocena → zapoznanie → sprzeciw → akta) z datami „do kiedy” liczonymi z pakietu i z podpowiedzią, dlaczego taki termin („16.03.2026 → poniedziałek 16.03.2026; termin 24 mies. od 16.03.2024, art. 81 ust. 4”).
-- **Wyjaśnienie każdego terminu:** kliknięcie daty pokazuje rachunek krok po kroku (start, +24 mies., nieobecność 05.10–06.11.2026 = 33 dni, przesunięcie z soboty na poniedziałek). Dla jury to dowód, że nie liczymy „na oko”.
-
-## 9. Notatki i przygotowanie rozmów
-
-- **Dziennik obserwacji:** szybka notatka (tekst, data, kryterium, wydźwięk: pozytywna, neutralna, do poprawy). Widzi ją tylko oceniający. Przy zmianie oceniającego przekazanie notatek wymaga decyzji (domyślnie: tylko lista dat i kryteriów, bez treści).
-- **Lista osiągnięć ocenianego:** oceniany sam dopisuje, co zrobił, i decyduje, czy udostępnić przełożonemu przed rozmową.
-- **Rozmowy bieżące (feedback):** scheduler proponuje krótką rozmowę co kwartał, zgodnie z rekomendacją cyklicznej informacji zwrotnej w standardach ZZL (Zarządzenie nr 6 SSC). Notatka z rozmowy trafia do dziennika.
-- **Przed rozmową rozpoczynającą:** checklista § 5 ust. 1 (obowiązki z OSP, kryteria, oczekiwania, cele), **pomoc w doborze kryteriów dodatkowych** (opisy z Zał. 1 obok siebie, pytania pomocnicze: „Czy stanowisko wymaga wystąpień publicznych?”), agenda do druku.
-- **Przed rozmową oceniającą:** checklista § 10, zestawienie notatek per kryterium i **flagi jakości obserwacji** (deterministyczne, bez AI): kryterium bez notatki; ponad 60% notatek z ostatnich 2 miesięcy (efekt świeżości); w kryterium wyłącznie negatywne notatki; brak notatek dłużej niż 6 miesięcy.
-- **Biblioteka trudnych rozmów** (statyczna, bez AI, konfigurowalna przez urząd): ocena negatywna, pracownik się nie zgadza, emocje, sprawy osobiste, powrót po długiej nieobecności. Każda karta: cel, struktura, przykładowe sformułowania, czego unikać.
-- **Szkic uzasadnienia i wniosków do IPRZ** (AI, opcjonalne): powstaje **tylko z notatek przełożonego**. Każde zdanie ma odnośnik do notatki źródłowej, zdania bez źródła są odrzucane. Szkic trafia do pola dopiero po kliknięciu „wstaw i edytuję”, oznaczony fioletowym znacznikiem „szkic AI”, który znika po edycji przez człowieka. Bez AI ten sam ekran działa jako uporządkowane zestawienie notatek do ręcznego przepisania.
-
-## 10. Wirtualny HR partner
-
-Moduł oceniany osobno, więc ma własny ekran („Zespół”) i własny moment w demo.
-
-**Źródła sygnałów:** wyłącznie dane już będące w systemie albo dobrowolne.
-
-| Źródło | Przykład sygnału (reguła z `partner.yaml`) | Działanie z katalogu |
-|---|---|---|
-| zmiany zakresu zadań (zdarzenia kadrowe, notatki „zmiana zadań”) | ≥ 3 zmiany zakresu lub priorytetów w 6 tygodni | rozmowa o priorytetach, przesunięcie zadania, odciążenie |
-| nieobecności (fakt i długość, bez przyczyny) | powrót po nieobecności > 1 mies. | rozmowa powitalna, plan wdrożenia, przegląd celów |
-| dobrowolny check-in ocenianego (1 klik co 2 tygodnie, skala 1–5, może wyłączyć) | spadek w 3 kolejnych check-inach | rozmowa wspierająca, mentoring, informacja o programie wsparcia psychologicznego urzędu |
-| notatki przełożonego | brak pozytywnej notatki przez 4 miesiące | **docenienie**: konkretna podpowiedź, za co i jak |
-| wynik oceny | kryterium na poziomie „poniżej oczekiwań” | działania rozwojowe z katalogu do IPRZ |
-| kamienie milowe | zakończony projekt, rocznica zatrudnienia, nowy stopień | podpowiedź docenienia |
-| obciążenie zespołu | jeden pracownik ma ≥ 40% zadań oznaczonych „pilne” w zespole | podział zadań, zastępstwo, wsparcie zespołu |
-
-- Każdy sygnał ma **wyjaśnienie** (jakie dane, jaka reguła, z jakiego okresu) i **status**: „omówione”, „zaplanowane działanie”, „nieaktualne”. Sygnał nigdy nie trafia do arkusza oceny ani do kadr.
-- **Kultura doceniania:** „Kalendarz docenienia” dla przełożonego (kto dawno nie usłyszał dobrego słowa, jakie są okazje) i karta „podziękowanie” do wysłania pracownikowi z systemu.
-- **Katalog działań** każdy urząd konfiguruje sam: własne szkolenia, KSAP, mentoring, programy wsparcia. W seedzie kilkanaście pozycji ogólnych.
-- **Prawo wglądu:** w profilu ocenianego jest sekcja „Jakie dane o mnie są brane pod uwagę” z listą kategorii i przełącznikiem check-inu.
-- **Opcjonalne AI:** „porozmawiaj o sytuacji w zespole”. Model dostaje wyłącznie **zanonimizowane sygnały** (np. „Osoba A: 3 zmiany zakresu, spadek check-inów”) i może proponować tylko działania z katalogu, z odnośnikiem do sygnału. Gdy dane nie wystarczają, mówi to wprost.
-- Na slajd: skrócona analiza RODO (minimalizacja, brak danych o zdrowiu, brak profilowania z automatycznymi decyzjami w rozumieniu art. 22 RODO, rola IOD, retencja sygnałów 12 mies.).
-
----
-
-## 11. Wdrażalność (dla dyrektora urzędu i dla Biura Informatyki)
-
-### Trzy profile urzędu, jedna baza kodu
-
-| Profil | Przykład | Konfiguracja | Wymagania sprzętowe (szacunek) |
-|---|---|---|---|
-| **mały** (do 50 osób) | inspekcja powiatowa, urząd skarbowy | `docker run`, SQLite na wolumenie, login i hasło, AI wyłączone, druk z QR | 1 vCPU, 1 GB RAM, 2 GB dysku; nawet istniejący serwer plików |
-| **średni** (50–1000) | urząd wojewódzki, urząd centralny | `docker compose`: aplikacja + Postgres, SMTP, LDAP/AD, opcjonalnie Ollama | 2 vCPU, 2–4 GB RAM, 10 GB |
-| **duży** (1000+) | ministerstwo | Postgres, SSO (OIDC lub LDAP), eksport do EZD RP, model lokalny na GPU albo zewnętrzny z pseudonimizacją | 4 vCPU, 4–8 GB RAM; AI: GPU 12 GB VRAM (opcjonalnie) |
-
-Obciążenie jest małe: przy 123 tys. osób i cyklu 24 mies. to ok. 5 tys. ocen miesięcznie **w całym kraju**. Mediana urzędu to kilka ocen w tygodniu.
-
-**Wariant centralny (do rozmowy z KPRM):** ta sama aplikacja uruchamiana przez KPRM lub COI jako **osobna instancja na urząd** na infrastrukturze rządowej, dla urzędów bez własnego informatyka. Izolujemy instancjami, nie kodem: nie ma wielodostępności, więc nie ma ryzyka wycieku między urzędami.
-
-### Wdrożenie w 15 minut
-
-1. `docker run -p 8000:8000 -v okres:/data ghcr.io/…/okres:1.0.0`
-2. **Kreator pierwszego uruchomienia:** nazwa urzędu, miejscowość (do pól „miejscowość” w arkuszu), konto administratora kadr, wybór pakietu przepisów.
-3. Import CSV pracowników, podległości i nieobecności (szablony do pobrania w kreatorze, udokumentowany format; Excel → „zapisz jako CSV”).
-4. System zakłada sprawy i liczy terminy dla wszystkich. Kadry widzą listę „co trzeba zrobić w tym tygodniu”.
-
-### Aktualizacja i naprawa błędów
-
-- **Kod:** nowa wersja obrazu (semver), migracje bazy uruchamiane automatycznie przy starcie, kopia bazy przed migracją. Powrót do poprzedniej wersji: poprzedni tag obrazu + kopia.
-- **Przepisy:** nowy podpisany pakiet, bez zmiany obrazu (sekcja 7).
-- **Zgłaszanie błędów:** w stopce „zgłoś błąd” z identyfikatorem wersji obrazu i pakietu (bez danych osobowych).
-- Repozytorium z CI: testy (w tym testy pakietów), lint, skan zależności, SBOM (CycloneDX), lista licencji generowana automatycznie.
-
-### Integracje
-
-- **Poczta:** powiadomienia przez SMTP urzędu + zaproszenia `.ics`; w demo log wiadomości w interfejsie.
-- **EZD (w tym EZD RP):** eksport paczki sprawy (PDF arkusza + metadane JSON + audyt) gotowej do zarejestrowania w EZD. Integracja przez API EZD RP opisana; do rozmowy z mentorami NASK (piaskownica). Na demo zamockowane.
-- **Systemy kadrowe:** CSV jako minimum, API REST (OpenAPI) do importu i eksportu dla urzędów z integracją.
-- **Sprawozdawczość:** eksport zbiorczy (liczba ocen, rozkład poziomów, oceny negatywne, sprzeciwy i ich wynik, stopnie fakultatywne i obligatoryjne, terminowość) w jednolitym formacie dla wszystkich instancji, do sprawozdania dyrektora generalnego (dawniej przez SWEZ_HR). **Format do potwierdzenia z Kamilem Kazimierczukiem.**
-
-### Podpisy i tryb hybrydowy
-
-- Urząd **bez** obiegu cyfrowego: system drukuje arkusz zgodny ze wzorem z kodem QR (identyfikator sprawy i wersja), podpisy odręczne, skan wgrywany do sprawy. Proces i terminy i tak prowadzi system.
-- Urząd **z** e-podpisem: eksport PDF do podpisu kwalifikowanego lub profilem zaufanym (opisane, zamockowane).
-- Potwierdzenia w systemie (zalogowany użytkownik + znacznik czasu + audyt) jako dowód czynności. Czy to wystarcza jako „podpis” w rozumieniu § 6 i § 12: **pytanie do mentorów**.
-
-### Bezpieczeństwo i ochrona danych
-
-- Role i uprawnienia per pole (z `forms/*.yaml`) i per sprawa; oceniany widzi tylko swoje sprawy, oceniający tylko podległych.
-- **Audyt** każdej zmiany pola, każdej korekty administratora (z obowiązkowym powodem) i każdego odczytu arkusza przez kadry.
-- Hasła: Argon2; sesje HttpOnly/Secure; CSRF Django; nagłówki bezpieczeństwa; limit prób logowania.
-- **Anonimizacja przy przetwarzaniu poza infrastrukturą urzędu:** warstwa pseudonimizacji przed każdym wywołaniem zewnętrznego API (imiona, nazwiska, komórki, stanowiska, daty → tokeny; mapa zostaje lokalnie; odpowiedź jest odtwarzana lokalnie). Domyślnie AI wyłączone, drugi w kolejności tryb to model lokalny.
-- Kopie zapasowe: komenda `okres backup` (zaszyfrowany plik), w compose zadanie nocne.
-- Dostępność: **WCAG 2.1 AA** (ustawa z 4.04.2019 o dostępności cyfrowej), deklaracja dostępności w stopce, pełna obsługa klawiaturą, test axe w CI.
-
----
-
-## 12. System wizualny
-
-**Kierunek:** urzędowy, spokojny, czytelny: „jak dobrze zaprojektowany druk urzędowy”. Kolorystyka nawiązuje do barw państwowych i portalu gov.pl (biel, granat, czerwień tylko jako akcent), ale nie kopiuje znaku gov.pl ani logo służby cywilnej (zgodność z identyfikacją gov.pl do sprawdzenia z mentorami). Wszystkie pary tekst/tło sprawdzone skryptem kontrastu (WCAG 2.1, próg AA 4,5:1).
-
-| Token | Kolor | Użycie | Kontrast |
-|---|---|---|---|
-| `--okres-granat` | `#0B3A6E` | nagłówek, logo, przyciski główne (biały tekst) | 11,4:1 z białym |
-| `--okres-niebieski` | `#1A5DAB` | linki, fokus, aktywny etap na osi sprawy | 6,6:1 z białym |
-| `--okres-tekst` | `#1A1F29` | tekst podstawowy | 16,5:1 |
-| `--okres-tekst-2` | `#4A5363` | tekst pomocniczy, **pola zablokowane** (na `#ECEEF2` z ikoną kłódki) | 7,8:1 / 7,2:1 na `#F4F6F9` |
-| `--okres-tlo` / `--okres-tlo-2` | `#FFFFFF` / `#F4F6F9` | tło / panele boczne, lista kontrolna | – |
-| `--okres-ramka` | `#D0D7E1` | obramowania, siatka arkusza | – |
-| `--okres-czerwien` | `#B3122E` | **tylko**: termin przekroczony, blokada formalna, błąd (tło `#FDECEF`) | 6,9:1 / 6,1:1 |
-| `--okres-zielen` | `#1B6B3A` | etap zakończony, test pakietu zaliczony (tło `#E8F4EC`) | 6,5:1 / 5,8:1 |
-| `--okres-bursztyn` | `#8A4B00` na `#FFF3D6` | ostrzeżenie miękkie, termin w ciągu 7 dni | 6,2:1 |
-| `--okres-morski` | `#0F6B6B` (tło `#E6F4F3`) | **moduł HR partnera** (osobny kolor = „doradztwo, nie procedura”) | 6,3:1 / 5,6:1 |
-| `--okres-fiolet` | `#5B3FA0` (tło `#F1EDFA`) | **wyłącznie treści AI**: znacznik „szkic AI”, ramka podpowiedzi | 7,9:1 / 6,9:1 |
-| `--okres-demo` | pasek `#FFF3D6` z tekstem `#8A4B00` | **„Tryb demonstracyjny: zegar przesunięty na 14.03.2028, dane fikcyjne”** zawsze na górze | 6,2:1 |
-
-**Zasady:**
-- Kolor nigdy nie jest jedynym nośnikiem informacji: status zawsze ma też ikonę i słowo („zablokowane”, „po terminie”).
-- Ocena negatywna **nie** jest na czerwono. Wynik to treść decyzji przełożonego, nie alarm; czerwień rezerwujemy dla błędów procesu.
-- AI ma jeden kolor i jedną etykietę w całym systemie, żeby jury i użytkownik od razu widzieli, co pochodzi od modelu.
-- **Typografia:** stos systemowy w interfejsie (`system-ui, "Segoe UI", Roboto, sans-serif`), bez pobierania fontów z sieci (działa offline i w zamkniętych sieciach urzędów). W PDF: **Liberation Sans** (OFL) dołączony do obrazu, żeby wydruk wyglądał tak samo wszędzie. Bazowy rozmiar 16 px, interlinia 1,5.
-- **Logo:** słowo „OKRES” wersalikami w granacie, z cienką poziomą osią i znacznikiem „dziś” (motyw osi okresu oceny). Bez godła i bez barw flagi w znaku.
-- **Układ:** desktop first (komputery w urzędach), responsywnie do tabletu; trzy kolumny na ekranie sprawy: oś etapów u góry, formularz w środku, lista kontrolna po prawej. Wydruk to osobny szablon zgodny ze wzorem, nie „print CSS” ekranu.
-
----
-
-## 13. Architektura i technologia
-
-```
-                ┌──────────────────────── jeden obraz OCI (python:3.13-slim, wersja przypięta) ───────────────────────┐
- przeglądarka ─▶│ gunicorn → Django 5.2 LTS + HTMX (szablony serwerowe)            okres scheduler (pętla co 5 min) │
-                │  ├─ cases/      silnik sprawy: etapy, zdarzenia, blokady pól, audyt, wersje arkusza                 │
-                │  ├─ rules/      loader pakietów, walidacja schematu, podpis Ed25519, testy pakietu, diff             │
-                │  ├─ deadlines/  operacje kalendarzowe, święta PL, ciągłość nieobecności, „wyjaśnij termin”           │
-                │  ├─ forms_pdf/  formularze z forms/*.yaml, wydruk HTML → PDF (WeasyPrint)                            │
-                │  ├─ notes/      dziennik obserwacji, osiągnięcia ocenianego, rozmowy bieżące                         │
-                │  ├─ partner/    sygnały z partner.yaml, katalog działań, check-iny, docenienia                       │
-                │  ├─ reports/    statystyki DG, eksport do sprawozdania, paczka do EZD                                │
-                │  ├─ ai/         dostawca: off | ollama | openai-compatible (+ pseudonimizacja), cytowanie notatek    │
-                │  └─ demo/       zegar symulacji, przełącznik ról, reset danych (tylko DEMO_MODE=1)                   │
-                └───────────── SQLite (/data) albo Postgres (DATABASE_URL) ─── Django admin = panel kadr i konfiguracji ┘
-```
-
-| Warstwa | Wybór | Licencja | Dlaczego |
-|---|---|---|---|
-| język / framework | Python 3.13, Django 5.2 LTS | PSF, BSD-3 | wbudowany panel admina, migracje, auth, długie wsparcie (LTS do 04.2028) |
-| interakcje | HTMX 2 (plik statyczny w repo) | 0BSD | dynamika bez SPA i bez łańcucha npm: mniej zależności do audytu |
-| CSS | własne tokeny, CSS bez preprocesora | – | zero kroku budowania frontu |
-| PDF | WeasyPrint | BSD-3 | HTML → PDF zgodny ze wzorem |
-| święta | `holidays` | MIT | polskie święta + testy na przykładach KPRM |
-| daty | `python-dateutil` (`relativedelta`) | Apache-2.0 / BSD | dodawanie miesięcy z „ostatnim dniem miesiąca” |
-| YAML / walidacja | PyYAML + `pydantic` | MIT | typowany schemat pakietu, czytelne błędy |
-| podpis pakietów | `cryptography` (Ed25519) | Apache-2.0 / BSD | podpis pakietów przepisów |
-| hasła | `argon2-cffi` | MIT | – |
-| serwer | gunicorn + WhiteNoise | MIT | jeden proces, statyki bez nginx |
-| baza | SQLite / Postgres (`psycopg` LGPL, tylko jako biblioteka, dynamicznie) | public domain / PostgreSQL | **do sprawdzenia:** psycopg 3 jest na LGPL-3.0; dopuszczalne przy linkowaniu dynamicznym, ale wpisujemy na listę licencji jawnie |
-| SSO (P2) | `django-auth-ldap` (BSD-2) / OIDC (`mozilla-django-oidc` to MPL-2.0: unikamy, rozważamy `authlib` BSD) | – | – |
-| testy | pytest, pytest-django, Playwright (smoke demo) | MIT / Apache | – |
-| narzędzia | uv, ruff, pip-audit, CycloneDX | MIT/Apache | skan zależności, SBOM |
-
-**Zasady techniczne:** jedna komenda startu; migracje przy starcie; konfiguracja wyłącznie przez zmienne środowiskowe (`DATABASE_URL`, `AI_PROVIDER`, `OLLAMA_URL`, `SMTP_URL`, `DEMO_MODE`, `RULES_TRUSTED_KEYS`); obraz bez tagu `latest` w dokumentacji (tylko semver); healthcheck `/healthz`; logi na stdout w JSON.
-
----
-
-## 14. AI w produkcie (opcjonalne, za jedną warstwą)
-
-| Tryb | Kiedy | Co wychodzi poza urząd |
-|---|---|---|
-| `off` (domyślny) | mały urząd, brak GPU | nic; wszystkie ekrany działają, szkice zastępuje zestawienie notatek |
-| `ollama` (lokalnie) | urząd ma GPU albo serwer centralny w sieci rządowej | nic |
-| `openai-compatible` | urząd świadomie wybiera zewnętrzne API | wyłącznie tekst po pseudonimizacji; mapa tokenów zostaje lokalnie |
-
-**Funkcje AI (wszystkie fioletowe, wszystkie z cytatami):**
-1. szkic uzasadnienia i wniosków do IPRZ z notatek (każde zdanie → notatka; zdania bez źródła odrzucane walidatorem),
-2. przeformułowanie notatki na język opisowy, bez ocen osobowości (podpowiedź „opisz zachowanie, nie cechę”),
-3. rozmowa z HR partnerem na zanonimizowanych sygnałach, działania tylko z katalogu.
-
-**Czego AI nie robi nigdy:** nie liczy terminów ani punktów, nie wybiera poziomu oceny, nie zatwierdza niczego, nie widzi danych innych niż przekazane jawnie, nie dostaje przyczyn nieobecności.
-
-**Model:**
-- docelowo **Bielik 11B v2.x Instruct** (polski model otwarty, Apache-2.0) w Q4_K_M przez Ollamę: dobry polski język urzędowy, licencja bez opłat; alternatywa **Qwen3 8B** (Apache-2.0), gdy GPU ma 10 GB.
-- parametry: kontekst 8k, temperatura 0,2, odpowiedź w JSON (zdania + identyfikatory notatek), limit czasu 25 s, a po jego przekroczeniu komunikat „AI niedostępne, kontynuuj bez szkicu” (nigdy nie udajemy wyniku).
-- **Ewaluacja na zbiorze syntetycznym** (20 zestawów notatek): odsetek zdań z poprawnym cytatem, odsetek zdań bez źródła po walidatorze (cel: 0), czas odpowiedzi. Wynik w README.
-
----
-
-## 15. Infrastruktura demo (konkretnie, stan na sob ~13:00)
-
-Źródła: `../SERVERS.md`, `../solvro-infra-hackathon.md`.
-
-| Element | Gdzie | Parametry | Uwagi |
-|---|---|---|---|
-| aplikacja demo | **`solvro-stacja-web`** (10.21.36.12, 16 vCPU Ryzen 9 7950X, ok. 11 GiB RAM wolne, 163 GB dysku) przez **Coolify 4.7.6** (`devops.solvro.pl`), projekt **Hackatony**, nowe środowisko **`okres`** | Dockerfile z repo; limit 1 vCPU / 768 MB (zużycie spodziewane < 300 MB); wolumen `/data` na SQLite; healthcheck `/healthz` | domena **`okres.b.solvro.pl`**, Let's Encrypt automatycznie; build na `solvro-build-server` (16 równoległych buildów), żeby nie obciążać produkcji |
-| baza | SQLite w wolumenie | – | celowo: pokazujemy wariant „mały urząd”. Postgres pokazujemy lokalnie w `docker compose` (profil `postgres`) |
-| AI | **`solvro-stacja`** (10.21.37.1), Ollama na GPU (RTX 3060 12 GB albo 3080 10 GB: niepotwierdzone) | 3060: `bielik-11b-v2.x-instruct:Q4_K_M` (~6,7 GB) + KV 8k (~1,5 GB); 3080: Qwen3 8B Q4_K_M (~5 GB); `OLLAMA_NUM_PARALLEL=1`, `OLLAMA_KEEP_ALIVE=24h` | **teraz nieosiągalna** (ping, :22 i :11434 timeout; `ollama.b.solvro.pl` → 502). Aplikacja woła `http://10.21.37.1:11434` po stronie serwera; Ollamy nie wystawiamy jury |
-| współdzielenie | ta sama Ollama obsługuje też projekt Azymut (zadanie MC) | `OLLAMA_MAX_LOADED_MODELS=2` | wspólny jest tylko host i model; **kod osobny** (AGENTS.md) |
-| plan B dla AI | Ollama na laptopie zespołu (Apple Silicon) + tunel WireGuard tylko na czas demo | Qwen3 8B albo Bielik 4.5B | jeśli stacja nie wróci do ~20:00 |
-| plan C | `AI_PROVIDER=off` | – | demo procesu w całości bez AI; to i tak nasz główny przekaz |
-
-**Tryb demonstracyjny (`DEMO_MODE=1`):**
-- pasek „Tryb demonstracyjny” zawsze widoczny, z bieżącą datą symulacji,
-- **przełącznik ról** („Zaloguj jako: oceniający / oceniany / kadry / dyrektor generalny”) bez haseł, żeby jury mogło samo przeklikać proces z linku,
-- **zegar symulacji** (+1 dzień, +1 miesiąc, „skocz do następnego terminu”), który uruchamia scheduler dla przesuniętej daty,
-- przycisk „przywróć dane demonstracyjne” (deterministyczny seed),
-- dane: fikcyjny „Urząd Wojewódzki w Okresowie”, ok. 12 osób w różnych etapach (w tym jedna osoba ze sprzeciwem, jedna przed obligatoryjnym stopniem, jedna po długiej nieobecności z przykładu KPRM).
-
----
-
-## 16. Zakres MVP
-
-**P0, musi działać na demo (do niedz. ~6:00):**
-- pakiet `sc-2016-470` (cykl, arkusze B i C, punktacja, schemat pól B i C) z testami z „liczenia terminów”,
-- silnik sprawy: kryteria → potwierdzenie → dziennik → rozmowa oceniająca → ocena → zapoznanie / fikcja zapoznania → licznik sprzeciwu,
-- strażnik formalny (blokady twarde i miękkie) i oś sprawy z wyjaśnieniem terminów,
-- długotrwała nieobecność (ciągłość, przesunięcie, powiadomienia), ponowna ocena po negatywnej, obligatoryjny stopień,
-- scheduler + zegar symulacji + przełącznik ról + seed,
-- wydruk PDF arkusza B i C zgodny ze wzorem,
-- panel kadr (lista pracowników, import CSV, nieobecności), wgranie pakietu z testami,
-- HR partner: 3 sygnały (zmiany zakresu, brak pozytywnej notatki, check-in) + katalog + prawo wglądu,
-- pakiet `projekt-nowelizacji-demo` i przełączenie na żywo,
-- strona `/pokrycie`,
-- wdrożenie na `okres.b.solvro.pl`.
-
-**P1 (niedz. 6:00–10:00, w kolejności):**
-1. sprzeciw: zmiana oceny i ponowne sporządzenie (UC-16, UC-17),
-2. zmiana terminu przez oceniającego i na wniosek ocenianego + zawiadomienie § 8 (UC-12, UC-13),
-3. arkusz A, wniosek fakultatywny o stopień (część III),
-4. szkic uzasadnienia i IPRZ z AI z cytatami,
-5. panel dyrektora generalnego + eksport do sprawozdania,
-6. zmiana stanowiska, zmiana oceniającego (UC-19, UC-26),
-7. kreator pierwszego uruchomienia, druk z QR, `.ics`, paczka do EZD,
-8. podpis Ed25519 pakietów, diff pakietów.
-
-**P2 (opisane w prezentacji, niezbudowane):** SSO (LDAP/OIDC), integracja z API EZD RP, podpis kwalifikowany, wariant centralny KPRM, czat HR partnera.
-
-## 17. Poza zakresem
-
-Prawdziwe integracje z EZD i systemami kadrowymi, e-podpis, **pierwsza ocena w służbie cywilnej** (inny proces, inne rozporządzenie; nie jest wymagana w zadaniu, a przy okazji to obszar projektu Azymut, z którym nie chcemy się pokrywać), wskaźniki behawioralne do kryteriów (jak wyżej), aplikacja mobilna, rzeczywista wysyłka e-maili (log + `.ics`).
-
-**Rozdzielenie od Azymutu (zadanie MC):** Azymut to ekran wskaźników zachowań, analiza OSP i RAG z paragrafami. OKRES to silnik procesu, terminów i przepisów jako danych oraz HR partner. Inne zadanie, inny kod, inna architektura (Django vs Next.js).
-
----
-
-## 18. Scenariusz demo (≈ 3 min, pełen proces)
-
-Persony: **Anna Nowak** (naczelniczka wydziału, oceniająca), **Piotr Zieliński** (główny specjalista, oceniany, urzędnik mianowany), **Ewa Kowalczyk** (kadry), **dyrektor generalny**. Wszystko fikcyjne.
-
-| Czas | Kto | Co pokazujemy | Kryterium |
-|---|---|---|---|
-| 0:00–0:15 | – | terminal: `docker run …` → kreator → import CSV 12 osób → system liczy terminy dla wszystkich | wdrożenie |
-| 0:15–0:45 | kadry → oceniająca → oceniany | scheduler przypomina o kryteriach (30 dni, § 7); Anna wybiera arkusz C (podpowiedź z danych stanowiska), dobiera 2 kryteria dodatkowe z opisami z Zał. 1; checklista § 5; Piotr potwierdza → **pola się blokują** (kłódka, „tryb korekty administratora”) | zgodność |
-| 0:45–1:10 | zegar +10 mies. | dziennik obserwacji; kadry importują L4 05–16.10.2026 + urlop 19.10–06.11.2026 (przykład KPRM) → „nieobecność ciągła 33 dni” → termin przesunięty, rachunek krok po kroku, powiadomienia | zgodność, kompletność |
-| 1:10–1:35 | oceniająca, ekran „Zespół” | HR partner (morski kolor): „3 zmiany zakresu w 6 tyg. + spadek check-inów” z wyjaśnieniem → działanie z katalogu; „ostatnia pozytywna notatka 4 mies. temu” → podpowiedź docenienia; podgląd „co widzi pracownik” | HR partner, oryginalność |
-| 1:35–2:15 | zegar → termin oceny | przygotowanie rozmowy (flaga: kryterium bez notatek, efekt świeżości); ocena; próba zatwierdzenia z cząstkową 1 bez uzasadnienia → **blokada § 11 ust. 3**; uzupełnienie; (opcjonalnie) fioletowy szkic IPRZ z cytatami notatek; **PDF obok wzoru z rozporządzenia** | zgodność |
-| 2:15–2:35 | oceniany → scheduler | zapoznanie, licznik sprzeciwu 7 dni; drugi pracownik: scheduler wykrywa **obligatoryjny stopień** (2 kolejne oceny na najwyższych poziomach) i przypomina DG o 30 dniach | kompletność |
-| 2:35–3:00 | kadry | **wgranie pakietu „projekt nowelizacji (demo)”**: 27/27 testów pakietu zaliczone, diff „cykl 24 → 12 mies.”, nowe sprawy liczą się po nowemu, rozpoczęte zostają przy dotychczasowych przepisach. Na koniec `/pokrycie`: „25/27 przypadków użycia KPRM” | wdrożenie, oryginalność |
-
-**Plan awaryjny:** demo działa offline i bez AI (lokalny `docker compose` na laptopie, seed deterministyczny); film z przebiegu nagrany w niedzielę rano; zrzuty ekranu w prezentacji.
-
-## 19. Prezentacja (PDF, maks. 15 slajdów)
-
-1. OKRES: tytuł, hasło, zespół.
-2. Problem: papier, terminy, błędy formalne, nowelizacja w toku (liczby z opisu zadania).
-3. Rozwiązanie w jednym zdaniu + 4 filary.
-4. Proces end-to-end: oś sprawy z torami BPMN (oceniający, oceniany, kadry, DG, scheduler).
-5. **Macierz pokrycia przypadków użycia** (zrzut `/pokrycie`).
-6. Zgodność formalna: strażnik, blokady z §, terminy z rachunkiem, wydruk obok wzoru.
-7. Notatki i rozmowy: dziennik, flagi jakości obserwacji, biblioteka trudnych rozmów.
-8. **Wirtualny HR partner**: sygnały, wyjaśnienia, kultura doceniania, prawo wglądu.
-9. AI: opcjonalne, lokalne, z cytatami; czego nigdy nie robi; wyniki ewaluacji.
-10. **Przepisy jako dane**: pakiet, testy, podpis, przełączenie na nowelizację.
-11. **Wdrożenie w każdym z 1743 urzędów**: trzy profile, wymagania sprzętowe, 15 minut, wariant centralny.
-12. Aktualizacje, bezpieczeństwo, RODO, WCAG, licencje (SBOM).
-13. Integracje: poczta, EZD RP, CSV/API, sprawozdawczość.
-14. Plan rozwoju z KPRM: pilotaż w 3 urzędach różnej wielkości → pakiet po nowelizacji → wariant centralny.
-15. Ujawnienia: użycie AI w wytwarzaniu i w produkcie, co jest zamockowane, linki (demo, repo, film).
-
----
-
-## 20. Harmonogram zespołu (sob → niedz)
-
-| Do kiedy | Cel |
+| Termin | Wynik potrzebny zespołowi |
 |---|---|
-| sob 16:00 | szkielet Django, modele, loader pakietu, testy terminów z „liczenia terminów” na zielono |
-| sob 18:00 | ścieżka główna arkusza C bez PDF; seed; zegar; przełącznik ról; pierwszy deploy na `okres.b.solvro.pl` |
-| **sob 20:00** | **draft na HackTribe** (tytuł, opis, problem, link do demo) |
-| sob 20:00–22:00 | konsultacja reguł z mentorami KPRM (lista pytań z sekcji 21) |
-| niedz 02:00 | nieobecności, stopień obligatoryjny, strażnik, PDF B/C, HR partner (3 sygnały) |
-| niedz 06:00 | pakiet nowelizacji + przełączenie, `/pokrycie`, panel kadr; **zamrożenie P0** |
-| niedz 09:00 | P1 według kolejności, README, film, slajdy |
-| **niedz 10:30** | **zgłoszenie finalne** (bufor 30 min przed 11:00) |
+| Sobota 16:00 | Sprawa C działa od utworzenia do potwierdzenia kryteriów. Pakiet bazowy i testy kalendarza, punktacji i uprawnień. Wczesna próba wydruku wszystkich trzech wzorów |
+| 18:00 | Pełna ścieżka C do zapoznania i pobrania, jedna sprawa z obserwacjami, pierwsza karta HR. Lokalny obraz gotowy do próby. Draft na HackTribe przygotowany przed granicą **20:00** |
+| 20:00–02:00 | A/B/C z częściami I–III, potwierdzenia i kopie, zdarzenia kadrowe oraz zaproszenie .ics. Konsultacja niejasności. Na laptopie demonstracyjnym zapisać z góry obraz, seed i wzory do porównania offline |
+| Niedziela 06:00 | Zamrożenie P0 po przejściu pełnej ścieżki, sprawdzeniu HR, A/B/C i zmiany wersji reguł. Wybór ewentualnego rozszerzenia |
+| 09:00 | Próba na projektorze i bez sieci, PDF prezentacji, nagranie awaryjne, README z rzeczywistą komendą startu i listą ograniczeń |
+| **10:30** | Zgłoszenie z prototypem, tytułem, opisem problemu i rozwiązania oraz prezentacją PDF do 15 slajdów. Koniec kodowania i finalne zgłoszenie o **11:00** |
 
-## 21. Otwarte pytania do mentorów KPRM (sobota wieczór)
+**Kolejność cięć.** W razie opóźnienia odkładamy najpierw lokalny model, dashboard i automatyczny raport pokrycia (wystarcza tabela z wynikami), następnie import CSV i publiczny hosting. Przy działającym P0 pierwsze rozszerzenia to obie ścieżki po sprzeciwie, pismo o zmianie terminu i przypomnienie o obligatoryjnym stopniu. Do pilotażu pozostają API EZD, SSO, zewnętrzny obieg podpisów, dystrybucja podpisanych pakietów i próby obciążeniowe dużego urzędu. Każdy brak z macierzy ujawniamy w zgłoszeniu.
 
-1. Czy potwierdzenie w systemie (zalogowany użytkownik + znacznik czasu + audyt) można traktować jak „podpis” z § 6 ust. 2 i § 12, czy potrzebny jest wydruk z podpisami lub podpis elektroniczny?
-2. Fikcja zapoznania: jaki dokument ją potwierdza (notatka służbowa, data doręczenia, świadek) i od kiedy biegnie 7 dni na sprzeciw?
-3. Kilka osobnych nieobecności > 1 mies. w jednym cyklu: czy przedłużenia się sumują?
-4. Czy przy przedłużeniu o czas nieobecności liczymy dni kalendarzowe nieobecności i czy przesunięcie na dzień roboczy stosujemy po dodaniu?
-5. W schemacie pól arkusza B pole „Uzasadnienie przyznanej oceny” występuje dwukrotnie z różnymi regułami. Która wersja obowiązuje?
-6. Czy znane są już kierunki nowelizacji (cykl 12 mies., art. 81a, oceny wyższych stanowisk) na tyle, żeby pakiet demonstracyjny je odwzorował?
-7. Jaki format danych do sprawozdania dyrektora generalnego byłby najbardziej przydatny (pytanie do Kamila Kazimierczuka)?
-8. Czy dobrowolny check-in nastroju jest akceptowalny w urzędach, czy lepiej oprzeć HR partnera tylko na danych procesowych?
-9. Czy przekazanie notatek poprzedniego oceniającego nowemu (§ 9 ust. 3) jest dopuszczalne, a jeśli tak, w jakim zakresie?
+## Trzy minuty przed jury
 
-## 22. Ryzyka
-
-| Ryzyko | Mitigacja |
+| Czas | Co widzi jury |
 |---|---|
-| błąd formalny zauważony przez ekspertów DSC | testy na przykładach KPRM, konsultacja reguł w sobotę wieczorem, strażnik formalny z § przy każdym komunikacie, demo przećwiczone na konkretnych datach |
-| zakres podprocesów za duży na 24 h | P0 = ścieżka główna + nieobecność + stopień obligatoryjny + przełączenie pakietu; reszta to przejścia w tym samym silniku; P1 w ustalonej kolejności |
-| stacja z GPU nie wróci | plan B (laptop + tunel), plan C (AI off); AI nie jest w ścieżce krytycznej demo |
-| HR partner odebrany jako inwigilacja | prawo wglądu, brak danych o zdrowiu, brak automatycznych decyzji, sygnały nie trafiają do oceny ani kadr, slajd RODO |
-| „przepisy jako dane” odebrane jako przerost formy | pokazać to na żywo na jednym przykładzie (12 mies.) w 25 sekund, z testami pakietu |
-| zespół zna lepiej Next.js niż Django | Django wybrane świadomie (panel admina, jeden proces, łatwe utrzymanie w urzędzie, brak łańcucha npm); szablony + HTMX są proste |
-| produkcja Solvro na tym samym hoście | limit zasobów w Coolify, build na build serverze, SQLite bez dodatkowych usług |
-| treść projektu nowelizacji mogła się zmienić | pakiet opisany jako hipotetyczny, oparty na publicznych omówieniach UDER 102 |
+| 0:00–0:30 | Sprawa fikcyjnego specjalisty. Przełożona przygotowuje rozmowę, zapisuje kryteria, pracownik potwierdza część I i pobiera kopię. Ekran wyjaśnia blokadę edycji |
+| 0:30–0:55 | Dla zatrudnienia 16.03.2025 termin bazowy to 16.03.2027. Dwa wpisy nieobecności z przykładu KPRM dodają 33 dni. 18.04.2027 wypada w niedzielę, więc ekran wskazuje poniedziałek 19.04 i pokazuje rachunek |
+| 0:55–1:25 | HR partner otwiera źródła trzech zmian priorytetu. Kierownik uzgadnia odciążenie i termin rozmowy sprawdzającej. W roli pracownika widać ustalenie. Pokazujemy też osiągnięcie warte docenienia |
+| 1:25–2:20 | Skok do rozmowy oceniającej, przykłady z całego okresu. Przełożona potwierdza rozmowę, podaje punkty. Jedna jedynka przy średniej ponad 6 wymaga uzasadnienia. Wpisuje je oraz wniosek rozwojowy, zatwierdza arkusz. Pokaz PDF obok wzoru C |
+| 2:20–2:40 | Pracownik potwierdza zapoznanie, pobiera kopię i widzi datę na sprzeciw. Kadry widzą przekazanie do akt, dwie daty po negatywnej oraz kolejną sprawę |
+| 2:40–3:00 | Dwie wersje reguł i wpływ na termin. Na pytania przygotowane są arkusze A/B, macierz pokrycia i wynik próby wdrożenia z czystego wolumenu |
 
-## 23. Źródła
+Awaria hostingu oznacza przejście na gotowy obraz lokalny. Awaria laptopa oznacza odtworzenie nagrania z tej samej wersji i pokazanie eksportów A/B/C. Prezentacja może mieć osiem slajdów obejmujących problem i skalę, przebieg sprawy, zgodność wydruku, HR partnera, reguły z symulacją, wynik próby instalacji, faktyczne pokrycie i plan pilotażu oraz ujawnienia i linki. README i prezentacja wymieniają narzędzia AI przy wytwarzaniu, modele faktycznie użyte w produkcie, wcześniejszy kod, licencje i rzeczy symulowane. Przy przekazaniu projektu uwzględnić zasady praw autorskich z § 4 regulaminu i podpisy wszystkich współtwórców.
 
-- Materiały KPRM: `materials/` (zadanie, akty prawne, przypadki użycia, schemat procesu, schematy pól, liczenie terminów).
-- Jury i mentorzy: `../hacknation-mentorzy.md`, sekcja 14.
-- Serwery: `../SERVERS.md`, `../solvro-infra-hackathon.md`.
-- Nowelizacja (do weryfikacji): [gov.pl: projekt ustawy o zmianie ustawy o służbie cywilnej](https://www.gov.pl/web/premier/projekt-ustawy-o-zmianie-ustawy-o-sluzbie-cywilnej), [Serwis SC: nowelizacja w wykazie prac](https://www.gov.pl/web/sluzbacywilna/nowelizacja-ustawy-o-sluzbie-cywilnej-wpisana-do-wykazu-prac-legislacyjnych-i-programowych-rady-ministrow), [DSK Kancelaria: zmiany w służbie cywilnej](https://dsk-kancelaria.pl/blog/kobieta-50-zmiany-w-sluzbie-cywilnej/), [FSP: uwagi do nowelizacji](https://sprawnepanstwo.pl/index.php/2026/05/21/nowelizacja-ustawy-o-sluzbie-cywilnej-uwagi-fsp/).
+## Kwestie dla mentorów i materiały odniesienia
+
+1. Jaki dowód podpisu i doręczenia przyjmuje urząd na każdym z dwóch etapów? Kto i na jakiej podstawie stwierdza fikcję zapoznania i datę skutku? Do rozstrzygnięcia demo pokazuje zwykłą ścieżkę potwierdzoną przez pracownika oraz odrębne pole na dokumentację przypadku wyjątkowego.
+2. Jak rozstrzygać nietypowy rozkład pracy, kilka odrębnych długich nieobecności i kolejność operacji na terminie? Do potwierdzenia pokazujemy przykład z dokumentu KPRM, a sporne przypadki przekazujemy kadrom z pełnym rachunkiem.
+3. Jak obsłużyć pierwszą ocenę okresową przy przeniesieniu, gdy próg od ustanowienia kryteriów i długość okresu podlegającego ocenie prowadzą do różnych wskazań? Kadry widzą obie przesłanki. Jakie dane poprzedniego przełożonego można przekazać następcy?
+4. Które działania HR są użyteczne dla małego urzędu i jaki minimalny eksport wystarcza kadrom? Odpowiedzi zapisujemy w PROGRESS.md z wpływem na zakres.
+
+Źródłami wymagań są oba dokumenty w `materials/zadanie/`, opis i warunki brzegowe z `materials/2. Przypadki użycia/`, opis procesu, trzy mapy pól i urzędowe wzory, przykłady z `liczenie terminów.docx` oraz akty i standardy ZZL z materiałów KPRM. W sprawach rozbieżnych odnotowujemy przepis, interpretację i decyzję mentora. [Rozporządzenie i załączniki A/B/C](https://eli.gov.pl/eli/DU/2016/470/ogl) · [Ustawa wskazana w zadaniu](https://eli.gov.pl/eli/DU/2026/590/ogl) · [Strona wydarzenia](https://hacknation.pl/)
