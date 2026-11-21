@@ -16,5 +16,6 @@
 </dl>
 {% endwith %}
 {% include "oceny/_kryteria.html" %}
+{% if jest_oceniajacym or jest_ocenianym %}{% include "oceny/_obserwacje.html" %}{% endif %}
 {% include "oceny/_ocena.html" %}
 {% endblock %}

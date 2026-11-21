@@ -327,6 +327,32 @@ class Ocena(models.Model):
             bledy["wnioski_iprz"] = "Wpisz wnioski do indywidualnego programu rozwoju zawodowego (§ 11 ust. 1 pkt 5)."
         return bledy
 
+    def obserwacje_dla(self, user):
+        return [o for o in self.obserwacje.select_related("autor") if o.widoczna_dla(user)]
+
+    def dodaj_obserwacje(self, autor, data, tresc: str, kryterium: str = "", skutek: str = "", udostepniona: bool = False):
+        if autor.id not in (self.oceniajacy_id, self.oceniany_id):
+            raise PermissionDenied("Obserwacje dodają strony oceny.")
+        if self.sporzadzona:
+            raise PermissionDenied("Ocena została sporządzona; okres obserwacji jest zamknięty.")
+        if not tresc.strip():
+            raise ValidationError({"tresc": "Opisz zaobserwowane działanie."})
+        # Osiągnięcie zgłoszone przez ocenianego zawsze trafia do przełożonego.
+        o = Obserwacja(ocena=self, autor=autor, data=data or zegar.dzis(), kryterium=kryterium, tresc=tresc.strip(),
+                       skutek=skutek.strip(), udostepniona=udostepniona or autor.id == self.oceniany_id)
+        o.full_clean()
+        o.save()
+        return o
+
+    def obserwacje_wg_kryteriow(self, user) -> list[tuple[str, str, list]]:
+        """Dla przygotowania rozmowy: kryterium → widoczne obserwacje (puste listy też, jako sygnał do pytania)."""
+        widoczne = self.obserwacje_dla(user)
+        grupy = [(kod, nazwa, [o for o in widoczne if o.kryterium == kod]) for kod, nazwa in self.wszystkie_kryteria().items()]
+        bez = [o for o in widoczne if not o.kryterium]
+        if bez:
+            grupy.append(("", "Bez przypisanego kryterium", bez))
+        return grupy
+
     @transaction.atomic
     def sporzadz(self, czastkowe: dict[str, int], data_rozmowy, uzasadnienie: str, wnioski: str):
         if self.sporzadzona:
@@ -436,3 +462,39 @@ class ZegarDemo(models.Model):
     def save(self, *args, **kwargs):
         self.pk = 1
         super().save(*args, **kwargs)
+
+
+class Obserwacja(models.Model):
+    """Datowana notatka z okresu oceny. Notatka przełożonego jest prywatna, dopóki jej nie udostępni;
+    osiągnięcie zgłoszone przez ocenianego widzą obie strony."""
+
+    ocena = models.ForeignKey(Ocena, on_delete=models.CASCADE, related_name="obserwacje")
+    autor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    data = models.DateField()
+    kryterium = models.CharField(max_length=60, blank=True)
+    tresc = models.TextField("co się wydarzyło")
+    skutek = models.TextField("jaki był skutek", blank=True)
+    udostepniona = models.BooleanField(default=False)
+    utworzona_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "obserwacje"
+        ordering = ["data", "pk"]
+
+    @property
+    def od_ocenianego(self) -> bool:
+        return self.autor_id == self.ocena.oceniany_id
+
+    def widoczna_dla(self, user) -> bool:
+        # Tylko strony oceny; kadry i DG nie czytają notatek (statystyki są zbiorcze).
+        if user.id == self.autor_id:
+            return True
+        return self.udostepniona and user.id in (self.ocena.oceniany_id, self.ocena.oceniajacy_id)
+
+    def clean(self):
+        if self.kryterium and self.kryterium not in self.ocena.wszystkie_kryteria():
+            raise ValidationError({"kryterium": "Wybierz kryterium z tej oceny."})
+        if self.data and self.ocena.poczatek_okresu and self.data < self.ocena.poczatek_okresu:
+            raise ValidationError({"data": "Obserwacja sprzed początku okresu oceny."})
+        if self.data and self.data > zegar.dzis():
+            raise ValidationError({"data": "Obserwacja nie może mieć daty z przyszłości."})

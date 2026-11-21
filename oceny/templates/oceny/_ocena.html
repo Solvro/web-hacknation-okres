@@ -24,10 +24,11 @@
       <table hx-post="{% url 'oceny:podglad_wyniku' ocena.pk %}" hx-trigger="change" hx-include="closest form" hx-target="#wynik" hx-swap="outerHTML">
         <thead><tr><th>Kryterium</th>{% for pkt, opis in skala.items %}<th title="{{ opis }}">{{ pkt }}</th>{% endfor %}</tr></thead>
         <tbody>
-          {% for kod, nazwa, wybrane in kryteria_oceny %}
-            <tr id="pole-kryterium_{{ kod }}"><td>{{ nazwa }}</td>
+          {% for g in obserwacje_kryteriow %}
+            <tr id="pole-kryterium_{{ g.kod }}"><td>{{ g.nazwa }}
+              <br><a class="cicho" href="#obserwacje">{{ g.obserwacje|length }} obserwacji</a>{% if g.podpowiedz %}<br><span class="cicho">{{ g.podpowiedz }}</span>{% endif %}</td>
               {% for pkt, opis in skala.items %}
-                <td><input type="radio" name="kryterium_{{ kod }}" value="{{ pkt }}" aria-label="{{ nazwa }}: {{ opis }}" {% if wybrane == pkt %}checked{% endif %}></td>
+                <td><input type="radio" name="kryterium_{{ g.kod }}" value="{{ pkt }}" aria-label="{{ g.nazwa }}: {{ opis }}" {% if g.wybrane == pkt %}checked{% endif %}></td>
               {% endfor %}
             </tr>
           {% endfor %}

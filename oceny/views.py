@@ -133,10 +133,23 @@ def _dane_formularza(request, ocena):
     return czastkowe, data_rozmowy, request.POST.get("uzasadnienie", ""), request.POST.get("wnioski_iprz", "")
 
 
+def _podpowiedz_pytania(ocena, kod) -> str:
+    """Pytanie do rozmowy z pierwszego wskaźnika kryterium w Załączniku nr 1."""
+    opis = rules.criteria(ocena.wersja_regul)[kod]["opis"]
+    return f"Brak obserwacji. Zapytaj w rozmowie o przykład z okresu oceny: „{opis[0]}”"
+
+
 def _kontekst_oceny(request, ocena, czastkowe=None, bledy=None, **pola):
     czastkowe = ocena.oceny_czastkowe if czastkowe is None else czastkowe
+    grupy = {kod: obs for kod, _, obs in ocena.obserwacje_wg_kryteriow(request.user)}
     return _kontekst(request, ocena) | {
         "kryteria_oceny": [(kod, nazwa, czastkowe.get(kod)) for kod, nazwa in ocena.wszystkie_kryteria().items()],
+        "obserwacje_kryteriow": [
+            {"kod": kod, "nazwa": nazwa, "wybrane": czastkowe.get(kod), "obserwacje": grupy.get(kod, []),
+             "podpowiedz": "" if grupy.get(kod) else _podpowiedz_pytania(ocena, kod)}
+            for kod, nazwa in ocena.wszystkie_kryteria().items()
+        ],
+        "obserwacje_bez_kryterium": grupy.get("", []),
         "skala": rules.load(ocena.wersja_regul)["punktacja"]["skala_czastkowa"],
         "wynik": ocena.podglad_wyniku(czastkowe),
         "bledy_pol": bledy or {},
@@ -237,3 +250,20 @@ def demo_konta():
     if not settings.OKRES_DEMO:
         return []
     return list(User.objects.filter(username__in=LOGINY_DEMO).select_related("pracownik").order_by("pk"))
+
+
+@login_required
+@require_POST
+def dodaj_obserwacje(request, pk):
+    ocena = _ocena_dla(request, pk)
+    try:
+        data = date.fromisoformat(request.POST.get("data", ""))
+    except ValueError:
+        data = None
+    bledy = {}
+    try:
+        ocena.dodaj_obserwacje(request.user, data, request.POST.get("tresc", ""), request.POST.get("kryterium", ""),
+                               request.POST.get("skutek", ""), request.POST.get("udostepniona") == "1")
+    except ValidationError as e:
+        bledy = {k: v[0] for k, v in e.message_dict.items()}
+    return render(request, "oceny/_obserwacje.html", _kontekst_oceny(request, ocena) | {"bledy_obserwacji": bledy})

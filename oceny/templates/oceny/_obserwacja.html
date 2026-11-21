@@ -1,0 +1,4 @@
+<article id="obserwacja-{{ o.pk }}" class="{% if o.od_ocenianego %}hr{% else %}potwierdzone{% endif %}" style="margin:.4rem 0">
+  <strong>{{ o.data|date:"d.m.Y" }}</strong> · {% if o.od_ocenianego %}osiągnięcie zgłoszone przez ocenianego{% else %}{{ o.autor.get_full_name }}{% if not o.udostepniona %} (prywatna){% endif %}{% endif %}<br>
+  {{ o.tresc|linebreaksbr }}{% if o.skutek %}<br><em>Skutek:</em> {{ o.skutek|linebreaksbr }}{% endif %}
+</article>
