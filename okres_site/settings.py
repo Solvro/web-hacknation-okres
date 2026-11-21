@@ -29,10 +29,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
 
-# Bez klucza w środowisku tylko tryb deweloperski (klucz losowy, sesje giną po restarcie).
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or (get_random_secret_key() if DEBUG else None)
+# Klucz: ze środowiska, albo z pliku na wolumenie danych (generuje go entrypoint kontenera przy pierwszym starcie,
+# czyta też `docker compose exec`), albo w trybie deweloperskim losowy (sesje giną po restarcie).
+DATA_DIR = Path(os.environ.get("OKRES_DATA_DIR", BASE_DIR))
+_PLIK_KLUCZA = DATA_DIR / ".secret_key"
+SECRET_KEY = (os.environ.get("DJANGO_SECRET_KEY")
+              or (_PLIK_KLUCZA.read_text().strip() if _PLIK_KLUCZA.is_file() else "")
+              or (get_random_secret_key() if DEBUG else None))
 if not SECRET_KEY:
-    raise RuntimeError("Ustaw DJANGO_SECRET_KEY (patrz .env.example).")
+    raise RuntimeError("Ustaw DJANGO_SECRET_KEY albo uruchom kontener, który wygeneruje klucz w OKRES_DATA_DIR/.secret_key "
+                       "(patrz README, „Uruchomienie”).")
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
@@ -41,6 +47,10 @@ CSRF_TRUSTED_ORIGINS = [o for o in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS",
 if os.environ.get("DJANGO_BEHIND_PROXY", "0") == "1":
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SESSION_COOKIE_SECURE = CSRF_COOKIE_SECURE = True
+    # HSTS tylko za proxy z TLS. Przekierowanie HTTP → HTTPS robi proxy; w aplikacji byłoby przekierowaniem
+    # także dla healthchecku z wnętrza kontenera (http://127.0.0.1:8000).
+    SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_HSTS_SECONDS", "31536000"))
+    SILENCED_SYSTEM_CHECKS = ["security.W008"]
 
 
 # Application definition
@@ -94,7 +104,6 @@ WSGI_APPLICATION = 'okres_site.wsgi.application'
 
 # Mały urząd: SQLite w katalogu danych (OKRES_DATA_DIR, w kontenerze wolumen /app/data).
 # Duży urząd: DATABASE_URL (np. postgres://...; wymaga doinstalowania sterownika bazy).
-DATA_DIR = Path(os.environ.get("OKRES_DATA_DIR", BASE_DIR))
 DATABASES = {
     'default': dj_database_url.config(default=f"sqlite:///{DATA_DIR / 'db.sqlite3'}", conn_max_age=600),
 }
@@ -168,7 +177,8 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
         'OPTIONS': {'host': os.environ["OKRES_SMTP_HOST"], 'port': int(os.environ.get("OKRES_SMTP_PORT", "25"))},
     } if os.environ.get("OKRES_SMTP_HOST") else {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+        # Bez SMTP: wiadomości w logu kontenera, z ostrzeżeniem (oceny/poczta.py).
+        'BACKEND': 'oceny.poczta.BezSMTP',
     },
 }
 

@@ -9,7 +9,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     UV_LINK_MODE=copy \
     UV_PROJECT_ENVIRONMENT=/opt/venv \
     PATH="/opt/venv/bin:$PATH" \
-    OKRES_DATA_DIR=/app/data
+    OKRES_DATA_DIR=/app/data \
+    DJANGO_DEBUG=0
 
 COPY --from=uv /uv /usr/local/bin/uv
 

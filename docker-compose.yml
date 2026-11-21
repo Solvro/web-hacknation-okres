@@ -1,12 +1,17 @@
 # Uruchomienie jedną komendą: docker compose up --build
-# Przed pierwszym startem: cp .env.example .env i uzupełnij DJANGO_SECRET_KEY.
+# Przed pierwszym startem: cp .env.example .env. Bez DJANGO_SECRET_KEY klucz zostanie wygenerowany na wolumenie.
 services:
   okres:
     build: .
-    env_file: .env
+    env_file:
+      - path: .env
+        required: false
     environment:
       # Asystent AI (opcjonalny): tryb rozumowania modelu wyłączony, chyba że .env mówi inaczej
       OKRES_AI_THINK: ${OKRES_AI_THINK:-0}
+    extra_hosts:
+      # Ollama na hoście: OKRES_OLLAMA_URL=http://host.docker.internal:11434 (działa też na Linuksie)
+      - "host.docker.internal:host-gateway"
     ports:
       - "8000:8000"
     volumes:
@@ -17,7 +22,9 @@ services:
   # Ten sam obraz i ta sama baza; alternatywnie cron hosta (DEPLOY.md).
   scheduler:
     build: .
-    env_file: .env
+    env_file:
+      - path: .env
+        required: false
     volumes:
       - okres-data:/app/data
     depends_on:

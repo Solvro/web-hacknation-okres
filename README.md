@@ -11,11 +11,11 @@ Terminy, punktację i warunki liczy deterministyczny kod sterowany wersjonowanym
 **Docker (jedna komenda):**
 
 ```sh
-cp .env.example .env    # ustaw DJANGO_SECRET_KEY; OKRES_DEMO=1 dla pokazu
+cp .env.example .env    # OKRES_DEMO=1 dla pokazu, 0 w urzędzie
 docker compose up --build
 ```
 
-Aplikacja: <http://localhost:8000>. Kontener sam wykonuje migracje. W trybie demo przy pustej bazie wczytuje dane syntetyczne. Usługa `scheduler` raz na dobę wysyła przypomnienia i zakłada kolejne okresy oceny. Szczegóły wdrożenia, w tym Coolify, są w [DEPLOY.md](DEPLOY.md).
+Aplikacja: <http://localhost:8000>. Kontener sam wykonuje migracje. Bez `DJANGO_SECRET_KEY` w `.env` przy pierwszym starcie losuje klucz i zapisuje go na wolumenie danych (`/app/data/.secret_key`), więc restart i aktualizacja obrazu nie wylogowują użytkowników. Własny klucz można podać jednolinijkowcem: `echo "DJANGO_SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_urlsafe(50))')" >> .env`. Usługa `scheduler` raz na dobę wysyła przypomnienia i zakłada kolejne okresy oceny. Szczegóły wdrożenia, w tym Coolify, są w [DEPLOY.md](DEPLOY.md).
 
 **Bez Dockera (Python 3.13, [uv](https://docs.astral.sh/uv/)):**
 
@@ -24,8 +24,41 @@ uv sync
 uv run python manage.py migrate
 uv run python manage.py seed_demo      # dane syntetyczne, tylko w trybie demo (DEBUG lub OKRES_DEMO=1)
 uv run python manage.py runserver
-uv run python manage.py test oceny partner
+uv run python manage.py test
 ```
+
+### Pierwsze uruchomienie w urzędzie (`OKRES_DEMO=0`)
+
+W profilu urzędu nie ma danych demo, zegara ani szybkiego logowania. Kolejne kroki:
+
+1. Konto administratora kadr:
+
+   ```sh
+   docker compose exec okres python manage.py createsuperuser
+   ```
+
+2. Panel kadr (`/admin/`) → **Urząd**: nazwa, miejscowość i aktywny pakiet przepisów (domyślnie `2016-04-04`).
+3. Import pracowników z CSV (separator `;`, kodowanie UTF-8). Ponowny import aktualizuje dane:
+
+   ```sh
+   docker compose cp pracownicy.csv okres:/app/data/pracownicy.csv
+   docker compose exec okres python manage.py import_pracownikow /app/data/pracownicy.csv
+   ```
+
+   ```text
+   login;imie;nazwisko;email;komorka;stanowisko;rodzaj_stanowiska;przelozony;urzednik;rok_mianowania;stopien;data_stopnia
+   jkowalska;Joanna;Kowalska;jk@urzad.local;Wydział Spraw Obywatelskich;naczelnik wydziału;kierujacy;;tak;2012;4;2021-06-01
+   anowak;Adam;Nowak;an@urzad.local;Wydział Spraw Obywatelskich;specjalista;pozostale;jkowalska;nie;;;
+   ```
+
+   `rodzaj_stanowiska` to `kierownik_urzedu`, `kierujacy` albo `pozostale` i wyznacza arkusz A, B albo C (§ 3). Hasła nie są importowane. Nadaje je kadry w panelu albo `python manage.py changepassword <login>`. SSO to plan pilotażu.
+4. Panel kadr → **Pracownicy**: zaznacz dyrektora generalnego (rozpatruje sprzeciwy, widzi statystyki). Konta kadr mają `is_staff`.
+5. Panel kadr → **Oceny** → Dodaj: pierwsza sprawa każdego pracownika (oceniany, oceniający, początek okresu i jego podstawa). Kolejne sprawy zakłada scheduler po sporządzeniu oceny.
+6. Poczta (opcjonalnie): `OKRES_SMTP_HOST` i `OKRES_POWIADOMIENIA_EMAIL=1`. Bez SMTP powiadomienia działają w aplikacji, a wiadomości e-mail trafiają tylko do logu z ostrzeżeniem.
+
+### Tryb demo (`OKRES_DEMO=1`)
+
+Przy pustej bazie kontener wczytuje dane syntetyczne (`seed_demo`). Pasek „DANE FIKCYJNE” jest widoczny cały czas, kadry mogą przesunąć zegar systemowy, a strona logowania ma przyciski ról. Reset danych: `docker compose down -v && docker compose up`.
 
 **Konta demo** (hasło `demo`; w trybie demo można też kliknąć rolę na stronie logowania):
 
