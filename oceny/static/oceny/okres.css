@@ -71,10 +71,30 @@ a:hover { text-decoration-thickness: 2px; }
 .gora nav a[aria-current] .ikona { color: var(--mieta); }
 .gora nav a[aria-current] { box-shadow: inset 0 -2px var(--mieta); }
 .gora :focus-visible { outline-color: var(--mieta); }
-.konto { display: flex; gap: .6rem; align-items: center; margin-left: auto; font-size: .85rem; }
+.konto { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; margin-left: auto; font-size: .85rem; }
 .kto { color: #e0eafb; overflow-wrap: anywhere; }
 .konto button { background: transparent; border-color: #7187a2; color: #fff; padding: .36rem .65rem; white-space: nowrap; }
 .konto button:hover { background: #284662; color: #fff; }
+.zmiana-roli { position: relative; margin: 0; }
+.zmiana-roli > summary { color: #fff; border: 1px solid #7187a2; padding: .36rem 1.55rem .36rem .65rem; }
+.zmiana-roli > summary:hover, .zmiana-roli[open] > summary { background: #284662; }
+.zmiana-roli .konta-lista {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  width: min(22rem, calc(100vw - 2 * var(--odstep)));
+  margin-top: .35rem;
+  max-height: 65vh;
+  overflow: auto;
+  padding: .65rem;
+  color: var(--tekst);
+  background: var(--tlo);
+  border: 1px solid var(--ramka);
+  border-radius: .65rem;
+  box-shadow: var(--cien);
+}
+.zmiana-roli form button { color: var(--glowny); white-space: normal; }
+.zmiana-roli form button:hover { background: #eaf2fb; color: var(--glowny); }
 
 main { max-width: 80rem; margin: 0 auto; padding: clamp(1.2rem, 3vw, 2.25rem) var(--odstep) 4rem; }
 h1, h2, h3 { color: var(--granat); line-height: 1.2; overflow-wrap: anywhere; }
@@ -375,6 +395,8 @@ details > :last-child:not(summary) { margin-bottom: 0; }
 @media (max-width: 38rem) {
   .logowanie-uklad { grid-template-columns: minmax(0, 1fr); }
   .kto { max-width: 9rem; }
+  .zmiana-roli { position: static; }
+  .zmiana-roli .konta-lista { right: var(--odstep); }
   th, td { padding: .55rem; }
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -387,8 +409,6 @@ details > :last-child:not(summary) { margin-bottom: 0; }
   .dane-wniosku { transition: grid-template-rows .18s ease, visibility .18s; }
   .konta-lista .ikona { transition: transform .16s; }
   .konta-lista button:hover .ikona { transform: translateX(.2rem); }
-  .powiadomienia li { transition: opacity .14s, transform .14s; }
-  .powiadomienia li.htmx-swapping { opacity: 0; transform: translateX(.3rem); }
   .lista-spraw tr, .sprawa-link { transition: background-color .16s, color .16s; }
   .htmx-request { transition: opacity .2s; opacity: .72; }
   @keyframes wejscie {

@@ -33,7 +33,7 @@
   {% endfor %}
   {% if k.uzgodnienia %}<h3>Uzgodnienia</h3>{% for u in k.uzgodnienia %}{% include "partner/_uzgodnienie.html" %}{% endfor %}{% endif %}
   {% if k.docenienia %}<h3>Ostatnie docenienia</h3><ul>{% for d in k.docenienia %}<li>{{ d.data|date:"d.m.Y" }}: {{ d.za_co }}{% if d.skutek %} — {{ d.skutek }}{% endif %}</li>{% endfor %}</ul>{% endif %}
-  <details><summary>Dziennik zadań ({{ k.zdarzenia|length }} ostatnich)</summary>
+  <details><summary>Dziennik zadań{% if k.zdarzenia %} <span class="znacznik">{{ k.zdarzenia|length }}</span>{% endif %}</summary>
     <ul>{% for z in k.zdarzenia %}<li>{{ z.data|date:"d.m.Y" }} · {{ z.rodzaj_nazwa }}: {{ z.opis }}</li>{% empty %}<li>Brak wpisów.</li>{% endfor %}</ul>
     <form hx-post="{% url 'partner:dodaj_zdarzenie' k.p.pk %}" hx-target="#karta-{{ k.p.pk }}" hx-swap="outerHTML">
       <label>Data <input type="date" name="data"></label>

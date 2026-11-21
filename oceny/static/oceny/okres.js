@@ -94,3 +94,8 @@ document.addEventListener("htmx:load", function (event) {
 document.addEventListener("click", function (event) {
   if (event.target.closest("[data-drukuj]")) window.print();
 });
+
+document.addEventListener("htmx:afterSettle", function (event) {
+  if (event.target.id !== "przypomnienia") return;
+  event.target.querySelector("summary, [role=status]")?.focus();
+});

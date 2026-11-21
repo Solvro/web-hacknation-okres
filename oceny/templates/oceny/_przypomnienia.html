@@ -1,0 +1,18 @@
+<div id="przypomnienia">
+  {% if liczba_powiadomien %}
+    <details class="przypomnienia"{% if przypomnienia_otwarte %} open{% endif %}>
+      <summary>{% include "oceny/_ikona.html" with ikona="dzwonek" %} Przypomnienia <span class="znacznik">Nieprzeczytane: {{ liczba_powiadomien }}</span></summary>
+      <ul class="powiadomienia">{% for p in powiadomienia %}
+        <li><a href="{% url 'oceny:szczegoly' p.ocena_id %}">{{ p.tresc }}</a>
+          <form method="post" action="{% url 'oceny:przeczytane' p.pk %}" hx-post="{% url 'oceny:przeczytane' p.pk %}" hx-target="#przypomnienia" hx-swap="outerHTML" hx-sync="#przypomnienia:drop" hx-disabled-elt="#przypomnienia button">
+            {% csrf_token %}
+            <button class="drugorzedny" type="submit" id="przeczytane-{{ p.pk }}" aria-label="Oznacz jako przeczytane: {{ p.tresc }}">Oznacz jako przeczytane</button>
+          </form>
+        </li>
+      {% endfor %}</ul>
+      {% if liczba_powiadomien > powiadomienia|length %}<p class="cicho">Najpierw wyświetlamy 20 przypomnień. Kolejne pojawią się po oznaczeniu pozycji jako przeczytanych.</p>{% endif %}
+    </details>
+  {% elif przypomnienia_otwarte %}
+    <p class="potwierdzone" role="status" tabindex="-1">Wszystkie przypomnienia przeczytane.</p>
+  {% endif %}
+</div>

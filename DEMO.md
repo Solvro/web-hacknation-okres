@@ -1,6 +1,6 @@
 # Scenariusz pokazu (3 minuty)
 
-Przygotowanie: `docker compose up` z `OKRES_DEMO=1` na czystym wolumenie (seed wczyta się sam) albo `uv run python manage.py seed_demo`. Przeglądarka 1280×720. W drugiej karcie zalogowane `kadry`, bo ono przestawia zegar w panelu kadr (Zegar demo). Pasek „Tryb demonstracyjny” pokazuje ustawioną datę. Dane użyte w pokazie są syntetyczne.
+Przygotowanie: `docker compose up` z `OKRES_DEMO=1` na czystym wolumenie (seed wczyta się sam) albo `uv run python manage.py seed_demo`. Przeglądarka 1280×720. Do przestawiania zegara w panelu kadr użyj konta `kadry`. Jeśli pokazujesz dwie role jednocześnie, otwórz je w osobnych profilach przeglądarki lub zwykłym i prywatnym oknie. Karty z tego samego profilu współdzielą sesję. Pasek „Tryb demonstracyjny” pokazuje ustawioną datę. Dane użyte w pokazie są syntetyczne.
 
 | Czas | Rola | Co robimy | Co widzi jury |
 |---|---|---|---|

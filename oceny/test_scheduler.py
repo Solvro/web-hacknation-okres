@@ -102,3 +102,22 @@ class SchedulerTest(TestCase):
                     self.client.get(url, {"data": "2026-12-01", "godzina": godzina}),
                     "Podaj poprawną datę i godzinę spotkania", status_code=400,
                 )
+
+    def test_lista_przypomnien_odswieza_sie_bez_przeladowania(self):
+        o = Ocena.objects.get(oceniany=self.jan)
+        dzien = date(2026, 11, 21)
+        pilne = Przypomnienie.objects.create(
+            ocena=o, odbiorca=self.anna, klucz="pilne", tresc="Sprawa z terminem", termin=dzien, utworzone=dzien,
+        )
+        pozostale = Przypomnienie.objects.create(
+            ocena=o, odbiorca=self.anna, klucz="bez-terminu", tresc="Sprawa bez terminu", utworzone=dzien,
+        )
+        self.client.force_login(self.anna)
+        r = self.client.get(reverse("oceny:moje_sprawy"))
+        self.assertContains(r, "Nieprzeczytane: 2")
+        self.assertLess(r.content.index(b"Sprawa z terminem"), r.content.index(b"Sprawa bez terminu"))
+        r = self.client.post(reverse("oceny:przeczytane", args=[pilne.pk]), headers={"HX-Request": "true"})
+        self.assertContains(r, "Nieprzeczytane: 1")
+        self.assertNotContains(r, "Sprawa z terminem")
+        r = self.client.post(reverse("oceny:przeczytane", args=[pozostale.pk]), headers={"HX-Request": "true"})
+        self.assertContains(r, "Wszystkie przypomnienia przeczytane.")

@@ -30,6 +30,16 @@
         {% endwith %}
         <div class="konto">
           <span class="kto">{{ user.get_full_name|default:user.username }}</span>
+          {% if okres_demo %}
+            {% with konta=demo_konta %}
+              {% if konta|length > 1 %}
+                <details class="zmiana-roli">
+                  <summary>Zmień rolę demo</summary>
+                  {% include "oceny/_konta_demo.html" %}
+                </details>
+              {% endif %}
+            {% endwith %}
+          {% endif %}
           <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="drugorzedny" type="submit">Wyloguj</button></form>
         </div>
       {% endif %}

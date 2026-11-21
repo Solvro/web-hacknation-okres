@@ -60,7 +60,7 @@ class SprawyTest(TestCase):
         self.client.force_login(self.jan)
         r = self.client.get(reverse("oceny:moje_sprawy"))
         self.assertContains(r, "Jan Borkowski")
-        self.assertNotContains(r, "Piotr Wysocki")
+        self.assertNotContains(r, "Piotr Wysocki</a>")
         self.client.force_login(self.anna)
         r = self.client.get(reverse("oceny:moje_sprawy") + "?filtr=moje")
         self.assertContains(r, "Piotr Wysocki")
@@ -80,6 +80,15 @@ class SprawyTest(TestCase):
         self.assertEqual(self.client.post(reverse("demo_zaloguj"), {"login": "admin"}).status_code, 403)
         with self.settings(OKRES_DEMO=False):
             self.assertEqual(self.client.post(reverse("demo_zaloguj"), {"login": "oceniany"}).status_code, 403)
+
+    def test_zmiana_roli_z_naglowka_tylko_w_demo(self):
+        self.client.force_login(self.anna)
+        start = reverse("oceny:moje_sprawy")
+        self.assertContains(self.client.get(start), "Zmień rolę demo")
+        self.assertRedirects(self.client.post(reverse("demo_zaloguj"), {"login": "oceniany"}), start)
+        self.assertEqual(self.client.get(start).wsgi_request.user, self.jan)
+        with self.settings(OKRES_DEMO=False):
+            self.assertNotContains(self.client.get(start), "Zmień rolę demo")
 
     def test_strona_sprawy_i_logowania(self):
         self.assertContains(self.client.get(reverse("login")), "Wybierz konto demonstracyjne")

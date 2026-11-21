@@ -19,17 +19,7 @@
     <section class="panel konta-demo" aria-labelledby="demo-tytul">
       <h2 id="demo-tytul">Wybierz konto demonstracyjne</h2>
       <p class="cicho">Zaloguj się w wybranej roli bez hasła.</p>
-      <div class="konta-lista">
-        {% for k in konta %}
-          <form method="post" action="{% url 'demo_zaloguj' %}">{% csrf_token %}
-            <input type="hidden" name="login" value="{{ k.username }}">
-            <button class="drugorzedny" type="submit">
-              <span><strong>{{ k.get_full_name|default:k.username }}</strong>{% if k.pracownik %}<small>{{ k.pracownik.stanowisko }}</small>{% endif %}</span>
-              {% include "oceny/_ikona.html" with ikona="strzalka" %}
-            </button>
-          </form>
-        {% endfor %}
-      </div>
+      {% include "oceny/_konta_demo.html" with user=None %}
     </section>
   {% endif %}
 </div>

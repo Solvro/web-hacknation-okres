@@ -5,15 +5,7 @@
   <h1>Moje sprawy</h1>
 </div>
 {% if wynik_schedulera %}<p class="potwierdzone" role="status">Scheduler: nowe przypomnienia {{ wynik_schedulera.przypomnienia }}, nowe sprawy {{ wynik_schedulera.nowe_sprawy }}.</p>{% endif %}
-{% if powiadomienia %}
-  <details class="przypomnienia">
-    <summary>{% include "oceny/_ikona.html" with ikona="dzwonek" %} Przypomnienia</summary>
-    <ul class="powiadomienia">{% for p in powiadomienia %}
-      <li id="przypomnienie-{{ p.pk }}"><a href="{% url 'oceny:szczegoly' p.ocena_id %}">{{ p.tresc }}</a>
-        <button class="drugorzedny" hx-post="{% url 'oceny:przeczytane' p.pk %}" hx-target="#przypomnienie-{{ p.pk }}" hx-swap="outerHTML swap:140ms">Oznacz jako przeczytane</button></li>
-    {% endfor %}</ul>
-  </details>
-{% endif %}
+{% include "oceny/_przypomnienia.html" %}
 <div class="narzedzia-spraw">
   <nav class="filtry" aria-label="Filtr spraw">
     <a href="{% url 'oceny:moje_sprawy' %}"{% if filtr != "moje" %} aria-current="page"{% endif %}>{% include "oceny/_ikona.html" with ikona="lista" %} Wszystkie</a>

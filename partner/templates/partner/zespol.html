@@ -3,6 +3,9 @@
 {% block klasa_strony %}partner{% endblock %}
 {% block tresc %}
 <h1>Zespół · wirtualny HR partner</h1>
-<p class="hr">Sygnały to wskazówki do rozmowy wyliczone z faktów organizacyjnych (dziennik zadań, okresy nieobecności bez przyczyn, zgłoszone osiągnięcia) według reguł w <code>rules/hr_partner.yaml</code>. Nie są oceną, nie trafiają do arkusza ani do kadr. Pracownik widzi te same fakty. Brak wpisów oznacza brak danych.</p>
-{% for k in karty %}{% include "partner/_karta.html" %}{% empty %}<p>Nie masz podległych pracowników.</p>{% endfor %}
+<p class="hr">Sygnały pomagają przygotować rozmowę na podstawie wpisów w dzienniku zadań, okresów nieobecności i zgłoszonych osiągnięć. Szczegóły sygnału pokazują, z których wpisów wynika. Pracownik widzi te same fakty. Zapisy są dostępne w HR partnerze.</p>
+{% for k in karty %}{% include "partner/_karta.html" %}{% empty %}<div class="panel">
+  <p>Nie masz podległych pracowników. W sekcji „Mój dobrostan i rozwój” znajdziesz dane dotyczące Twojej pracy.</p>
+  {% if user.pracownik %}<a class="przycisk drugorzedny" href="{% url 'partner:moje' %}">Mój dobrostan i rozwój</a>{% endif %}
+</div>{% endfor %}
 {% endblock %}

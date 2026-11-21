@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import F, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -51,16 +51,23 @@ def moje_sprawy(request):
     wiersze.sort(key=lambda w: (not (w["krok"] and w["krok"]["moj"]), (w["krok"] or {}).get("termin") or date.max))
     return render(request, "oceny/moje_sprawy.html", {
         "wiersze": wiersze, "filtr": request.GET.get("filtr", ""),
-        "powiadomienia": request.user.przypomnienia.filter(przeczytane=False).select_related("ocena")[:20],
         "wynik_schedulera": request.session.pop("wynik_schedulera", None),
-    })
+    } | _przypomnienia(request.user))
+
+
+def _przypomnienia(user):
+    qs = user.przypomnienia.filter(przeczytane=False).order_by(F("termin").asc(nulls_last=True), "-utworzone", "pk")
+    return {"powiadomienia": list(qs[:20]), "liczba_powiadomien": qs.count()}
 
 
 @login_required
 @require_POST
 def przeczytane(request, pk):
     request.user.przypomnienia.filter(pk=pk).update(przeczytane=True)
-    return HttpResponse("")
+    if request.headers.get("HX-Request") == "true":
+        ctx = _przypomnienia(request.user) | {"przypomnienia_otwarte": True}
+        return render(request, "oceny/_przypomnienia.html", ctx)
+    return redirect("oceny:moje_sprawy")
 
 
 @login_required
@@ -357,7 +364,7 @@ def demo_zaloguj(request):
     login_demo = request.POST.get("login", "")
     if not settings.OKRES_DEMO or login_demo not in LOGINY_DEMO:
         raise PermissionDenied("Szybkie logowanie działa tylko w trybie demo.")
-    login(request, get_object_or_404(User, username=login_demo), backend="django.contrib.auth.backends.ModelBackend")
+    login(request, get_object_or_404(User, username=login_demo, is_active=True), backend="django.contrib.auth.backends.ModelBackend")
     return redirect("oceny:moje_sprawy")
 
 
@@ -368,7 +375,7 @@ def demo_konta():
 
     if not settings.OKRES_DEMO:
         return []
-    return list(User.objects.filter(username__in=LOGINY_DEMO).select_related("pracownik").order_by("pk"))
+    return list(User.objects.filter(username__in=LOGINY_DEMO, is_active=True).select_related("pracownik").order_by("pk"))
 
 
 @login_required
