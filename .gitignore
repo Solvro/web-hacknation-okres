@@ -1,0 +1,23 @@
+# materiały partnera: lokalnie, nie publikujemy
+materials/
+
+# sekrety
+.env
+.env.*
+!.env.example
+
+# zależności i buildy
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+.next/
+dist/
+build/
+
+# lokalne dane
+*.sqlite3
+*.db
+data/
+
+.DS_Store
