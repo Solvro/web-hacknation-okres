@@ -130,7 +130,7 @@ Bez płatnych licencji i bez usług zewnętrznych wymaganych do działania.
 ## Gdzie użyto AI
 
 - **W wytwarzaniu:** kod, testy i dokumentację pisaliśmy z asystentami AI do programowania (Claude Code, Codex) pod nadzorem zespołu. Każdą zmianę sprawdzały testy automatyczne, a kluczowe reguły porównaliśmy ręcznie z tekstem ustawy, rozporządzenia, schematami pól i dokumentem KPRM o liczeniu terminów. Kod przejrzał też osobny agent AI. Wynik przeglądu i wprowadzone poprawki są w `PROGRESS.md`.
-- **W produkcie:** AI jest opcjonalne i domyślnie wyłączone (`OKRES_AI=wylaczone`). Po włączeniu (`OKRES_AI=ollama`) model lokalny, domyślnie Gemma 4 12B przez Ollamę z wyłączonym trybem rozumowania, porządkuje wyłącznie notatki przełożonego według kryteriów:
+- **W produkcie:** AI jest opcjonalne i domyślnie wyłączone (`OKRES_AI=wylaczone`). Po włączeniu (`OKRES_AI=ollama`) model lokalny, domyślnie Gemma 4 12B (`OKRES_AI_MODEL=gemma4:12b`) przez Ollamę z wyłączonym trybem rozumowania (`OKRES_AI_THINK=0`), porządkuje wyłącznie notatki przełożonego według kryteriów:
   - każde zdanie odsyła do notatki źródłowej, a zdania bez źródła są odrzucane;
   - imiona i nazwiska stron są pseudonimizowane przed wysłaniem;
   - awaria modelu jest jawnie oznaczona;

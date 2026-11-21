@@ -153,6 +153,8 @@ OKRES_AI = os.environ.get("OKRES_AI", "wylaczone")
 OKRES_OLLAMA_URL = os.environ.get("OKRES_OLLAMA_URL", "http://localhost:11434")
 OKRES_AI_MODEL = os.environ.get("OKRES_AI_MODEL", "gemma4:12b")
 OKRES_AI_TIMEOUT = int(os.environ.get("OKRES_AI_TIMEOUT", "30"))
+# Tryb rozumowania modelu (Ollama „think”): 0 = wyłączony (szybciej, domyślnie), 1 = włączony.
+OKRES_AI_THINK = os.environ.get("OKRES_AI_THINK", "0") == "1"
 
 # Tryb demonstracyjny: zegar, dane syntetyczne i szybkie logowanie. Nigdy w profilu urzędu.
 OKRES_DEMO = os.environ.get("OKRES_DEMO", "1" if DEBUG else "0") == "1"

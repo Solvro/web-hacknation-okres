@@ -30,6 +30,11 @@ docker compose exec okres python manage.py scheduler
 | `DATABASE_URL` | opcjonalnie inna baza; Postgres wymaga doinstalowania sterownika |
 | `OKRES_DEMO` | `1` tylko na demo (zegar, dane syntetyczne, szybkie logowanie) |
 | `OKRES_SEED_ON_START` | `1`: w trybie demo wczytaj dane syntetyczne przy pustej bazie |
+| `OKRES_AI` | `wylaczone` (domyślnie) albo `ollama`: opcjonalny asystent porządkujący notatki |
+| `OKRES_OLLAMA_URL` | adres Ollamy w sieci urzędu, np. `http://localhost:11434` |
+| `OKRES_AI_MODEL` | `gemma4:12b` (domyślnie); alternatywa `hf.co/speakleash/Bielik-11B-v3.1-Instruct-GGUF:Q4_K_M` |
+| `OKRES_AI_THINK` | `0` (domyślnie): tryb rozumowania modelu wyłączony, szybsza odpowiedź; `1`: włączony |
+| `OKRES_AI_TIMEOUT` | limit czasu odpowiedzi modelu w sekundach (domyślnie 30) |
 
 ## Coolify (demo hackathonowe)
 

@@ -64,3 +64,36 @@ class AsystentTest(TestCase):
         self.assertContains(r, "Zestawienie bez AI")
         self.client.force_login(self.jan)
         self.assertEqual(self.client.post(reverse("oceny:asystent", args=[self.o.pk]), dane).status_code, 403)
+
+
+class OllamaPayloadTest(TestCase):
+    def _wyslij(self):
+        wyslane = {}
+
+        class Odp:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                return False
+
+            def read(self):
+                return json.dumps({"message": {"content": "{}"}}).encode()
+
+        def urlopen(req, timeout):
+            wyslane["body"] = json.loads(req.data)
+            return Odp()
+
+        with mock.patch.object(asystent.urllib.request, "urlopen", urlopen):
+            asystent._zapytaj_ollama("x")
+        return wyslane["body"]
+
+    @override_settings(OKRES_AI_MODEL="dowolny:model", OKRES_AI_THINK=False)
+    def test_domyslnie_bez_rozumowania_dla_kazdego_modelu(self):
+        body = self._wyslij()
+        self.assertIs(body["think"], False)
+        self.assertEqual(body["model"], "dowolny:model")
+
+    @override_settings(OKRES_AI_THINK=True)
+    def test_rozumowanie_wlaczane_zmienna(self):
+        self.assertIs(self._wyslij()["think"], True)

@@ -59,9 +59,9 @@ def _zapytaj_ollama(prompt: str) -> str:
         "stream": False,
         "format": "json",
         "messages": [{"role": "user", "content": prompt}],
+        # Ollama przyjmuje think=false także dla modeli bez trybu rozumowania.
+        "think": settings.OKRES_AI_THINK,
     }
-    if settings.OKRES_AI_MODEL == "gemma4:12b":
-        payload["think"] = False
     dane = json.dumps(payload).encode()
     req = urllib.request.Request(f"{settings.OKRES_OLLAMA_URL}/api/chat", data=dane,
                                  headers={"Content-Type": "application/json"})

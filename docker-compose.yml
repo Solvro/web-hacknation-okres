@@ -4,6 +4,9 @@ services:
   okres:
     build: .
     env_file: .env
+    environment:
+      # Asystent AI (opcjonalny): tryb rozumowania modelu wyłączony, chyba że .env mówi inaczej
+      OKRES_AI_THINK: ${OKRES_AI_THINK:-0}
     ports:
       - "8000:8000"
     volumes:
