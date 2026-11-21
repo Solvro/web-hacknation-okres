@@ -1,0 +1,10 @@
+:root {
+  --header-bg: #102744;
+  --header-color: #fff;
+  --header-branding-color: #fff;
+  --breadcrumbs-bg: #244361;
+  --breadcrumbs-fg: #e0eafb;
+}
+.znak-kadr { display: inline-flex; align-items: center; gap: .6rem; font-weight: 700; }
+.znak-kadr img { flex: none; }
+#header :focus-visible { outline: 2px solid #78e5cb; outline-offset: 3px; }

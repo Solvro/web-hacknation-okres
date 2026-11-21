@@ -80,7 +80,7 @@ class SprawyTest(TestCase):
             self.assertEqual(self.client.post(reverse("demo_zaloguj"), {"login": "oceniany"}).status_code, 403)
 
     def test_strona_sprawy_i_logowania(self):
-        self.assertContains(self.client.get(reverse("login")), "Pokaz: wejdź w rolę")
+        self.assertContains(self.client.get(reverse("login")), "Wybierz konto demonstracyjne")
         self.client.force_login(self.anna)
         r = self.client.get(reverse("oceny:szczegoly", args=[self.o.pk]))
         self.assertContains(r, "DANE FIKCYJNE")

@@ -29,3 +29,12 @@ td.x { text-align: center; font-weight: bold; width: 12mm; }
 .nowa-strona { break-before: page; }
 .potwierdzenie-elektroniczne { font: 7pt system-ui, sans-serif; color: #333; }
 @media print { .pasek { display: none; } .arkusz { padding: 0; } }
+@media screen {
+  .pasek { flex-wrap: wrap; color: #e0eafb; background: #102744; }
+  .pasek button { color: #102744; background: #78e5cb; border-radius: .6rem; font-weight: 650; }
+  .pasek button:hover { background: #acf1e0; }
+  .pasek a { color: #fff; text-underline-offset: .17em; }
+  .pasek span { color: #fff3d6; }
+  .pasek :focus-visible { outline: 2px solid #78e5cb; outline-offset: 3px; }
+  .arkusz { width: calc(100% - 2rem); }
+}

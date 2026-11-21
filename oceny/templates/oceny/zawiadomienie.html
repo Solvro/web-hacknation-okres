@@ -1,5 +1,7 @@
 {% load static %}<!doctype html>
 <html lang="pl"><head><meta charset="utf-8"><title>Zawiadomienie o zmianie terminu oceny</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="{% static 'oceny/znak.png' %}" type="image/png">
 <link rel="stylesheet" href="{% static 'oceny/wydruk.css' %}"></head>
 <body>
 <div class="pasek"><button type="button" onclick="window.print()">Drukuj / zapisz jako PDF</button><a href="{% url 'oceny:szczegoly' ocena.pk %}">Wróć do sprawy</a></div>

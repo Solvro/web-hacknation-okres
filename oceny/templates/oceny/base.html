@@ -3,32 +3,39 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block tytul %}OKRES{% endblock %} · OKRES</title>
+  <meta name="theme-color" content="#102744">
+  <title>{% block tytul %}Oceny okresowe{% endblock %} · OKRES</title>
+  <link rel="icon" href="{% static 'oceny/znak.png' %}" type="image/png">
   <link rel="stylesheet" href="{% static 'oceny/okres.css' %}">
   <script src="{% static 'oceny/htmx.min.js' %}" defer></script>
 </head>
-<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<body class="{% block klasa_strony %}{% endblock %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <a class="pomin" href="#tresc">Przejdź do treści</a>
   {% if okres_demo %}
     <div class="demo" role="status">DANE FIKCYJNE · tryb demonstracyjny{% if zegar_przesuniety %} · DEMO: zegar systemowy przesunięty na {{ zegar_przesuniety|date:"d.m.Y" }} (terminy liczone od tej daty){% endif %}</div>
   {% endif %}
   <header class="gora">
-    <a class="znak" href="{% url 'oceny:moje_sprawy' %}">OKRES</a>
-    <nav aria-label="Główna">
+    <div class="gora-uklad">
+      <a class="znak" href="{% url 'oceny:moje_sprawy' %}"><img src="{% static 'oceny/znak.png' %}" width="40" height="40" alt="">OKRES</a>
       {% if user.is_authenticated %}
-        <a href="{% url 'oceny:moje_sprawy' %}">Moje sprawy</a>
-        {% if user.pracownik.podwladni.exists %}<a href="{% url 'partner:zespol' %}">Zespół · HR partner</a>{% endif %}
-        {% if user.pracownik %}<a href="{% url 'partner:moje' %}">Mój dobrostan i rozwój</a>{% endif %}
-        {% if moze_statystyki %}<a href="{% url 'oceny:statystyki' %}">Statystyki</a>{% endif %}
-        {% if user.is_staff %}<a href="{% url 'admin:index' %}">Panel kadr</a>{% endif %}
+        {% with trasa=request.resolver_match.url_name obszar=request.resolver_match.namespace %}
+          <nav aria-label="Główna">
+            <a href="{% url 'oceny:moje_sprawy' %}"{% if obszar == 'oceny' and trasa != 'statystyki' %} aria-current="{% if trasa == 'moje_sprawy' %}page{% else %}true{% endif %}"{% endif %}>Moje sprawy</a>
+            {% if user.pracownik.podwladni.exists %}<a href="{% url 'partner:zespol' %}"{% if trasa == 'zespol' and obszar == 'partner' %} aria-current="page"{% endif %}>Zespół · HR partner</a>{% endif %}
+            {% if user.pracownik %}<a href="{% url 'partner:moje' %}"{% if trasa == 'moje' and obszar == 'partner' %} aria-current="page"{% endif %}>Mój dobrostan i rozwój</a>{% endif %}
+            {% if moze_statystyki %}<a href="{% url 'oceny:statystyki' %}"{% if trasa == 'statystyki' %} aria-current="page"{% endif %}>Statystyki</a>{% endif %}
+            {% if user.is_staff %}<a href="{% url 'admin:index' %}">Panel kadr</a>{% endif %}
+          </nav>
+        {% endwith %}
+        <div class="konto">
+          <span class="kto">{{ user.get_full_name|default:user.username }}</span>
+          <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="drugorzedny" type="submit">Wyloguj</button></form>
+        </div>
       {% endif %}
-    </nav>
-    {% if user.is_authenticated %}
-      <span class="kto">{{ user.get_full_name|default:user.username }}</span>
-      <form method="post" action="{% url 'logout' %}" style="display:inline">{% csrf_token %}<button class="drugorzedny" type="submit">Wyloguj</button></form>
-    {% endif %}
+    </div>
   </header>
-  <main>
-    {% if urzad %}<p class="cicho">{{ urzad.nazwa }}</p>{% endif %}
+  <main id="tresc" tabindex="-1">
+    {% if urzad and user.is_authenticated %}<p class="urzad">{{ urzad.nazwa }}</p>{% endif %}
     {% block tresc %}{% endblock %}
   </main>
 </body>

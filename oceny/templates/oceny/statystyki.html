@@ -1,9 +1,12 @@
 {% extends "oceny/base.html" %}
 {% block tytul %}Statystyki{% endblock %}
 {% block tresc %}
-<h1>Statystyki ocen okresowych</h1>
-<p class="cicho">Stan na {{ dzis|date:"d.m.Y" }}. Dane zbiorcze z procesu formalnego, bez notatek przełożonych i danych HR partnera. <a href="?format=csv">Pobierz CSV</a> (do sprawozdania).</p>
-<dl class="naglowek-sprawy">
+<div class="naglowek-strony statystyki-naglowek">
+  <div><h1>Statystyki ocen okresowych</h1>
+    <p class="cicho">Stan na {{ dzis|date:"d.m.Y" }}. Podsumowanie formalnego procesu ocen.</p></div>
+  <a class="przycisk drugorzedny" href="?format=csv">Pobierz CSV</a>
+</div>
+<dl class="naglowek-sprawy statystyki-karty">
   <div><dt>Sprawy w systemie</dt><dd>{{ liczba_spraw }}</dd></div>
   <div><dt>Po terminie</dt><dd>{{ po_terminie }}</dd></div>
   <div><dt>Termin w ciągu 30 dni</dt><dd>{{ w_30_dni }}</dd></div>
@@ -12,13 +15,19 @@
   <div><dt>Sprzeciwy</dt><dd>{{ sprzeciwy }}</dd></div>
   <div><dt>Fikcje zapoznania</dt><dd>{{ fikcje_zapoznania }}</dd></div>
 </dl>
-<h2>Etapy spraw</h2>
+<div class="statystyki-uklad">
+<section class="panel"><h2>Etapy spraw</h2>
 <table><thead><tr><th>Etap</th><th>Liczba</th></tr></thead><tbody>{% for n, l in etapy %}<tr><td>{{ n }}</td><td>{{ l }}</td></tr>{% endfor %}</tbody></table>
-<h2>Poziomy w sporządzonych ocenach</h2>
+</section>
+<section class="panel"><h2>Poziomy w sporządzonych ocenach</h2>
 <table><thead><tr><th>Poziom</th><th>Liczba</th></tr></thead><tbody>{% for n, l in poziomy %}<tr><td>{{ n }}</td><td>{{ l }}</td></tr>{% empty %}<tr><td colspan="2">Brak sporządzonych ocen.</td></tr>{% endfor %}</tbody></table>
-<h2>Arkusze i komórki</h2>
+</section>
+<section class="panel"><h2>Arkusze i komórki</h2>
 <table><thead><tr><th>Arkusz</th><th>Liczba</th></tr></thead><tbody>{% for n, l in arkusze %}<tr><td>{{ n }}</td><td>{{ l }}</td></tr>{% endfor %}</tbody></table>
 <table><thead><tr><th>Komórka organizacyjna</th><th>Sprawy</th></tr></thead><tbody>{% for n, l in komorki %}<tr><td>{{ n }}</td><td>{{ l }}</td></tr>{% endfor %}</tbody></table>
-<h2>Rozstrzygnięcia sprzeciwów</h2>
+</section>
+<section class="panel"><h2>Rozstrzygnięcia sprzeciwów</h2>
 <table><thead><tr><th>Rozstrzygnięcie</th><th>Liczba</th></tr></thead><tbody>{% for n, l in sprzeciwy_decyzje %}<tr><td>{{ n }}</td><td>{{ l }}</td></tr>{% empty %}<tr><td colspan="2">Brak sprzeciwów.</td></tr>{% endfor %}</tbody></table>
+</section>
+</div>
 {% endblock %}

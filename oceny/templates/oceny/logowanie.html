@@ -1,21 +1,37 @@
 {% extends "oceny/base.html" %}
 {% block tytul %}Logowanie{% endblock %}
+{% block klasa_strony %}logowanie{% endblock %}
 {% block tresc %}
-<h1>Logowanie</h1>
-{% if form.errors %}<p role="alert">Nieprawidłowy login lub hasło.</p>{% endif %}
-<form method="post">{% csrf_token %}
-  <label>Login <input type="text" name="username" autocomplete="username" required autofocus></label>
-  <label>Hasło <input type="password" name="password" autocomplete="current-password" required></label>
-  <button type="submit">Zaloguj</button>
-</form>
-{% with konta=demo_konta %}{% if konta %}
-  <h2>Pokaz: wejdź w rolę</h2>
-  <p class="cicho">Konta syntetyczne, dostępne tylko w trybie demonstracyjnym.</p>
-  {% for k in konta %}
-    <form method="post" action="{% url 'demo_zaloguj' %}" style="display:inline-block;margin:.25rem">{% csrf_token %}
-      <input type="hidden" name="login" value="{{ k.username }}">
-      <button class="drugorzedny" type="submit">{{ k.get_full_name }}{% if k.pracownik %} · {{ k.pracownik.stanowisko }}{% endif %}</button>
+{% with konta=demo_konta %}
+<div class="logowanie-uklad">
+  <section class="panel logowanie-panel" aria-labelledby="logowanie-tytul">
+    <h1 id="logowanie-tytul">Zaloguj się</h1>
+    <p class="cicho">Cyfrowy asystent ocen okresowych</p>
+    {% if form.errors %}<p role="alert">Nieprawidłowy login lub hasło.</p>{% endif %}
+    <form method="post">{% csrf_token %}
+      <label>Login <input type="text" name="username" value="{{ form.username.value|default_if_none:'' }}" autocomplete="username" required></label>
+      <label>Hasło <input type="password" name="password" autocomplete="current-password" required></label>
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+      <button type="submit">Zaloguj się</button>
     </form>
-  {% endfor %}
-{% endif %}{% endwith %}
+  </section>
+  {% if konta %}
+    <section class="panel konta-demo" aria-labelledby="demo-tytul">
+      <h2 id="demo-tytul">Wybierz konto demonstracyjne</h2>
+      <p class="cicho">Możesz wejść w wybraną rolę bez hasła. Wszystkie konta są fikcyjne.</p>
+      <div class="konta-lista">
+        {% for k in konta %}
+          <form method="post" action="{% url 'demo_zaloguj' %}">{% csrf_token %}
+            <input type="hidden" name="login" value="{{ k.username }}">
+            <button class="drugorzedny" type="submit">
+              <span><strong>{{ k.get_full_name|default:k.username }}</strong>{% if k.pracownik %}<small>{{ k.pracownik.stanowisko }}</small>{% endif %}</span>
+              <span aria-hidden="true">→</span>
+            </button>
+          </form>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+</div>
+{% endwith %}
 {% endblock %}

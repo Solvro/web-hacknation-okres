@@ -1,11 +1,13 @@
 {% extends "oceny/base.html" %}
 {% block tytul %}Ocena okresowa · {{ ocena.oceniany.get_full_name }}{% endblock %}
 {% block tresc %}
-<p><a href="{% url 'oceny:moje_sprawy' %}">← Moje sprawy</a></p>
+<a class="powrot" href="{% url 'oceny:moje_sprawy' %}">← Moje sprawy</a>
+<div class="naglowek-strony">
 <h1>Ocena okresowa · arkusz {{ ocena.arkusz }}</h1>
-<p><a class="przycisk" href="{% url 'oceny:wydruk' ocena.pk %}">{% if ocena.sporzadzona %}Arkusz do druku / PDF{% else %}Część I do druku / PDF{% endif %}</a>
+<div class="akcje"><a class="przycisk drugorzedny" href="{% url 'oceny:wydruk' ocena.pk %}">{% if ocena.sporzadzona %}Arkusz do druku / PDF{% else %}Część I do druku / PDF{% endif %}</a>
   {% if ocena.sporzadzona %}<a href="{% url 'oceny:wydruk' ocena.pk %}?czesc=I">Kopia części I</a>{% endif %}
-  {% if user.is_staff or jest_ocenianym %} · <a href="{% url 'oceny:eksport_sprawy' ocena.pk %}">Paczka do akt / EZD (ZIP)</a>{% endif %}</p>
+  {% if user.is_staff or jest_ocenianym %}<a href="{% url 'oceny:eksport_sprawy' ocena.pk %}">Paczka do akt / EZD (ZIP)</a>{% endif %}</div>
+</div>
 {% with p=ocena.oceniany.pracownik %}
 <dl class="naglowek-sprawy">
   <div><dt>Oceniany</dt><dd>{{ ocena.oceniany.get_full_name|default:ocena.oceniany }}</dd></div>
@@ -20,9 +22,9 @@
 </dl>
 {% endwith %}
 {% if jest_oceniajacym or jest_ocenianym %}{% if not ocena.sporzadzona %}
-<p>Przygotuj się do rozmowy:
-  {% if not ocena.kryteria_zablokowane %}<a href="{% url 'oceny:przygotowanie' ocena.pk 'rozpoczynajaca' %}">rozmowa rozpoczynająca (§ 5)</a>
-  {% else %}<a href="{% url 'oceny:przygotowanie' ocena.pk 'oceniajaca' %}">rozmowa oceniająca (§ 10)</a>{% endif %}</p>
+<p>
+  {% if not ocena.kryteria_zablokowane %}<a class="przycisk" href="{% url 'oceny:przygotowanie' ocena.pk 'rozpoczynajaca' %}">Przygotuj się do rozmowy rozpoczynającej (§ 5) <span aria-hidden="true">→</span></a>
+  {% else %}<a class="przycisk" href="{% url 'oceny:przygotowanie' ocena.pk 'oceniajaca' %}">Przygotuj się do rozmowy oceniającej (§ 10) <span aria-hidden="true">→</span></a>{% endif %}</p>
 {% endif %}{% endif %}
 {% with st=ocena.obligatoryjny_stopien %}{% if st %}<p class="hr" role="status"><strong>Art. 89 ust. 2:</strong> obowiązek przyznania {{ st.stopien }}. stopnia służbowego do {{ st.termin|date:"d.m.Y" }} ({{ st.uzasadnienie }}).</p>{% endif %}{% endwith %}
 {% if jest_oceniajacym and not ocena.sporzadzona %}
@@ -36,6 +38,12 @@
   </form>
 </details>
 {% endif %}
+<nav class="skroty" aria-label="Sekcje sprawy">
+  <a href="#kryteria">Kryteria</a>
+  {% if jest_oceniajacym or jest_ocenianym %}<a href="#obserwacje">Obserwacje</a>{% endif %}
+  <a href="#ocena">Ocena</a>
+  {% if jest_kadrami or jest_oceniajacym or jest_ocenianym %}<a href="#kadrowe">Zdarzenia kadrowe</a>{% endif %}
+</nav>
 {% include "oceny/_kryteria.html" %}
 {% if jest_oceniajacym or jest_ocenianym %}{% include "oceny/_obserwacje.html" %}{% endif %}
 {% include "oceny/_ocena.html" %}

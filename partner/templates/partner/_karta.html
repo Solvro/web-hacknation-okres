@@ -1,5 +1,5 @@
-<section id="karta-{{ k.p.pk }}" style="border:1px solid var(--ramka);border-radius:4px;padding:1rem;margin-bottom:1.5rem">
-  <h2 style="margin-top:0">{{ k.p.imie_nazwisko }} <span class="cicho">· {{ k.p.stanowisko }}</span></h2>
+<section id="karta-{{ k.p.pk }}" class="panel karta-hr">
+  <h2>{{ k.p.imie_nazwisko }} <span class="cicho">{{ k.p.stanowisko }}</span></h2>
   {% for pole, komunikat in k.bledy.items %}<p role="alert">{{ komunikat }}</p>{% endfor %}
   {% for s in k.sygnaly %}
     <article class="hr" style="margin-bottom:.75rem">

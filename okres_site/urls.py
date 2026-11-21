@@ -21,6 +21,10 @@ from django.views.generic import RedirectView
 from oceny import views as oceny_views
 from django.urls import include, path
 
+admin.site.site_header = "OKRES · Panel kadr"
+admin.site.site_title = "OKRES"
+admin.site.index_title = "Administracja ocenami okresowymi"
+
 urlpatterns = [
     path('', RedirectView.as_view(pattern_name='oceny:moje_sprawy')),
     path('logowanie/', auth_views.LoginView.as_view(template_name='oceny/logowanie.html'), name='login'),
