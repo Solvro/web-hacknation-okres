@@ -6,6 +6,14 @@
 <p><strong>Cel:</strong> {{ r.cel }} <span class="cicho">({{ r.podstawa }})</span></p>
 <h2>Agenda (zagadnienia wymagane przepisami)</h2>
 <ol>{% for a in r.agenda %}<li><strong>{{ a.temat }}</strong><ul>{% for p in a.pytania %}<li><em>„{{ p }}”</em></li>{% endfor %}</ul></li>{% endfor %}</ol>
+{% if rodzaj == "oceniajaca" %}
+  <h2>Oczekiwania i cele ustalone w rozmowie rozpoczynającej</h2>
+  {% if ocena.cele_i_oczekiwania %}
+    <p class="potwierdzone">{{ ocena.cele_i_oczekiwania|linebreaksbr }}<br><span class="cicho">Zapisane {{ ocena.data_zatwierdzenia_kryteriow|date:"d.m.Y" }} (§ 5 ust. 1 pkt 3–4). Omów sposób ich realizacji (§ 10 pkt 2).</span></p>
+  {% else %}
+    <p class="cicho">W rozmowie rozpoczynającej nie zapisano celów. Zagadnienie z § 10 pkt 2 omawia się tylko wtedy, gdy cele zostały wyznaczone.</p>
+  {% endif %}
+{% endif %}
 <h2>Kryteria i wskaźniki z Załącznika nr 1</h2>
 {% for k in kryteria %}
   <h3>{{ k.nazwa }}</h3>

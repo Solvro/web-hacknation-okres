@@ -118,6 +118,9 @@ class Ocena(models.Model):
     kryteria_zatwierdzone_at = models.DateTimeField(null=True, blank=True)
     data_zatwierdzenia_kryteriow = models.DateField(null=True, blank=True)
     miejscowosc_czesc_i = models.CharField(max_length=100, blank=True)
+    # § 5 ust. 1 pkt 3–4: oczekiwania co do spełniania kryteriów oraz cele i sposób ich realizacji (jeżeli uzasadnione).
+    # Zapis z rozmowy dla obu stron; wraca w przygotowaniu do rozmowy oceniającej (§ 10 pkt 2). Nie jest polem wzoru arkusza.
+    cele_i_oczekiwania = models.TextField("oczekiwania i cele na okres oceny", blank=True)
     kryteria_potwierdzone_at = models.DateTimeField(null=True, blank=True)
     data_potwierdzenia_kryteriow = models.DateField(null=True, blank=True)
 
@@ -333,7 +336,7 @@ class Ocena(models.Model):
         self.full_clean()
         self.save()
 
-    def zatwierdz_kryteria(self, data_rozmowy, miejscowosc: str = ""):
+    def zatwierdz_kryteria(self, data_rozmowy, miejscowosc: str = "", cele: str = ""):
         """Oceniający potwierdza przeprowadzenie rozmowy z § 5 ust. 1 i zapoznanie ocenianego z kryteriami."""
         if self.kryteria_zatwierdzone:
             raise PermissionDenied("Kryteria zostały już zatwierdzone.")
@@ -346,6 +349,7 @@ class Ocena(models.Model):
             raise ValidationError({"data_rozmowy": "Rozmowa nie może poprzedzać początku okresu oceny."})
         self.data_rozmowy_rozpoczynajacej = data_rozmowy
         self.miejscowosc_czesc_i = miejscowosc.strip()
+        self.cele_i_oczekiwania = cele.strip()
         self.kryteria_zatwierdzone_at = timezone.now()
         self.data_zatwierdzenia_kryteriow = dzis
         self.save()
@@ -659,7 +663,9 @@ class Ocena(models.Model):
             podstawa = "art. 81 ust. 6 ustawy, § 9 ust. 2 rozporządzenia"
         else:
             # Ponowne czynności z §§ 5–6; termin oceny bez zmian. Dotychczasowe kryteria zostają w zdarzeniu.
-            dane["poprzednie"] = {"kryteria_dodatkowe": self.kryteria_dodatkowe, "arkusz": self.arkusz}
+            dane["poprzednie"] = {"kryteria_dodatkowe": self.kryteria_dodatkowe, "arkusz": self.arkusz,
+                                  "cele_i_oczekiwania": self.cele_i_oczekiwania}
+            self.cele_i_oczekiwania = ""
             self.kryteria_zatwierdzone_at = self.kryteria_potwierdzone_at = None
             self.data_zatwierdzenia_kryteriow = self.data_potwierdzenia_kryteriow = None
             self.data_rozmowy_rozpoczynajacej = None

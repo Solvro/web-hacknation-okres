@@ -30,7 +30,7 @@ class OcenaAdmin(admin.ModelAdmin):
                   "kryteria_zatwierdzone_at", "data_zatwierdzenia_kryteriow", "data_potwierdzenia_kryteriow", "wersja",
                   "anulowana_powod"]
         if obj and obj.kryteria_zatwierdzone:
-            zawsze += ["arkusz", "oceniany", "kryteria_dodatkowe", "data_rozmowy_rozpoczynajacej", "miejscowosc_czesc_i",
+            zawsze += ["arkusz", "oceniany", "kryteria_dodatkowe", "data_rozmowy_rozpoczynajacej", "miejscowosc_czesc_i", "cele_i_oczekiwania",
                        "poczatek_okresu", "podstawa_poczatku", "poprzednia"]
         return zawsze
 

@@ -23,6 +23,9 @@
         <legend>Potwierdzenie oceniającego (§ 5 ust. 1, § 6)</legend>
         <p>W trakcie rozmowy omawia się: główne obowiązki z opisu stanowiska, kryteria obowiązkowe i dodatkowe, oczekiwania co do sposobu spełniania kryteriów oraz cele i sposób ich realizacji, jeśli ich wyznaczenie jest uzasadnione.</p>
         <label>Data rozmowy <input type="date" name="data_rozmowy" required></label>
+        <label>Oczekiwania i cele na okres oceny (§ 5 ust. 1 pkt 3–4; cele, jeśli ich wyznaczenie jest uzasadnione)
+          <textarea name="cele_i_oczekiwania" rows="3" placeholder="Np. skrócenie czasu obsługi wniosku do 14 dni; sposób: lista kontrolna i przegląd co kwartał."></textarea></label>
+        <p class="cicho">Zapis dla obu stron, wraca w przygotowaniu do rozmowy oceniającej (§ 10 pkt 2). Nie jest drukowany na arkuszu, bo wzór go nie przewiduje.</p>
         <label>Miejscowość <input type="text" name="miejscowosc" value="{{ miejscowosc_domyslna }}"></label>
         <button type="submit">Potwierdzam przeprowadzenie rozmowy i zapoznanie ocenianego z kryteriami</button>
       </fieldset>
@@ -34,6 +37,7 @@
     <p class="potwierdzone">Rozmowa {{ ocena.data_rozmowy_rozpoczynajacej|date:"d.m.Y" }}. Potwierdził oceniający: {{ ocena.oceniajacy.get_full_name }}, {{ ocena.miejscowosc_czesc_i }} {{ ocena.data_zatwierdzenia_kryteriow|date:"d.m.Y" }}.
       {% if ocena.kryteria_zablokowane %}<br>Potwierdził oceniany: {{ ocena.oceniany.get_full_name }}, {{ ocena.data_potwierdzenia_kryteriow|date:"d.m.Y" }}.{% endif %}
       <br>Zmiana kryteriów możliwa tylko w trybie korekty administratora.</p>
+    <p><strong>Oczekiwania i cele na okres oceny (§ 5 ust. 1 pkt 3–4):</strong> {% if ocena.cele_i_oczekiwania %}{{ ocena.cele_i_oczekiwania|linebreaksbr }}{% else %}<span class="cicho">nie zapisano</span>{% endif %}</p>
     {% if not ocena.kryteria_zablokowane %}
       {% if jest_ocenianym %}
         <button hx-post="{% url 'oceny:potwierdz_kryteria' ocena.pk %}" hx-target="#kryteria" hx-swap="outerHTML">Potwierdzam przeprowadzenie rozmowy i zapoznanie z kryteriami oraz terminem oceny</button>

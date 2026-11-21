@@ -170,7 +170,7 @@ def zatwierdz_kryteria(request, pk):
         data_rozmowy = None
     bledy = ()
     try:
-        ocena.zatwierdz_kryteria(data_rozmowy, request.POST.get("miejscowosc", ""))
+        ocena.zatwierdz_kryteria(data_rozmowy, request.POST.get("miejscowosc", ""), request.POST.get("cele_i_oczekiwania", ""))
     except ValidationError as e:
         bledy = e.messages
     return render(request, "oceny/_kryteria.html", _kontekst(request, ocena, bledy))
