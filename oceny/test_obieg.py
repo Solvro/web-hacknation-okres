@@ -35,6 +35,27 @@ class CeleIOczekiwaniaTest(TestCase):
         self.assertContains(r, "Skrócić kolejkę o połowę.")
         self.assertContains(r, "§ 10 pkt 2")
 
+    def test_formularz_zachowuje_wybor_i_cele_po_bledzie_daty(self):
+        self.client.force_login(self.anna)
+        url = reverse("oceny:zatwierdz_kryteria", args=[self.o.pk])
+        dane = {"data_rozmowy": "2025-04-02", "kryteria": ["kreatywnosc", "", ""],
+                "cele_i_oczekiwania": "Skrócić czas obsługi skarg."}
+
+        r = self.client.post(url, dane, headers={"HX-Request": "true"})
+        self.assertContains(r, "Rozmowa nie może mieć daty z przyszłości.")
+        self.assertContains(r, '<option value="kreatywnosc" selected>Kreatywność</option>', html=True)
+        self.assertContains(r, dane["cele_i_oczekiwania"])
+        self.o.refresh_from_db()
+        self.assertEqual(self.o.kryteria_dodatkowe, [])
+        self.assertFalse(self.o.kryteria_zatwierdzone)
+
+        r = self.client.post(url, dane | {"data_rozmowy": "2025-04-01"}, headers={"HX-Request": "true"})
+        self.assertContains(r, "Oczekuje na potwierdzenie ocenianego.")
+        self.assertContains(r, 'hx-swap-oob="true"')
+        self.o.refresh_from_db()
+        self.assertEqual(self.o.kryteria_dodatkowe, ["kreatywnosc"])
+        self.assertEqual(self.o.cele_i_oczekiwania, dane["cele_i_oczekiwania"])
+
     def test_bez_celow_jawna_informacja(self):
         self.o.zatwierdz_kryteria(date(2025, 3, 31))
         self.client.force_login(self.anna)

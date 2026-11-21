@@ -13,7 +13,7 @@
 <body class="{% block klasa_strony %}{% endblock %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
   <a class="pomin" href="#tresc">Przejdź do treści</a>
   {% if okres_demo %}
-    <div class="demo" role="status">DANE FIKCYJNE · tryb demonstracyjny{% if zegar_przesuniety %} · DEMO: zegar systemowy przesunięty na {{ zegar_przesuniety|date:"d.m.Y" }} (terminy liczone od tej daty){% endif %}</div>
+    <div class="demo" role="status">Tryb demonstracyjny{% if zegar_przesuniety %} · Data systemowa ustawiona na {{ zegar_przesuniety|date:"d.m.Y" }}{% endif %}</div>
   {% endif %}
   <header class="gora">
     <div class="gora-uklad">

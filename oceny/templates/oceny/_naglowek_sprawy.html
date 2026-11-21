@@ -14,6 +14,19 @@
     <a class="przycisk drugorzedny" href="{% url 'oceny:wydruk' ocena.pk %}">{% include "oceny/_ikona.html" with ikona="pobierz" %} {% if ocena.sporzadzona %}Arkusz{% else %}Część I{% endif %} do druku / PDF</a>
   </header>
   {% endwith %}
+  {% if krok %}
+    <aside class="nastepny-krok" aria-label="Następny krok">
+      <div>
+        <span class="cicho">{% if ocena.etap == "termin_sprzeciwu" %}Uprawnienie ocenianego{% elif krok.moj %}Twoje zadanie{% elif krok.kto %}Następny krok · {{ krok.kto.get_full_name|default:krok.kto }}{% else %}Następny krok{% endif %}</span>
+        <strong>{{ krok.opis }}</strong>
+      </div>
+      {% if krok.moj %}
+        {% if ocena.etap == "kryteria" %}<a href="#kryteria">Przejdź do kryteriów</a>
+        {% elif ocena.etap == "ocena" %}<a href="#ocena">Otwórz formularz</a>
+        {% else %}<a href="#zapoznanie">Przejdź do zapoznania i sprzeciwu</a>{% endif %}
+      {% endif %}
+    </aside>
+  {% endif %}
   <details class="sprawa-informacje">
     <summary>{% include "oceny/_ikona.html" with ikona="teczka" %} Terminy, dane i dokumenty</summary>
     <dl class="naglowek-sprawy">

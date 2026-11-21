@@ -58,7 +58,7 @@ W profilu urzędu nie ma danych demo, zegara ani szybkiego logowania. Kolejne kr
 
 ### Tryb demo (`OKRES_DEMO=1`)
 
-Przy pustej bazie kontener wczytuje dane syntetyczne (`seed_demo`). Pasek „DANE FIKCYJNE” jest widoczny cały czas, kadry mogą przesunąć zegar systemowy, a strona logowania ma przyciski ról. Reset danych: `docker compose down -v && docker compose up`.
+Przy pustej bazie kontener wczytuje dane syntetyczne (`seed_demo`). Pasek „Tryb demonstracyjny” pokazuje też datę systemową, gdy kadry ją przesuną. Strona logowania ma przyciski najważniejszych ról. Seed daje 13 pracowników i 14 spraw, w tym ocenę do zapoznania (Natalia Wróbel), sprzeciw do rozpatrzenia (Joanna Kurek) i zakończoną ocenę (Rafał Duda). W istniejącej bazie demo uruchom ponownie `seed_demo`, żeby dopisać sprawy. Reset danych: `docker compose down -v && docker compose up`.
 
 **Konta demo** (hasło `demo`; w trybie demo można też kliknąć rolę na stronie logowania):
 

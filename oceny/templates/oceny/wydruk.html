@@ -12,7 +12,7 @@
 <div class="pasek">
   <button type="button" onclick="window.print()">Drukuj / zapisz jako PDF</button>
   <a href="{% url 'oceny:szczegoly' ocena.pk %}">Wróć do sprawy</a>
-  {% if okres_demo %}<span>DANE FIKCYJNE · ten pasek nie jest drukowany</span>{% endif %}
+  {% if okres_demo %}<span>Tryb demonstracyjny</span>{% endif %}
 </div>
 <div class="arkusz">
   <p class="zal">Załącznik nr {{ cfg.zalacznik }}</p>

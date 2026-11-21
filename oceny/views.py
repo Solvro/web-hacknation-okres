@@ -3,6 +3,7 @@ from datetime import date, datetime, timedelta
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -129,7 +130,8 @@ def _kontekst(request, ocena, bledy=()):
         "obowiazkowe": rules.mandatory_criteria(ocena.arkusz, ocena.wersja_regul),
         "maks": maks,
         "sloty": (ocena.kryteria_dodatkowe + [""] * maks)[:maks],
-        "miejscowosc_domyslna": _miejscowosc(ocena.oceniajacy),
+        "rozmowa_dane": {"miejscowosc": _miejscowosc(ocena.oceniajacy)},
+        "dzis": zegar.dzis(),
         "jest_oceniajacym": ocena.oceniajacy_id == request.user.id,
         "jest_ocenianym": ocena.oceniany_id == request.user.id,
         "jest_dg": _jest_dg(request.user) and request.user.id not in (ocena.oceniany_id, ocena.oceniajacy_id),
@@ -172,18 +174,26 @@ def ustaw_kryteria(request, pk):
 @require_POST
 def zatwierdz_kryteria(request, pk):
     ocena = _ocena_dla(request, pk)
-    if ocena.oceniajacy_id != request.user.id:
-        raise PermissionDenied("Rozmowę i kryteria zatwierdza oceniający.")
+    # Najpierw sprawdź widoczność, potem zablokuj wiersz na czas zapisu obu części formularza.
+    dane = {"data_rozmowy": request.POST.get("data_rozmowy", ""),
+            "miejscowosc": request.POST.get("miejscowosc", ""),
+            "cele_i_oczekiwania": request.POST.get("cele_i_oczekiwania", "")}
+    sloty = request.POST.getlist("kryteria")
     try:
-        data_rozmowy = date.fromisoformat(request.POST.get("data_rozmowy", ""))
-    except ValueError:
-        data_rozmowy = None
-    bledy = ()
-    try:
-        ocena.zatwierdz_kryteria(data_rozmowy, request.POST.get("miejscowosc", ""), request.POST.get("cele_i_oczekiwania", ""))
+        with transaction.atomic():
+            ocena = Ocena.objects.select_for_update().get(pk=ocena.pk)
+            if ocena.oceniajacy_id != request.user.id:
+                raise PermissionDenied("Rozmowę i kryteria zatwierdza oceniający.")
+            if sloty:
+                ocena.ustaw_kryteria([kod for kod in sloty if kod])
+            ocena.zatwierdz_kryteria(_data(dane["data_rozmowy"]), dane["miejscowosc"], dane["cele_i_oczekiwania"])
     except ValidationError as e:
-        bledy = e.messages
-    return render(request, "oceny/_kryteria.html", _kontekst(request, ocena, bledy))
+        ocena.refresh_from_db()
+        ctx = _kontekst(request, ocena, e.messages) | {"rozmowa_dane": dane}
+        if sloty:
+            ctx["sloty"] = (sloty + [""] * ctx["maks"])[:ctx["maks"]]
+        return render(request, "oceny/_kryteria.html", ctx)
+    return _fragment_sprawy(request, "oceny/_kryteria.html", _kontekst(request, ocena))
 
 
 @login_required

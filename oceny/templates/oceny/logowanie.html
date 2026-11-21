@@ -18,7 +18,7 @@
   {% if konta %}
     <section class="panel konta-demo" aria-labelledby="demo-tytul">
       <h2 id="demo-tytul">Wybierz konto demonstracyjne</h2>
-      <p class="cicho">Możesz wejść w wybraną rolę bez hasła. Wszystkie konta są fikcyjne.</p>
+      <p class="cicho">Zaloguj się w wybranej roli bez hasła.</p>
       <div class="konta-lista">
         {% for k in konta %}
           <form method="post" action="{% url 'demo_zaloguj' %}">{% csrf_token %}

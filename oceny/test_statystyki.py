@@ -33,7 +33,7 @@ class StatystykiEksportImportTest(TestCase):
         self.assertContains(r, "Sprawy w systemie")
         self.assertNotContains(r, "Raport kwartalny")
         csv = self.client.get(reverse("oceny:statystyki") + "?format=csv").content.decode()
-        self.assertIn("liczba_spraw;3", csv)
+        self.assertIn("liczba_spraw;14", csv)
 
     def test_eksport_zip(self):
         o = Ocena.objects.get(oceniany=self.jan)

@@ -13,7 +13,8 @@
           <label>Podstawa <select name="podstawa">{% for k, v in podstawy_terminu.items %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></label>
           <label>Nowy termin sporządzenia oceny <input type="date" name="nowy_termin" required></label>
           <label>Uzasadnienie <input type="text" name="uzasadnienie"></label>
-          <button type="submit">Zmień termin i przygotuj zawiadomienie</button>
+          <p class="cicho" id="skutek-terminu">Po zapisie będzie dostępne zawiadomienie do druku.</p>
+          <button type="submit" aria-describedby="skutek-terminu">Zmień termin</button>
         </form>
       </details>
     {% endif %}
@@ -23,7 +24,7 @@
           <label>Nowy oceniający <select name="nowy">{% for u in kandydaci %}<option value="{{ u.pk }}">{{ u.get_full_name|default:u.username }}</option>{% endfor %}</select></label>
           <label>Data zmiany <input type="date" name="data"></label>
           <label>Powód <input type="text" name="powod" placeholder="np. zmiana podległości, zastępstwo"></label>
-          <button type="submit">Zapisz zmianę oceniającego</button>
+          <button type="submit">Zmień oceniającego</button>
           <p class="cicho">Kryteria oceny pozostają bez zmian. Prywatne notatki poprzedniego oceniającego zostają u niego.</p>
         </form>
       </details>
@@ -32,7 +33,7 @@
           <label>Data zmiany stanowiska <input type="date" name="data_zmiany" required></label>
           <label>Nowe stanowisko <input type="text" name="stanowisko"></label>
           <label>Rodzaj stanowiska <select name="rodzaj_stanowiska"><option value="">bez zmian</option>{% for k, v in rodzaje_stanowisk %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></label>
-          <button type="submit">Zapisz i wylicz skutek</button>
+          <button type="submit">Zapisz zmianę</button>
           <p class="cicho">Więcej niż 6 miesięcy: ocena między 7 dniami przed a 30 dniami po zmianie. Mniej: ponowne ustalenie kryteriów w 30 dni, termin oceny bez zmian.</p>
         </form>
       </details>

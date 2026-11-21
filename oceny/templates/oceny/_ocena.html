@@ -27,20 +27,21 @@
     <p>Ocenę można sporządzić po potwierdzeniu części I przez obie strony.</p>
   {% elif jest_oceniajacym %}
     {% if bledy_pol %}
-      <div role="alert"><p>Przed sporządzeniem oceny popraw:</p>
+      <div class="bledy-formularza" role="alert"><p>Sprawdź pola przed wysłaniem oceny.</p>
         <ul>{% for pole, komunikat in bledy_pol.items %}<li><a href="#pole-{{ pole }}">{{ komunikat }}</a></li>{% endfor %}</ul>
       </div>
     {% endif %}
-    <form hx-post="{% url 'oceny:sporzadz' ocena.pk %}" hx-target="#ocena" hx-swap="outerHTML">
-      <label id="pole-data_rozmowy">Data przeprowadzenia rozmowy oceniającej (§ 10)
-        <input type="date" name="data_rozmowy" value="{{ pola.data_rozmowy|date:'Y-m-d' }}"></label>
-      <fieldset id="pole-okres"><legend>Okres, w którym oceniany podlegał ocenie</legend>
+    <form hx-post="{% url 'oceny:sporzadz' ocena.pk %}" hx-target="#ocena" hx-swap="outerHTML" hx-disabled-elt="find button[type=submit]">
+      <label id="pole-data_rozmowy">Data rozmowy oceniającej
+        <input type="date" name="data_rozmowy" value="{{ pola.data_rozmowy|date:'Y-m-d' }}" max="{{ dzis|date:'Y-m-d' }}" required></label>
+      <fieldset id="pole-okres"><legend>Okres podlegania ocenie</legend>
         <div class="zakres-dat">
           <label>Od <input type="date" name="okres_od" value="{{ pola.okres_od|date:'Y-m-d' }}"></label>
           <label>Do <input type="date" name="okres_do" value="{{ pola.okres_do|date:'Y-m-d' }}"></label>
         </div>
       </fieldset>
       <h3>Oceny cząstkowe</h3>
+      <p class="cicho">Wybierz po jednej ocenie dla każdego kryterium.</p>
       <details class="sprawa-podsekcja">
         <summary>Skala punktowa</summary>
         <ul>{% for pkt, opis in skala.items %}<li><strong>{{ pkt }}</strong> · {{ opis }}</li>{% endfor %}</ul>
@@ -66,10 +67,12 @@
         <div id="asystent" aria-live="polite"></div>
       </details>
       <h3>Uzasadnienie i rozwój</h3>
-      <label id="pole-uzasadnienie">Uzasadnienie przyznanej oceny (obowiązkowe przy ocenie negatywnej)
-        <textarea name="uzasadnienie" rows="4">{{ pola.uzasadnienie }}</textarea></label>
-      <label id="pole-wnioski_iprz">Wnioski dotyczące indywidualnego programu rozwoju zawodowego
-        <textarea name="wnioski_iprz" rows="4">{{ pola.wnioski_iprz }}</textarea></label>
+      <label id="pole-uzasadnienie">Uzasadnienie
+        <textarea name="uzasadnienie" rows="4" aria-describedby="pomoc-uzasadnienie">{{ pola.uzasadnienie }}</textarea></label>
+      <p class="pomoc-pola" id="pomoc-uzasadnienie">Wymagane przy ocenie negatywnej.</p>
+      <label id="pole-wnioski_iprz">Wnioski do IPRZ
+        <textarea name="wnioski_iprz" rows="4" aria-describedby="pomoc-iprz">{{ pola.wnioski_iprz }}</textarea></label>
+      <p class="pomoc-pola" id="pomoc-iprz">Opisz działania do indywidualnego programu rozwoju zawodowego.</p>
       {% if ocena.oceniany_urzednik %}
         <fieldset id="pole-poprz_ocena"><legend>Dane dotyczące poprzedniej oceny okresowej urzędnika służby cywilnej</legend>
           {% if z_historii %}
@@ -101,7 +104,10 @@
         <p class="cicho">Wniosek o kolejny stopień służbowy: NIE DOTYCZY (oceniany jest pracownikiem służby cywilnej).</p>
       {% endif %}
       <label>Miejscowość <input type="text" name="miejscowosc" value="{{ pola.miejscowosc }}"></label>
-      <button type="submit">Przekaż ocenę do zapoznania</button>
+      <div class="akcja-sprawy">
+        <p id="skutek-oceny">Po zapisaniu ocena będzie dostępna dla pracownika do zapoznania.</p>
+        <button type="submit" aria-describedby="skutek-oceny">Przekaż ocenę</button>
+      </div>
     </form>
   {% else %}
     <p>Ocena jest w przygotowaniu.</p>

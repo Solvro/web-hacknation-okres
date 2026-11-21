@@ -1,23 +1,30 @@
 <section id="zapoznanie">
-  <h3>Zapoznanie z oceną (§ 12) i sprzeciw (art. 83)</h3>
-  <p class="cicho"><strong>Pouczenie.</strong> Na podstawie art. 83 ust. 1 ustawy z dnia 21 listopada 2008 r. o służbie cywilnej od oceny okresowej służy, w terminie 7 dni od dnia zapoznania się z oceną, sprzeciw do dyrektora generalnego urzędu.</p>
+  <h3>Zapoznanie z oceną</h3>
+  {% if jest_ocenianym %}
+    <aside class="pomoc-sprawy" aria-label="Prawo do sprzeciwu">
+      <p>Na sprzeciw do dyrektora generalnego masz 7 dni od dnia zapoznania się z oceną (art. 83 ust. 1 ustawy o służbie cywilnej).</p>
+    </aside>
+  {% endif %}
   {% for pole, komunikat in bledy_zapoznania.items %}<p role="alert">{{ komunikat }}</p>{% endfor %}
   {% if not ocena.zapoznany %}
     {% if jest_ocenianym %}
-      <form hx-post="{% url 'oceny:potwierdz_zapoznanie' ocena.pk %}" hx-target="#zapoznanie" hx-swap="outerHTML">
+      <form hx-post="{% url 'oceny:potwierdz_zapoznanie' ocena.pk %}" hx-target="#zapoznanie" hx-swap="outerHTML" hx-disabled-elt="find button">
         <label>Miejscowość <input type="text" name="miejscowosc" value="{{ miejscowosc_ocenianego }}"></label>
-        <button type="submit">Przeprowadzono ze mną rozmowę oceniającą oraz zapoznałem (-łam) się z oceną okresową i wnioskami dotyczącymi indywidualnego programu rozwoju zawodowego</button>
+        <div class="akcja-sprawy">
+          <p id="skutek-zapoznania">Potwierdzasz, że odbyła się rozmowa oceniająca i znasz ocenę oraz wnioski do indywidualnego programu rozwoju zawodowego.</p>
+          <button type="submit" aria-describedby="skutek-zapoznania">Potwierdź zapoznanie</button>
+        </div>
       </form>
     {% else %}
       <p>Oczekuje na potwierdzenie zapoznania przez ocenianego.</p>
       {% if jest_kadrami %}
-      <form hx-post="{% url 'oceny:fikcja_zapoznania' ocena.pk %}" hx-target="#zapoznanie" hx-swap="outerHTML">
+      <form hx-post="{% url 'oceny:fikcja_zapoznania' ocena.pk %}" hx-target="#zapoznanie" hx-swap="outerHTML" hx-disabled-elt="find button">
         <fieldset><legend>Fikcja zapoznania (komórka kadrowa)</legend>
         <p class="cicho">Tylko gdy informacja o ocenie dotarła, a oceniany nie mógł lub nie chciał potwierdzić zapoznania. Sam upływ czasu nie wystarcza.</p>
         <label>Data doręczenia informacji o ocenie <input type="date" name="data_doreczenia" required></label>
         <label>Okoliczności i dowód doręczenia
-          <textarea name="uwagi" rows="2" placeholder="np. przekazano osobiście, odmowa podpisu w obecności świadka"></textarea></label>
-        <button type="submit">Odnotuj fikcję zapoznania</button></fieldset>
+          <textarea name="uwagi" rows="2" required placeholder="np. przekazano osobiście, odmowa podpisu w obecności świadka"></textarea></label>
+        <button type="submit">Zapisz doręczenie</button></fieldset>
       </form>
       {% endif %}
     {% endif %}
@@ -37,16 +44,18 @@
           {% endif %}
         </div>
         {% if jest_dg and not sprzeciw.decyzja %}
-          <form hx-post="{% url 'oceny:rozpatrz_sprzeciw' ocena.pk %}" hx-target="#ocena" hx-swap="outerHTML">
+          <form hx-post="{% url 'oceny:rozpatrz_sprzeciw' ocena.pk %}" hx-target="#ocena" hx-swap="outerHTML" hx-disabled-elt="find button">
             <fieldset><legend>Rozstrzygnięcie sprzeciwu (dyrektor generalny)</legend>
-              <label><input type="radio" name="decyzja" value="nieuwzgledniony"> Nie uwzględniam sprzeciwu</label>
-              <label><input type="radio" name="decyzja" value="zmiana"> Uwzględniam i zmieniam ocenę (wpisz zmienione oceny cząstkowe)</label>
-              {% if ocena.wersja == 1 %}<label><input type="radio" name="decyzja" value="ponowne"> Uwzględniam; ocenę sporządza się po raz drugi (powrót do rozmowy oceniającej)</label>{% endif %}
-              <table>
+              <label><input type="radio" name="decyzja" value="nieuwzgledniony" required> Nie uwzględniam sprzeciwu</label>
+              <label><input type="radio" name="decyzja" value="zmiana"> Uwzględniam i zmieniam ocenę</label>
+              {% if ocena.wersja == 1 %}<label><input type="radio" name="decyzja" value="ponowne"> Uwzględniam i kieruję do ponownej oceny</label>{% endif %}
+              <div class="zmienione-punkty">
+              <p class="cicho">Zmień punkty przy wybranych kryteriach.</p>
+              <table class="tabela-punktacji">
                 <thead><tr><th>Kryterium</th>{% for pkt, opis in skala.items %}<th title="{{ opis }}">{{ pkt }}</th>{% endfor %}</tr></thead>
                 <tbody>{% for kod, nazwa, wybrane in kryteria_oceny %}<tr><td>{{ nazwa }}</td>
                   {% for pkt, opis in skala.items %}<td><input type="radio" name="kryterium_{{ kod }}" value="{{ pkt }}" aria-label="{{ nazwa }}: {{ opis }}" {% if wybrane == pkt %}checked{% endif %}></td>{% endfor %}</tr>{% endfor %}</tbody>
-              </table>
+              </table></div>
               <label>Uzasadnienie rozstrzygnięcia <textarea name="uzasadnienie_decyzji" rows="3" required></textarea></label>
               <button type="submit">Zapisz rozstrzygnięcie</button>
             </fieldset>
@@ -54,11 +63,15 @@
         {% endif %}
       {% elif ocena.zapoznany %}
         <p>Termin na sprzeciw do dyrektora generalnego: <strong>{{ ocena.termin_sprzeciwu|date:"d.m.Y" }}</strong>.</p>
-        {% if jest_ocenianym %}
-          <form hx-post="{% url 'oceny:zloz_sprzeciw' ocena.pk %}" hx-target="#zapoznanie" hx-swap="outerHTML">
-            <label>Treść sprzeciwu <textarea name="tresc" rows="3"></textarea></label>
-            <button type="submit">Złóż sprzeciw</button>
-          </form>
+        {% if jest_ocenianym and ocena.etap == "termin_sprzeciwu" %}
+          <details class="sprawa-podsekcja"{% if bledy_zapoznania %} open{% endif %}>
+            <summary>Złóż sprzeciw</summary>
+            <form hx-post="{% url 'oceny:zloz_sprzeciw' ocena.pk %}" hx-target="#zapoznanie" hx-swap="outerHTML" hx-disabled-elt="find button">
+              <label>Treść sprzeciwu <textarea name="tresc" rows="3" required></textarea></label>
+              <p class="cicho" id="skutek-sprzeciwu">Sprzeciw trafi do dyrektora generalnego.</p>
+              <button type="submit" aria-describedby="skutek-sprzeciwu">Wyślij sprzeciw</button>
+            </form>
+          </details>
         {% endif %}
       {% endif %}
     {% endwith %}

@@ -71,3 +71,22 @@ function pokazCelOdnosnika() {
 
 window.addEventListener("hashchange", pokazCelOdnosnika);
 pokazCelOdnosnika();
+
+// Każdy wybór zostaje w formularzu aż do zatwierdzenia rozmowy.
+function odswiezDostepneKryteria(grupa) {
+  const pola = [...grupa.querySelectorAll("select")];
+  const wybrane = new Set(pola.map((pole) => pole.value).filter(Boolean));
+  for (const pole of pola) {
+    for (const opcja of pole.options) {
+      opcja.disabled = !opcja.selected && wybrane.has(opcja.value);
+    }
+  }
+}
+
+document.addEventListener("change", function (event) {
+  const grupa = event.target.closest("[data-wybor-kryteriow]");
+  if (grupa) odswiezDostepneKryteria(grupa);
+});
+document.addEventListener("htmx:load", function (event) {
+  event.target.querySelectorAll("[data-wybor-kryteriow]").forEach(odswiezDostepneKryteria);
+});

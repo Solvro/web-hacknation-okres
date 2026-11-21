@@ -57,14 +57,14 @@ class SprawyTest(TestCase):
     def test_moje_sprawy_widocznosc(self):
         self.client.force_login(self.jan)
         r = self.client.get(reverse("oceny:moje_sprawy"))
-        self.assertContains(r, "Jan Testowy")
-        self.assertNotContains(r, "Piotr Przykładowy")
+        self.assertContains(r, "Jan Borkowski")
+        self.assertNotContains(r, "Piotr Wysocki")
         self.client.force_login(self.anna)
         r = self.client.get(reverse("oceny:moje_sprawy") + "?filtr=moje")
-        self.assertContains(r, "Piotr Przykładowy")
-        self.assertNotContains(r, "Anna Syntetyczna</a>")  # jej własna sprawa nie wymaga jej działania
+        self.assertContains(r, "Piotr Wysocki")
+        self.assertNotContains(r, "Anna Leszczyńska</a>")  # jej własna sprawa nie wymaga jej działania
         self.client.force_login(User.objects.get(username="kadry"))
-        self.assertContains(self.client.get(reverse("oceny:moje_sprawy")), "Anna Syntetyczna")
+        self.assertContains(self.client.get(reverse("oceny:moje_sprawy")), "Anna Leszczyńska")
 
     def test_jak_obliczono(self):
         self.client.force_login(self.jan)
@@ -83,7 +83,8 @@ class SprawyTest(TestCase):
         self.assertContains(self.client.get(reverse("login")), "Wybierz konto demonstracyjne")
         self.client.force_login(self.anna)
         r = self.client.get(reverse("oceny:szczegoly", args=[self.o.pk]))
-        self.assertContains(r, "DANE FIKCYJNE")
+        self.assertNotContains(r, "DANE FIKCYJNE")
+        self.assertContains(r, "Data systemowa ustawiona na 23.11.2026")
         self.assertContains(r, "Organizacja pracy i orientacja na osiąganie celów")
         self.assertContains(r, "19.04.2027")
 

@@ -405,3 +405,46 @@ details > :last-child:not(summary) { margin-bottom: 0; }
 .podpowiedz-rozwoj ul { margin: .3rem 0 0; }
 .podpowiedz-rozwoj li { margin-bottom: .35rem; }
 button.maly { padding: .15rem .55rem; font-size: .85em; margin-left: .35rem; }
+
+.nastepny-krok, .akcja-sprawy {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: .65rem 1.25rem;
+  padding: .85rem 1rem;
+  border: 1px solid #d4e4f8;
+  border-radius: .7rem;
+  background: #eef4fc;
+  color: var(--granat);
+}
+.nastepny-krok { margin-block: .85rem; }
+.nastepny-krok strong { display: block; }
+.akcja-sprawy { margin-block: 1rem .25rem; }
+.akcja-sprawy > :first-child { flex: 1 1 19rem; }
+.akcja-sprawy p, .pomoc-sprawy > :last-child { margin: 0; }
+.formularz-z-pomoca { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem 1.5rem; }
+.wybor-kryteriow select { max-width: 100%; }
+.pomoc-sprawy {
+  align-self: start;
+  padding: .75rem 1rem;
+  border-left: 3px solid #8aafd8;
+  border-radius: .35rem;
+  background: #f5f8fc;
+}
+.pomoc-sprawy h3 { margin: 0; color: var(--granat); font-size: 1rem; }
+.pomoc-sprawy ul { padding-inline-start: 1.2rem; margin-block: .5rem; }
+.pomoc-pola { margin: -.3rem 0 1rem; color: var(--potw-tekst); font-size: .875rem; }
+.bledy-formularza {
+  padding: .55rem 1.1rem .55rem 1.6rem;
+  border-left: 3px solid var(--blad);
+  background: #fff2f1;
+}
+@media (min-width: 52rem) {
+  .formularz-z-pomoca { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+  .formularz-z-pomoca > aside { margin-top: 1rem; }
+}
+@supports selector(:has(*)) {
+  fieldset:has([name="decyzja"]) .zmienione-punkty { display: none; }
+  fieldset:has([name="decyzja"][value="zmiana"]:checked) .zmienione-punkty { display: block; }
+}

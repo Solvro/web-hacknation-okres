@@ -81,7 +81,7 @@ class ZapoznanieSprzeciwTest(TestCase):
         r = self.client.post(url)
         self.assertContains(r, "09.11.2026")
         r = self.client.get(reverse("oceny:szczegoly", args=[self.o.pk]))
-        self.assertContains(r, "DEMO: zegar systemowy przesunięty")
+        self.assertContains(r, "Data systemowa ustawiona na")
 
     @override_settings(OKRES_DEMO=False)
     def test_zegar_ignorowany_poza_trybem_demo(self):

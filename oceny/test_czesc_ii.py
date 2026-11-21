@@ -79,7 +79,7 @@ class CzescIIiIIITest(TestCase):
     def test_widok_formularza(self):
         self.client.force_login(self.anna)
         r = self.client.get(reverse("oceny:szczegoly", args=[self.o.pk]))
-        self.assertContains(r, "Okres, w którym oceniany podlegał ocenie")
+        self.assertContains(r, "Okres podlegania ocenie")
         self.assertContains(r, 'value="2026-11-23"')
         dane = {f"kryterium_{k}": "7" for k in self.komplet} | {
             "data_rozmowy": "2026-11-23", "okres_od": "2024-12-10", "okres_do": "2026-11-23", "wnioski_iprz": "Kurs",
