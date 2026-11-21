@@ -1,0 +1,13 @@
+# materiały partnera nigdy nie trafiają do obrazu
+materials/
+.git/
+.venv/
+__pycache__/
+*.pyc
+*.sqlite3
+data/
+staticfiles/
+.env
+.env.*
+!.env.example
+.DS_Store

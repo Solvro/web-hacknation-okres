@@ -1,0 +1,14 @@
+# Uruchomienie jedną komendą: docker compose up --build
+# Przed pierwszym startem: cp .env.example .env i uzupełnij DJANGO_SECRET_KEY.
+services:
+  okres:
+    build: .
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - okres-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  okres-data:
