@@ -289,3 +289,50 @@ def dodaj_obserwacje(request, pk):
     except ValidationError as e:
         bledy = {k: v[0] for k, v in e.message_dict.items()}
     return render(request, "oceny/_obserwacje.html", _kontekst_oceny(request, ocena) | {"bledy_obserwacji": bledy})
+
+
+STOPNIE_SLOWNIE = ["", "pierwszego", "drugiego", "trzeciego", "czwartego", "piątego", "szóstego", "siódmego", "ósmego",
+                   "dziewiątego"]
+
+
+def _przedzialy(ocena):
+    """Wiersze tabeli „Przyznanie oceny” ze wzoru, z zaznaczeniem przedziału średniej."""
+    poziomy = rules.load(ocena.wersja_regul)["punktacja"]["poziomy"]
+    wiersze, dolna = [], None
+    minimum = min(rules.load(ocena.wersja_regul)["punktacja"]["skala_czastkowa"])
+    for p in poziomy:
+        zakres = (f"od {minimum} punktu do {p['do']} punktów" if dolna is None
+                  else f"powyżej {dolna} punktów do {p['do']} punktów")
+        wiersze.append((zakres, p["nazwa"], ocena.sporzadzona and ocena.poziom == p["nazwa"]))
+        dolna = p["do"]
+    return wiersze
+
+
+@login_required
+def wydruk(request, pk):
+    """Arkusz A/B/C do druku lub zapisu PDF z przeglądarki. ?czesc=I: kopia części I dla ocenianego."""
+    ocena = _ocena_dla(request, pk)
+    cfg = rules.load(ocena.wersja_regul)["arkusze"][ocena.arkusz]
+    maks = rules.load(ocena.wersja_regul)["kryteria_dodatkowe"]["max"]
+    obowiazkowe = rules.mandatory_criteria(ocena.arkusz, ocena.wersja_regul)
+    dodatkowe_nazwy = [nazwa for kod, nazwa in ocena.wszystkie_kryteria().items() if kod not in obowiazkowe]
+    dodatkowe_kolumna = (dodatkowe_nazwy + [""] * maks)[:maks]
+    # Układ wzoru: obok obowiązkowych najpierw pola kryteriów dodatkowych, niżej scalone pole terminu.
+    wiersze = []
+    for i, nazwa in enumerate(obowiazkowe.values()):
+        wiersze.append((nazwa, dodatkowe_kolumna[i] if i < maks else None, i == maks))
+    czastkowe = ocena.oceny_czastkowe
+    dodatkowe_kody = [k for k in ocena.kryteria_dodatkowe]
+    wszystkie = ocena.wszystkie_kryteria()
+    czastkowe_dodatkowe = [(wszystkie[k], czastkowe.get(k)) for k in dodatkowe_kody]
+    czastkowe_dodatkowe += [("brak", None)] * (maks - len(czastkowe_dodatkowe))
+    return render(request, "oceny/wydruk.html", {
+        "ocena": ocena, "cfg": cfg, "wiersze_czesci_i": wiersze, "rowspan_terminu": len(obowiazkowe) - maks,
+        "tylko_czesc_i": request.GET.get("czesc") == "I" or not ocena.sporzadzona,
+        "skala": rules.load(ocena.wersja_regul)["punktacja"]["skala_czastkowa"],
+        "czastkowe_obowiazkowe": [(nazwa, czastkowe.get(kod)) for kod, nazwa in obowiazkowe.items()],
+        "czastkowe_dodatkowe": czastkowe_dodatkowe,
+        "srednia_wydruk": f"{ocena.srednia}".replace(".", ",") if ocena.srednia is not None else "",
+        "przedzialy": _przedzialy(ocena),
+        "stopien_slownie": STOPNIE_SLOWNIE[ocena.stopien_sluzbowy + 1] if ocena.stopien_sluzbowy and ocena.stopien_sluzbowy < 9 else "",
+    })

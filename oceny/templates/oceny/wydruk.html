@@ -1,0 +1,140 @@
+{% load static %}<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <title>Arkusz {{ ocena.arkusz }} · {{ ocena.oceniany.get_full_name }}</title>
+  <link rel="stylesheet" href="{% static 'oceny/wydruk.css' %}">
+</head>
+<body>
+{% with p=ocena.oceniany.pracownik o=ocena.oceniajacy.pracownik %}
+<div class="pasek">
+  <button type="button" onclick="window.print()">Drukuj / zapisz jako PDF</button>
+  <a href="{% url 'oceny:szczegoly' ocena.pk %}">Wróć do sprawy</a>
+  {% if okres_demo %}<span>DANE FIKCYJNE · ten pasek nie jest drukowany</span>{% endif %}
+</div>
+<div class="arkusz">
+  <p class="zal">Załącznik nr {{ cfg.zalacznik }}</p>
+  <p class="wzor">WZÓR</p>
+  <p class="nazwa-arkusza">ARKUSZ {{ ocena.arkusz }}</p>
+  <h1>OCENA OKRESOWA<br>URZĘDNIKA SŁUŻBY CYWILNEJ LUB PRACOWNIKA SŁUŻBY CYWILNEJ<sup>1)</sup></h1>
+
+  <p class="czesc">CZĘŚĆ I</p>
+  <table><tr><td class="etykieta">NAZWA URZĘDU</td><td>{{ urzad.nazwa }}</td></tr></table>
+  <h2>Dane ocenianego</h2>
+  <table>
+    <tr><td class="etykieta">Imię</td><td>{{ ocena.oceniany.first_name }}</td></tr>
+    <tr><td class="etykieta">Nazwisko</td><td>{{ ocena.oceniany.last_name }}</td></tr>
+    {% if cfg.komorka_organizacyjna %}<tr><td class="etykieta">Komórka organizacyjna</td><td>{{ p.komorka }}</td></tr>{% endif %}
+    <tr><td class="etykieta">Stanowisko pracy</td><td>{{ p.stanowisko }}</td></tr>
+  </table>
+  <h2>Dane oceniającego</h2>
+  {% include "oceny/_wydruk_oceniajacy.html" %}
+  <h2>Kryteria oceny i termin sporządzenia oceny</h2>
+  <table>
+    <tr><th>Kryteria obowiązkowe</th><th colspan="2">Kryteria dodatkowe wybrane przez oceniającego<br><em>(nie więcej niż 3)</em></th></tr>
+    {% for wiersz in wiersze_czesci_i %}
+      <tr><td>{{ wiersz.0 }}</td>
+        {% if wiersz.2 %}<td rowspan="{{ rowspan_terminu }}">Termin sporządzenia oceny</td><td rowspan="{{ rowspan_terminu }}">{{ ocena.termin_oceny|date:"d.m.Y" }}</td>
+        {% elif wiersz.1 is not None %}<td colspan="2">{{ wiersz.1 }}</td>{% endif %}</tr>
+    {% endfor %}
+  </table>
+  <div class="ramka kursywa">Potwierdzamy:<br>
+    – przeprowadzenie rozmowy, o której mowa w § 5 ust. 1 rozporządzenia Prezesa Rady Ministrów z dnia 4 kwietnia 2016 r. w sprawie warunków i sposobu przeprowadzania ocen okresowych urzędników służby cywilnej i pracowników służby cywilnej (Dz. U. poz. 470), i omówienie w trakcie tej rozmowy wszystkich wymaganych zagadnień<sup>2)</sup>,<br>
+    – zapoznanie ocenianego z kryteriami oceny oraz terminem sporządzenia oceny.
+    <div class="podpisy">
+      <div><div class="wartosc">{{ ocena.miejscowosc_czesc_i }}</div><div class="opis">miejscowość</div></div>
+      <div><div class="wartosc">{{ ocena.data_zatwierdzenia_kryteriow|date:"d.m.Y" }}</div><div class="opis">data (dd.mm.rrrr)</div></div>
+      <div><div class="wartosc">{% if ocena.kryteria_zatwierdzone %}<span class="potwierdzenie-elektroniczne">potwierdzono w systemie: {{ ocena.oceniajacy.get_full_name }}</span>{% endif %}</div><div class="opis">podpis oceniającego</div></div>
+    </div>
+    <div class="podpisy">
+      <div><div class="wartosc">{{ ocena.miejscowosc_czesc_i }}</div><div class="opis">miejscowość</div></div>
+      <div><div class="wartosc">{{ ocena.data_potwierdzenia_kryteriow|date:"d.m.Y" }}</div><div class="opis">data (dd.mm.rrrr)</div></div>
+      <div><div class="wartosc">{% if ocena.kryteria_zablokowane %}<span class="potwierdzenie-elektroniczne">potwierdzono w systemie: {{ ocena.oceniany.get_full_name }}</span>{% endif %}</div><div class="opis">podpis ocenianego</div></div>
+    </div>
+  </div>
+  <div class="przypisy">
+    <p><sup>1)</sup> {{ cfg.przypis }}</p>
+    <p><sup>2)</sup> W trakcie rozmowy omawiane są: 1) główne obowiązki wynikające z opisu stanowiska pracy zajmowanego przez ocenianego, 2) kryteria obowiązkowe i kryteria dodatkowe, jeżeli są wybierane przez oceniającego, 3) oczekiwania oceniającego co do sposobu spełniania kryteriów oceny przez ocenianego, 4) cele do osiągnięcia w okresie, w którym oceniany podlega ocenie, jeżeli ich określenie jest uzasadnione ze względu na charakter obowiązków wynikających z opisu stanowiska pracy zajmowanego przez ocenianego, a także sposób realizacji wyznaczonych celów.</p>
+  </div>
+
+  {% if not tylko_czesc_i %}
+  <p class="czesc nowa-strona">CZĘŚĆ II</p>
+  <table>
+    <tr><td class="etykieta">DATA PRZEPROWADZENIA ROZMOWY OCENIAJĄCEJ<sup>3)</sup></td><td colspan="4">{{ ocena.data_rozmowy_oceniajacej|date:"d.m.Y" }}</td></tr>
+    <tr><td class="etykieta">OKRES, W KTÓRYM OCENIANY PODLEGAŁ OCENIE</td><td>OD:</td><td>{{ ocena.okres_od|date:"d.m.Y" }}</td><td>DO:</td><td>{{ ocena.okres_do|date:"d.m.Y" }}</td></tr>
+  </table>
+  <table>
+    <tr><th rowspan="2" style="text-align:left">KRYTERIA OBOWIĄZKOWE</th><th colspan="5">OCENA CZĄSTKOWA<sup>4)</sup></th></tr>
+    <tr>{% for pkt, opis in skala.items %}<th>{{ opis|capfirst }}<br>{{ pkt }}</th>{% endfor %}</tr>
+    {% for nazwa, pkt in czastkowe_obowiazkowe %}<tr><td>{{ nazwa }}</td>{% for s in skala %}<td class="x">{% if pkt == s %}X{% endif %}</td>{% endfor %}</tr>{% endfor %}
+    <tr><th style="text-align:left">KRYTERIA DODATKOWE WYBRANE PRZEZ OCENIAJĄCEGO</th><th colspan="5">OCENA CZĄSTKOWA<sup>4)</sup></th></tr>
+    {% for nazwa, pkt in czastkowe_dodatkowe %}<tr><td>{{ nazwa }}</td>{% for s in skala %}<td class="x">{% if pkt == s %}X{% endif %}</td>{% endfor %}</tr>{% endfor %}
+    <tr><td colspan="4">Średnia arytmetyczna z ocen cząstkowych przyznanych za poszczególne kryteria oceny:</td><td colspan="2" class="x">{{ srednia_wydruk }}</td></tr>
+  </table>
+  <h2>Przyznanie oceny</h2>
+  <table>
+    <tr><th>Należy wstawić znak „X” w odpowiednie pole</th><th>Liczba punktów stanowiąca średnią arytmetyczną ze wszystkich ocen cząstkowych</th><th>Ogólny poziom spełnienia kryteriów oceny</th></tr>
+    {% for zakres, nazwa, zaznaczony in przedzialy %}<tr><td class="x">{% if zaznaczony %}X{% endif %}</td><td style="text-align:center">{{ zakres }}</td><td style="text-align:center">{{ nazwa }}</td></tr>{% endfor %}
+  </table>
+  <table><tr><td>OCENA OKRESOWA W SŁUŻBIE CYWILNEJ</td><td>POZYTYWNA<sup>5)</sup></td><td class="x">{% if ocena.pozytywna %}X{% endif %}</td><td>NEGATYWNA<sup>5)</sup></td><td class="x">{% if ocena.pozytywna is False %}X{% endif %}</td></tr></table>
+
+  <h2 class="nowa-strona">Uzasadnienie przyznanej oceny okresowej<sup>6)</sup></h2>
+  <div class="pole-tekstowe">{{ ocena.uzasadnienie }}</div>
+  <h2>Wnioski dotyczące indywidualnego programu rozwoju zawodowego<sup>7)</sup></h2>
+  <div class="pole-tekstowe male">{{ ocena.wnioski_iprz }}</div>
+  <h2>Dane dotyczące poprzedniej oceny okresowej urzędnika służby cywilnej</h2>
+  <table><tr><td>Ocena</td><td>{% if ocena.oceniany_urzednik %}{{ ocena.get_poprz_ocena_display }}{% endif %}</td><td>Poziom</td><td>{{ ocena.poprz_poziom }}</td><td>Data sporządzenia</td><td>{{ ocena.poprz_data|date:"d.m.Y" }}</td></tr></table>
+  <h2>Czy do oceny okresowej dołączono wniosek o przyznanie kolejnego stopnia służbowego?</h2>
+  <table><tr><td>TAK</td><td class="x">{% if ocena.wniosek_stopien == "tak" %}X{% endif %}</td><td>NIE</td><td class="x">{% if ocena.wniosek_stopien == "nie" %}X{% endif %}</td><td>NIE DOTYCZY (oceniany jest pracownikiem służby cywilnej)</td><td class="x">{% if ocena.wniosek_stopien == "nie_dotyczy" %}X{% endif %}</td></tr></table>
+  <h2>Dane oceniającego</h2>
+  {% include "oceny/_wydruk_oceniajacy.html" %}
+  <div class="ramka podpisy" style="margin-top:-3mm">
+    <div><div class="wartosc">{{ ocena.miejscowosc_czesc_ii }}</div><div class="opis">miejscowość</div></div>
+    <div><div class="wartosc">{{ ocena.data_sporzadzenia|date:"d.m.Y" }}</div><div class="opis">data (dd.mm.rrrr)</div></div>
+    <div><div class="wartosc">{% if ocena.sporzadzona %}<span class="potwierdzenie-elektroniczne">potwierdzono w systemie: {{ ocena.oceniajacy.get_full_name }}</span>{% endif %}</div><div class="opis">podpis oceniającego</div></div>
+  </div>
+  <div class="ramka kursywa">Przeprowadzono ze mną rozmowę oceniającą oraz zapoznałem(-łam) się z oceną okresową i wnioskami dotyczącymi indywidualnego programu rozwoju zawodowego.
+    <div class="podpisy">
+      <div><div class="wartosc">{{ ocena.miejscowosc_zapoznania }}</div><div class="opis">miejscowość</div></div>
+      <div><div class="wartosc">{{ ocena.data_zapoznania|date:"d.m.Y" }}</div><div class="opis">data (dd.mm.rrrr)</div></div>
+      <div><div class="wartosc">{% if ocena.zapoznany %}{{ ocena.oceniany.get_full_name }}{% endif %}</div><div class="opis">imię i nazwisko lub pieczątka ocenianego</div></div>
+      <div><div class="wartosc">{% if ocena.sposob_zapoznania == "potwierdzenie" %}<span class="potwierdzenie-elektroniczne">potwierdzono w systemie</span>{% elif ocena.sposob_zapoznania == "fikcja" %}<span class="potwierdzenie-elektroniczne">fikcja zapoznania: {{ ocena.uwagi_zapoznania }}</span>{% endif %}</div><div class="opis">podpis ocenianego</div></div>
+    </div>
+  </div>
+  <div class="ramka"><em>Pouczenie</em><br><em>Zgodnie z art. 83 ust. 1 ustawy z dnia 21 listopada 2008 r. o służbie cywilnej od oceny okresowej służy, w terminie 7 dni od dnia zapoznania się z oceną, sprzeciw do dyrektora generalnego urzędu<sup>8)</sup>.</em></div>
+  <div class="przypisy">
+    <p><sup>3)</sup> W trakcie rozmowy oceniającej omawia się: 1) główne obowiązki wykonywane przez ocenianego w okresie, w którym podlegał ocenie, oraz sposób ich realizacji, z uwzględnieniem spełniania przez ocenianego ustalonych kryteriów oceny, 2) sposób realizowania przez ocenianego celów do osiągnięcia w okresie, w którym oceniany podlegał ocenie, jeżeli cele te zostały wyznaczone, 3) kierunki dalszego rozwoju zawodowego i potrzeby ocenianego w zakresie podnoszenia kwalifikacji i doskonalenia umiejętności.</p>
+    <p><sup>4)</sup> Należy wstawić znak „X” w odpowiednie pole.</p>
+    <p><sup>5)</sup> POZYTYWNA – w przypadku ustalenia ogólnego poziomu spełniania kryteriów oceny na poziomie „znacznie powyżej oczekiwań”, „powyżej oczekiwań” albo „na poziomie oczekiwań”, pod warunkiem nieuzyskania przez ocenianego żadnej z ocen cząstkowych na poziomie „znacznie poniżej oczekiwań”. NEGATYWNA – w przypadku ustalenia ogólnego poziomu spełniania kryteriów oceny na poziomie „poniżej oczekiwań” albo „znacznie poniżej oczekiwań”, a także w przypadku uzyskania przez ocenianego co najmniej jednej oceny cząstkowej na poziomie „znacznie poniżej oczekiwań”.</p>
+    <p><sup>6)</sup> Uzasadnienie jest obligatoryjne w przypadku otrzymania przez ocenianego negatywnej oceny okresowej. W przypadku przyznania oceny pozytywnej uzasadnienie jest fakultatywne.</p>
+    <p><sup>7)</sup> Uwzględniając sporządzoną ocenę, realizowane i przyszłe zadania oraz oczekiwania ocenianego, należy określić kierunki rozwoju zawodowego ocenianego, biorąc pod uwagę obszary wiedzy i umiejętności wymagające doskonalenia, oraz zaproponować optymalne formy i metody ich realizacji.</p>
+    <p><sup>8)</sup> W urzędzie, w którym przepisy nie przewidują tworzenia stanowiska dyrektora generalnego urzędu, sprzeciw składa się do kierownika tego urzędu.</p>
+  </div>
+
+  {% if ocena.wniosek_stopien == "tak" %}
+  <p class="czesc nowa-strona">CZĘŚĆ III</p>
+  <p class="wzor">Wniosek jest wypełniany i dołączany do arkusza oceny okresowej ocenianego tylko w sytuacji skorzystania przez oceniającego z możliwości przewidzianej w art. 89 ust. 1 ustawy z dnia 21 listopada 2008 r. o służbie cywilnej.</p>
+  <h2>Dane urzędnika służby cywilnej</h2>
+  <table>
+    <tr><td class="etykieta">Imię</td><td>{{ ocena.oceniany.first_name }}</td></tr>
+    <tr><td class="etykieta">Nazwisko</td><td>{{ ocena.oceniany.last_name }}</td></tr>
+    <tr><td class="etykieta">Rok mianowania</td><td>{{ ocena.rok_mianowania }}</td></tr>
+    <tr><td class="etykieta">Posiadany stopień służbowy</td><td>{{ ocena.stopien_sluzbowy }}</td></tr>
+    <tr><td class="etykieta">Data przyznania stopnia służbowego</td><td>{{ ocena.data_stopnia|date:"d.m.Y" }}</td></tr>
+  </table>
+  <div class="ramka">WNIOSEK O PRZYZNANIE URZĘDNIKOWI SŁUŻBY CYWILNEJ KOLEJNEGO STOPNIA SŁUŻBOWEGO<br><br>
+    W związku z uzyskaniem przez Panią/Pana <strong>{{ ocena.oceniany.get_full_name }}</strong> pozytywnej oceny okresowej, na podstawie art. 89 ust. 1 ustawy z dnia 21 listopada 2008 r. o służbie cywilnej wnioskuję o przyznanie <strong>{{ stopien_slownie }}</strong> stopnia służbowego.</div>
+  <h2>Umotywowanie wniosku</h2>
+  <div class="pole-tekstowe">{{ ocena.umotywowanie_wniosku }}</div>
+  <div class="podpisy">
+    <div><div class="wartosc">{{ ocena.miejscowosc_czesc_ii }}</div><div class="opis">miejscowość</div></div>
+    <div><div class="wartosc">{{ ocena.data_sporzadzenia|date:"d.m.Y" }}</div><div class="opis">data (dd.mm.rrrr)</div></div>
+    <div><div class="wartosc">{{ ocena.oceniajacy.get_full_name }}</div><div class="opis">imię i nazwisko lub pieczątka oceniającego</div></div>
+    <div><div class="wartosc"></div><div class="opis">podpis oceniającego</div></div>
+  </div>
+  {% endif %}
+  {% endif %}
+</div>
+{% endwith %}
+</body>
+</html>

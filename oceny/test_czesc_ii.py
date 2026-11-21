@@ -24,7 +24,7 @@ class CzescIIiIIITest(TestCase):
 
     def test_domyslne_okres_i_dane_urzednika(self):
         d = self.o.domyslne_pola()
-        self.assertEqual(d["okres_od"], date(2024, 12, 10))  # data wyznaczenia kryteriów
+        self.assertEqual(d["okres_od"], self.dzis)  # przypis 6: data zapoznania ocenianego z kryteriami
         self.assertEqual(d["okres_do"], self.dzis)  # przed terminem: data bieżąca
         self.assertEqual((d["rok_mianowania"], d["stopien_sluzbowy"]), (2019, 2))
 
@@ -52,7 +52,7 @@ class CzescIIiIIITest(TestCase):
         self.o.refresh_from_db()
         self.assertEqual(self.o.wniosek_stopien, "tak")
         self.assertEqual(self.o.stopien_sluzbowy, 2)
-        self.assertEqual(self.o.okres_od, date(2024, 12, 10))
+        self.assertEqual(self.o.okres_od, self.dzis)
         self.assertIsNone(self.o.poprz_data)
 
     def test_pracownik_nie_dotyczy(self):
@@ -80,7 +80,7 @@ class CzescIIiIIITest(TestCase):
         self.client.force_login(self.anna)
         r = self.client.get(reverse("oceny:szczegoly", args=[self.o.pk]))
         self.assertContains(r, "Okres, w którym oceniany podlegał ocenie")
-        self.assertContains(r, 'value="2024-12-10"')
+        self.assertContains(r, 'value="2026-11-23"')
         dane = {f"kryterium_{k}": "7" for k in self.komplet} | {
             "data_rozmowy": "2026-11-23", "okres_od": "2024-12-10", "okres_do": "2026-11-23", "wnioski_iprz": "Kurs",
             "poprz_ocena": "brak", "wniosek_stopien": "tak", "rok_mianowania": "2019", "stopien_sluzbowy": "2",

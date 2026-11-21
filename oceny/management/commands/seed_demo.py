@@ -10,13 +10,13 @@ from oceny.models import Nieobecnosc, Ocena, Pracownik, Urzad
 # Dane wyłącznie syntetyczne. Hasło jest jawne, więc komenda działa tylko w trybie demo.
 HASLO = "demo"
 OSOBY = [
-    # login, imię, nazwisko, stanowisko, komórka, rodzaj, przełożony, kadry, DG, urzędnik (rok, stopień)
+    # login, imię, nazwisko, stanowisko, komórka, rodzaj, przełożony, kadry, DG, urzędnik (rok mianowania, stopień, data stopnia)
     ("dyrektor", "Dorota", "Dyrektorska", "Dyrektor generalny", "Kierownictwo", "kierujacy", None, False, True, None),
     ("kadry", "Krystyna", "Kadrowa", "Główna specjalistka ds. kadr", "Biuro Kadr", "pozostale", "dyrektor", True, False, None),
     ("oceniajaca", "Anna", "Syntetyczna", "Naczelniczka Wydziału Spraw Obywatelskich", "Wydział Spraw Obywatelskich",
-     "kierujacy", "dyrektor", False, False, (2015, 4)),
+     "kierujacy", "dyrektor", False, False, (2015, 4, date(2020, 9, 1))),
     ("oceniany", "Jan", "Testowy", "Starszy specjalista", "Wydział Spraw Obywatelskich", "pozostale", "oceniajaca",
-     False, False, (2019, 2)),
+     False, False, (2019, 2, date(2022, 5, 4))),
     ("piotr", "Piotr", "Przykładowy", "Specjalista", "Wydział Spraw Obywatelskich", "pozostale", "oceniajaca",
      False, False, None),
 ]
@@ -41,7 +41,8 @@ class Command(BaseCommand):
             p, _ = Pracownik.objects.update_or_create(user=u, defaults=dict(
                 stanowisko=stanowisko, komorka=komorka, rodzaj_stanowiska=rodzaj, przelozony=prac.get(przel),
                 dyrektor_generalny=dg, urzednik=bool(urzednik), rok_mianowania=urzednik and urzednik[0],
-                stopien_sluzbowy=urzednik and urzednik[1], miejscowosc_pracy="Bydgoszcz"))
+                stopien_sluzbowy=urzednik and urzednik[1], data_stopnia=urzednik and urzednik[2],
+                miejscowosc_pracy="Bydgoszcz"))
             prac[login] = p
         # Przykład KPRM: L4 5–16.10.2026 + urlop 19.10–6.11.2026 (bez przyczyn w systemie)
         jan = prac["oceniany"]

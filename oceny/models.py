@@ -340,7 +340,8 @@ class Ocena(models.Model):
         termin = self.termin_oceny
         p = getattr(self.oceniany, "pracownik", None)
         domyslne = {
-            "okres_od": self.data_rozmowy_rozpoczynajacej or self.poczatek_okresu,
+            # Przypis 6 do wzoru: „od” to data zapoznania ocenianego z kryteriami (część I).
+            "okres_od": self.data_potwierdzenia_kryteriow or self.poczatek_okresu,
             "okres_do": min(dzis, termin) if termin else dzis,
             "rok_mianowania": p and p.rok_mianowania, "stopien_sluzbowy": p and p.stopien_sluzbowy,
             "data_stopnia": p and p.data_stopnia,

@@ -1,0 +1,6 @@
+<table>
+  <tr><td class="etykieta">Imię</td><td>{{ ocena.oceniajacy.first_name }}</td></tr>
+  <tr><td class="etykieta">Nazwisko</td><td>{{ ocena.oceniajacy.last_name }}</td></tr>
+  {% if cfg.komorka_organizacyjna %}<tr><td class="etykieta">Komórka organizacyjna</td><td>{{ o.komorka }}</td></tr>{% endif %}
+  <tr><td class="etykieta">Stanowisko{% if ocena.arkusz != "A" %} pracy{% endif %}</td><td>{{ o.stanowisko }}</td></tr>
+</table>

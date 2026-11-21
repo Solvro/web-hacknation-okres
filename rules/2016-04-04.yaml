@@ -98,12 +98,21 @@ kryteria:  # Załącznik nr 1: wykaz kryteriów oceny (nazwy i opisy)
 arkusze:  # § 4 ust. 1-3: kryteria obowiązkowe; § 3: przypisanie arkusza do stanowiska
   A:
     dotyczy: kierownik urzędu na stanowisku pracy w służbie cywilnej (§ 3 ust. 2)
+    zalacznik: 2
+    komorka_organizacyjna: false
+    przypis: Arkusz służy do sporządzenia oceny okresowej urzędnika służby cywilnej lub pracownika służby cywilnej, zatrudnionego na stanowisku kierownika urzędu, które jest stanowiskiem pracy w służbie cywilnej.
     obowiazkowe: [zarzadzanie_ludzmi, podejmowanie_decyzji, organizacja_pracy, wspolpraca, komunikacja, zarzadzanie_strategiczne]
   B:
     dotyczy: stanowisko związane z bezpośrednim kierowaniem pracownikami (§ 3 ust. 3)
+    zalacznik: 3
+    komorka_organizacyjna: true
+    przypis: Arkusz służy do sporządzenia oceny okresowej urzędnika służby cywilnej lub pracownika służby cywilnej, zatrudnionego na stanowisku, na którym praca polega na bezpośrednim kierowaniu pracownikami.
     obowiazkowe: [zarzadzanie_ludzmi, podejmowanie_decyzji, organizacja_pracy, wspolpraca, komunikacja]
   C:
     dotyczy: pozostałe stanowiska (§ 3 ust. 4)
+    zalacznik: 4
+    komorka_organizacyjna: true
+    przypis: "Arkusz służy do sporządzenia oceny okresowej urzędnika służby cywilnej lub pracownika służby cywilnej, zatrudnionego na stanowisku, które nie jest: stanowiskiem kierownika urzędu, będącym stanowiskiem pracy w służbie cywilnej, ani stanowiskiem, na którym praca polega na bezpośrednim kierowaniu pracownikami."
     obowiazkowe: [wykorzystywanie_wiedzy, rzetelnosc, organizacja_pracy, wspolpraca, komunikacja]
 
 kryteria_dodatkowe:

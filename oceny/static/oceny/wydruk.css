@@ -1,0 +1,31 @@
+/* Wydruk A4 odwzorowujący wzory arkuszy z załączników 2–4 do rozporządzenia (Dz. U. 2016 poz. 470). */
+@page { size: A4; margin: 14mm 15mm 12mm 15mm; }
+body { font: 10pt/1.25 "Times New Roman", Times, serif; color: #000; margin: 0; background: #fff; }
+.pasek { font: 14px system-ui, sans-serif; background: #FFF3D6; color: #8A4B00; padding: .5rem 1rem; display: flex; gap: 1rem; align-items: center; }
+.pasek button { font: inherit; background: #0B3A6E; color: #fff; border: 0; padding: .4rem .9rem; border-radius: 4px; cursor: pointer; }
+.arkusz { max-width: 180mm; margin: 0 auto; padding: 8mm 0; }
+.przypisy, .ramka { break-inside: avoid; }
+.wzor { text-align: center; font-style: italic; margin: 0 0 4mm; }
+.zal { text-align: right; font-weight: bold; }
+h1 { font-size: 11pt; text-align: center; margin: 3mm 0; }
+.nazwa-arkusza { font-weight: bold; margin: 2mm 0; }
+.czesc { text-align: center; letter-spacing: .4em; font-size: 12pt; margin: 4mm 0 3mm; }
+h2 { font-size: 9.5pt; font-weight: bold; margin: 4mm 0 1mm; text-transform: uppercase; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 3mm; }
+td, th { border: 1px solid #000; padding: .9mm 2mm; vertical-align: top; font-weight: normal; }
+th { text-align: center; }
+td.etykieta { width: 40%; }
+td.x { text-align: center; font-weight: bold; width: 12mm; }
+.pole-tekstowe { border: 1.5px solid #000; min-height: 38mm; padding: 2mm; white-space: pre-wrap; margin-bottom: 3mm; }
+.pole-tekstowe.male { min-height: 26mm; }
+.podpisy { display: flex; justify-content: space-between; gap: 4mm; padding: 2.5mm 2mm 0; text-align: center; }
+.podpisy div { flex: 1; }
+.podpisy .wartosc { min-height: 5mm; border-bottom: 1px dotted #000; }
+.podpisy .opis { font-style: italic; font-size: 8.5pt; }
+.ramka { border: 1.5px solid #000; padding: 2mm; margin-bottom: 3mm; }
+.ramka.kursywa { font-style: italic; }
+.przypisy { font-size: 7.5pt; line-height: 1.2; border-top: 1px solid #000; margin-top: 6mm; padding-top: 1mm; width: 100%; }
+.przypisy p { margin: .5mm 0; }
+.nowa-strona { break-before: page; }
+.potwierdzenie-elektroniczne { font: 7pt system-ui, sans-serif; color: #333; }
+@media print { .pasek { display: none; } .arkusz { padding: 0; } }
