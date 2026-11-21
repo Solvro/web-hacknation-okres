@@ -1,5 +1,6 @@
 # Rozporządzenie PRM z 4.04.2016 w sprawie warunków i sposobu przeprowadzania ocen okresowych (Dz. U. poz. 470)
 wersja: "2016-04-04"
+nazwa: "Stan prawny z zadania: ustawa o służbie cywilnej (Dz.U. 2026 poz. 590), rozporządzenie PRM (Dz.U. 2016 poz. 470)"
 obowiazuje_od: 2016-04-04
 
 kryteria:  # Załącznik nr 1: wykaz kryteriów oceny (nazwy i opisy)
@@ -154,3 +155,10 @@ przypomnienia:  # ile dni przed terminem scheduler przypomina (0 = w dniu termin
   sprzeciw: [2, 0]
   zapoznanie: [0, -3, -7]  # ujemne = dni po sporządzeniu bez zapoznania
   rozpatrzenie: [7, 2, 0]
+
+przyklady:  # sprawdzane przez `manage.py sprawdz_reguly` przed aktywacją pakietu
+  - {poczatek: "2024-03-16", termin_oceny: "2026-03-16"}  # KPRM: 24 miesiące
+  - {poczatek: "2025-03-16", nieobecnosci: [["2026-10-05", "2026-10-16"], ["2026-10-19", "2026-11-06"]], termin_oceny: "2027-04-19"}
+  - {punkty: [1, 7, 7, 7, 9], poziom: powyzej, pozytywna: false}
+  - {punkty: [3, 5], poziom: ponizej, pozytywna: false}
+  - {punkty: [5, 7], poziom: na_poziomie, pozytywna: true}

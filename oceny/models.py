@@ -14,9 +14,17 @@ class Urzad(models.Model):
 
     nazwa = models.CharField(max_length=300)
     miejscowosc = models.CharField(max_length=100)
+    wersja_regul = models.CharField("aktywny pakiet reguł", max_length=40, default=rules.DOMYSLNA_WERSJA,
+                                    help_text="Dla nowych spraw. Sprawy w toku zachowują swoją wersję.")
 
     class Meta:
         verbose_name = verbose_name_plural = "urząd"
+
+    def clean(self):
+        if self.wersja_regul not in {w["kod"] for w in rules.dostepne_wersje()}:
+            raise ValidationError({"wersja_regul": "Nie ma takiego pakietu reguł w katalogu rules/."})
+        if bledy := rules.sprawdz(self.wersja_regul):
+            raise ValidationError({"wersja_regul": "Pakiet nie przeszedł sprawdzenia: " + " ".join(bledy)})
 
     def __str__(self):
         return self.nazwa
@@ -86,7 +94,7 @@ class Nieobecnosc(models.Model):
 
 class Ocena(models.Model):
     arkusz = models.CharField(max_length=1, choices=[("A", "A"), ("B", "B"), ("C", "C")])
-    wersja_regul = models.CharField(max_length=20, default=rules.DOMYSLNA_WERSJA)
+    wersja_regul = models.CharField(max_length=40, default=rules.aktywna)
     oceniany = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="oceny_wlasne")
     oceniajacy = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="oceny_sporzadzane")
     PODSTAWY_POCZATKU = [

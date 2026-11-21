@@ -1,0 +1,10 @@
+# Ilustracja techniczna zmiany przepisów: ocena co 12 miesięcy. Nie przypisuje przyszłej ustawie treści ani daty.
+dziedziczy: "2016-04-04"
+wersja: "symulacja-12m"
+nazwa: "SYMULACJA: cykl oceny 12 miesięcy (ilustracja zmiany jednego parametru)"
+symulacja: true
+terminy:
+  okres_oceny_miesiace: 12
+przyklady:
+  - {poczatek: "2024-03-16", termin_oceny: "2025-03-17"}  # 16.03.2025 to niedziela
+  - {punkty: [1, 7, 7, 7, 9], poziom: powyzej, pozytywna: false}

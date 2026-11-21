@@ -1,0 +1,22 @@
+{% extends "oceny/base.html" %}
+{% block tytul %}Wersje przepisów{% endblock %}
+{% block tresc %}
+<p><a href="{% url 'oceny:szczegoly' ocena.pk %}">← Wróć do sprawy</a></p>
+<h1>Wpływ wersji przepisów na terminy · {{ ocena.oceniany.get_full_name }}</h1>
+<p>Sprawa jest prowadzona według pakietu <strong>{{ ocena.wersja_regul }}</strong>. Nowe sprawy w urzędzie dostają pakiet <strong>{{ aktywna }}</strong> (zmiana w panelu kadr: Urząd → aktywny pakiet reguł). Każdy pakiet przed aktywacją przechodzi sprawdzenie przykładów (<code>manage.py sprawdz_reguly</code>); pakiet z błędem nie zostanie aktywowany.</p>
+<table>
+  <thead><tr><th>Pakiet</th><th>Termin ustalenia kryteriów</th><th>Termin oceny</th><th>Sprawdzenie</th></tr></thead>
+  <tbody>
+  {% for w in wiersze %}
+    <tr{% if w.biezaca %} style="font-weight:600"{% endif %}>
+      <td>{{ w.wersja.kod }}{% if w.wersja.symulacja %} <span class="znacznik">symulacja</span>{% endif %}<br><span class="cicho">{{ w.wersja.nazwa }}</span></td>
+      <td>{{ w.kryteria.termin|date:"d.m.Y"|default:"—" }}</td>
+      <td>{{ w.ocena.termin|date:"d.m.Y"|default:"—" }}
+        {% if w.ocena %}<details><summary>Jak obliczono?</summary>{% include "oceny/_rachunek.html" with rachunek=w.ocena %}</details>{% endif %}</td>
+      <td>{% if w.bledy %}<span class="blad">{{ w.bledy|join:" " }}</span>{% else %}poprawny{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<p class="cicho">Pakiet „symulacja” to ilustracja techniczna zmiany jednego parametru, bez przypisywania przyszłej ustawie treści ani daty wejścia w życie. Dla rzeczywistej nowelizacji o objęciu spraw w toku decyduje przepis przejściowy.</p>
+{% endblock %}

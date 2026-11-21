@@ -487,3 +487,18 @@ def przygotowanie(request, pk, rodzaj):
         "jest_oceniajacym": request.user.id == ocena.oceniajacy_id,
         "dodatkowe_do_wyboru": rules.extra_criteria(ocena.arkusz, ocena.wersja_regul) if rodzaj == "rozpoczynajaca" else {},
     })
+
+
+@login_required
+def porownanie_regul(request, pk):
+    """Wpływ wersji przepisów na terminy tej sprawy (pokaz aktualizacji reguł bez przebudowy systemu)."""
+    import copy
+
+    ocena = _ocena_dla(request, pk)
+    wiersze = []
+    for w in rules.dostepne_wersje():
+        kopia = copy.copy(ocena)
+        kopia.wersja_regul = w["kod"]
+        wiersze.append({"wersja": w, "kryteria": kopia.rachunek_kryteriow(), "ocena": kopia.rachunek_oceny(),
+                        "biezaca": w["kod"] == ocena.wersja_regul, "bledy": rules.sprawdz(w["kod"])})
+    return render(request, "oceny/porownanie_regul.html", {"ocena": ocena, "wiersze": wiersze, "aktywna": rules.aktywna()})
