@@ -119,18 +119,35 @@ def potwierdz_kryteria(request, pk):
     return render(request, "oceny/_kryteria.html", _kontekst_oceny(request, ocena) | {"odswiez_ocene": True})
 
 
+def _data(wartosc):
+    try:
+        return date.fromisoformat(wartosc or "")
+    except ValueError:
+        return None
+
+
+def _liczba(wartosc):
+    try:
+        return int(wartosc)
+    except (TypeError, ValueError):
+        return None
+
+
+POLA_DATY = ("okres_od", "okres_do", "poprz_data", "data_stopnia")
+POLA_LICZBY = ("rok_mianowania", "stopien_sluzbowy")
+POLA_TEKSTU = ("miejscowosc", "poprz_ocena", "poprz_poziom", "wniosek_stopien", "umotywowanie_wniosku")
+
+
 def _dane_formularza(request, ocena):
     czastkowe = {}
     for kod in ocena.wszystkie_kryteria():
-        try:
-            czastkowe[kod] = int(request.POST.get(f"kryterium_{kod}", ""))
-        except ValueError:
-            pass
-    try:
-        data_rozmowy = date.fromisoformat(request.POST.get("data_rozmowy", ""))
-    except ValueError:
-        data_rozmowy = None
-    return czastkowe, data_rozmowy, request.POST.get("uzasadnienie", ""), request.POST.get("wnioski_iprz", "")
+        if (pkt := _liczba(request.POST.get(f"kryterium_{kod}"))) is not None:
+            czastkowe[kod] = pkt
+    pola = {k: _data(request.POST.get(k)) for k in POLA_DATY}
+    pola |= {k: _liczba(request.POST.get(k)) for k in POLA_LICZBY}
+    pola |= {k: request.POST.get(k, "") for k in POLA_TEKSTU}
+    return (czastkowe, _data(request.POST.get("data_rozmowy")), request.POST.get("uzasadnienie", ""),
+            request.POST.get("wnioski_iprz", ""), pola)
 
 
 def _podpowiedz_pytania(ocena, kod) -> str:
@@ -153,7 +170,12 @@ def _kontekst_oceny(request, ocena, czastkowe=None, bledy=None, **pola):
         "skala": rules.load(ocena.wersja_regul)["punktacja"]["skala_czastkowa"],
         "wynik": ocena.podglad_wyniku(czastkowe),
         "bledy_pol": bledy or {},
-        "pola": pola,
+        "pola": ocena.domyslne_pola() | {"miejscowosc": _miejscowosc(ocena.oceniajacy)}
+                | {k: v for k, v in pola.items() if v not in (None, "")},
+        "z_historii": ocena.poprzednia_z_historii(),
+        "poziomy": [p["nazwa"] for p in reversed(rules.load(ocena.wersja_regul)["punktacja"]["poziomy"])],
+        "stopnie": range(1, 10),
+        "miejscowosc_ocenianego": _miejscowosc(ocena.oceniany),
     }
 
 
@@ -177,12 +199,12 @@ def podglad_wyniku(request, pk):
 @require_POST
 def sporzadz(request, pk):
     ocena = _tylko_oceniajacy(request, pk)
-    czastkowe, data_rozmowy, uzasadnienie, wnioski = _dane_formularza(request, ocena)
+    czastkowe, data_rozmowy, uzasadnienie, wnioski, pola = _dane_formularza(request, ocena)
     try:
-        ocena.sporzadz(czastkowe, data_rozmowy, uzasadnienie, wnioski)
+        ocena.sporzadz(czastkowe, data_rozmowy, uzasadnienie, wnioski, **pola)
     except ValidationError as e:
-        ctx = _kontekst_oceny(request, ocena, czastkowe, data_rozmowy=request.POST.get("data_rozmowy", ""),
-                              uzasadnienie=uzasadnienie, wnioski_iprz=wnioski)
+        ctx = _kontekst_oceny(request, ocena, czastkowe, **(pola | {
+            "data_rozmowy": data_rozmowy, "uzasadnienie": uzasadnienie, "wnioski_iprz": wnioski}))
         ctx["bledy_pol"] = {k: v[0] for k, v in e.message_dict.items()}
         return render(request, "oceny/_ocena.html", ctx)
     return render(request, "oceny/_ocena.html", _kontekst_oceny(request, ocena))
@@ -198,7 +220,7 @@ def potwierdz_zapoznanie(request, pk):
     ocena = _ocena_dla(request, pk)
     if ocena.oceniany_id != request.user.id:
         raise PermissionDenied("Zapoznanie potwierdza oceniany.")
-    ocena.potwierdz_zapoznanie()
+    ocena.potwierdz_zapoznanie(request.POST.get("miejscowosc") or _miejscowosc(ocena.oceniany))
     return _zapoznanie(request, ocena)
 
 

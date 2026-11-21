@@ -1,17 +1,27 @@
 <section id="ocena"{% if oob %} hx-swap-oob="true"{% endif %}>
-  <h2>Część II · ocena</h2>
+  <h2>Część II · rozmowa oceniająca i ocena</h2>
   {% if ocena.sporzadzona %}
-    <p>Sporządzona {{ ocena.data_sporzadzenia|date:"d.m.Y" }} po rozmowie oceniającej {{ ocena.data_rozmowy_oceniajacej|date:"d.m.Y" }}.</p>
+    <p class="potwierdzone">Sporządzona {{ ocena.data_sporzadzenia|date:"d.m.Y" }}{% if ocena.miejscowosc_czesc_ii %} w miejscowości {{ ocena.miejscowosc_czesc_ii }}{% endif %} po rozmowie oceniającej {{ ocena.data_rozmowy_oceniajacej|date:"d.m.Y" }}.
+      Okres podlegania ocenie: {{ ocena.okres_od|date:"d.m.Y" }}–{{ ocena.okres_do|date:"d.m.Y" }}.</p>
     <table>
       <thead><tr><th>Kryterium</th><th>Ocena cząstkowa</th></tr></thead>
       <tbody>{% for kod, nazwa, pkt in kryteria_oceny %}<tr><td>{{ nazwa }}</td><td>{{ pkt }}</td></tr>{% endfor %}</tbody>
     </table>
     <p>Średnia {{ ocena.srednia }} · poziom: {{ ocena.poziom }} · <strong>ocena {% if ocena.pozytywna %}pozytywna{% else %}negatywna{% endif %}</strong></p>
-    {% if ocena.uzasadnienie %}<h3>Uzasadnienie</h3><p>{{ ocena.uzasadnienie|linebreaksbr }}</p>{% endif %}
-    <h3>Wnioski do IPRZ</h3><p>{{ ocena.wnioski_iprz|linebreaksbr }}</p>
+    {% if ocena.uzasadnienie %}<h3>Uzasadnienie przyznanej oceny</h3><p>{{ ocena.uzasadnienie|linebreaksbr }}</p>{% endif %}
+    <h3>Wnioski dotyczące indywidualnego programu rozwoju zawodowego</h3><p>{{ ocena.wnioski_iprz|linebreaksbr }}</p>
+    {% if ocena.oceniany_urzednik %}
+      <p>Poprzednia ocena okresowa: {{ ocena.get_poprz_ocena_display }}{% if ocena.poprz_poziom %}, {{ ocena.poprz_poziom }}, {{ ocena.poprz_data|date:"d.m.Y" }}{% endif %}.</p>
+    {% endif %}
+    <p>Wniosek o przyznanie kolejnego stopnia służbowego: <strong>{{ ocena.get_wniosek_stopien_display }}</strong>.</p>
+    {% if ocena.wniosek_stopien == "tak" %}
+      <h3>Część III · wniosek o przyznanie kolejnego stopnia służbowego (art. 89 ust. 1)</h3>
+      <p>Rok mianowania {{ ocena.rok_mianowania }}, posiadany stopień {{ ocena.stopien_sluzbowy }} (od {{ ocena.data_stopnia|date:"d.m.Y" }}). Wnioskowany stopień: {{ ocena.stopien_sluzbowy|add:1 }}.</p>
+      <p>{{ ocena.umotywowanie_wniosku|linebreaksbr }}</p>
+    {% endif %}
     {% include "oceny/_zapoznanie.html" %}
   {% elif not ocena.kryteria_zablokowane %}
-    <p>Ocenę można sporządzić po potwierdzeniu kryteriów przez ocenianego.</p>
+    <p>Ocenę można sporządzić po potwierdzeniu części I przez obie strony.</p>
   {% elif jest_oceniajacym %}
     {% if bledy_pol %}
       <div role="alert"><p>Przed sporządzeniem oceny popraw:</p>
@@ -19,10 +29,14 @@
       </div>
     {% endif %}
     <form hx-post="{% url 'oceny:sporzadz' ocena.pk %}" hx-target="#ocena" hx-swap="outerHTML">
-      <label id="pole-data_rozmowy">Data rozmowy oceniającej (§ 10)
-        <input type="date" name="data_rozmowy" value="{{ pola.data_rozmowy }}"></label>
+      <label id="pole-data_rozmowy">Data przeprowadzenia rozmowy oceniającej (§ 10)
+        <input type="date" name="data_rozmowy" value="{{ pola.data_rozmowy|date:'Y-m-d' }}"></label>
+      <fieldset id="pole-okres"><legend>Okres, w którym oceniany podlegał ocenie</legend>
+        <label>od <input type="date" name="okres_od" value="{{ pola.okres_od|date:'Y-m-d' }}"></label>
+        <label>do <input type="date" name="okres_do" value="{{ pola.okres_do|date:'Y-m-d' }}"></label>
+      </fieldset>
       <table hx-post="{% url 'oceny:podglad_wyniku' ocena.pk %}" hx-trigger="change" hx-include="closest form" hx-target="#wynik" hx-swap="outerHTML">
-        <thead><tr><th>Kryterium</th>{% for pkt, opis in skala.items %}<th title="{{ opis }}">{{ pkt }}</th>{% endfor %}</tr></thead>
+        <thead><tr><th>Kryterium</th>{% for pkt, opis in skala.items %}<th title="{{ opis }}">{{ pkt }}<br><span class="cicho">{{ opis }}</span></th>{% endfor %}</tr></thead>
         <tbody>
           {% for g in obserwacje_kryteriow %}
             <tr id="pole-kryterium_{{ g.kod }}"><td>{{ g.nazwa }}
@@ -35,11 +49,40 @@
         </tbody>
       </table>
       {% include "oceny/_wynik.html" %}
-      <label id="pole-uzasadnienie">Uzasadnienie (obowiązkowe przy ocenie negatywnej)
+      <label id="pole-uzasadnienie">Uzasadnienie przyznanej oceny (obowiązkowe przy ocenie negatywnej)
         <textarea name="uzasadnienie" rows="4">{{ pola.uzasadnienie }}</textarea></label>
-      <label id="pole-wnioski_iprz">Wnioski do indywidualnego programu rozwoju zawodowego
+      <label id="pole-wnioski_iprz">Wnioski dotyczące indywidualnego programu rozwoju zawodowego
         <textarea name="wnioski_iprz" rows="4">{{ pola.wnioski_iprz }}</textarea></label>
-      <button type="submit">Sporządź ocenę</button>
+      {% if ocena.oceniany_urzednik %}
+        <fieldset id="pole-poprz_ocena"><legend>Dane dotyczące poprzedniej oceny okresowej urzędnika służby cywilnej</legend>
+          {% if z_historii %}
+            <p class="potwierdzone">Z historii ocen: {{ z_historii.poprz_ocena }}, {{ z_historii.poprz_poziom }}, {{ z_historii.poprz_data|date:"d.m.Y" }}.</p>
+          {% else %}
+            <label>Ocena <select name="poprz_ocena"><option value="">— wybierz —</option>
+              <option value="pozytywna" {% if pola.poprz_ocena == "pozytywna" %}selected{% endif %}>pozytywna</option>
+              <option value="negatywna" {% if pola.poprz_ocena == "negatywna" %}selected{% endif %}>negatywna</option>
+              <option value="brak" {% if pola.poprz_ocena == "brak" %}selected{% endif %}>brak</option></select></label>
+            <label>Poziom <select name="poprz_poziom"><option value="">—</option>
+              {% for p in poziomy %}<option {% if pola.poprz_poziom == p %}selected{% endif %}>{{ p }}</option>{% endfor %}</select></label>
+            <label>Data sporządzenia <input type="date" name="poprz_data" value="{{ pola.poprz_data|date:'Y-m-d' }}"></label>
+          {% endif %}
+        </fieldset>
+        <fieldset id="pole-wniosek_stopien"><legend>Czy do oceny okresowej dołączono wniosek o przyznanie kolejnego stopnia służbowego?</legend>
+          <label><input type="radio" name="wniosek_stopien" value="tak" {% if pola.wniosek_stopien == "tak" %}checked{% endif %}> TAK (tylko przy ocenie pozytywnej)</label>
+          <label><input type="radio" name="wniosek_stopien" value="nie" {% if pola.wniosek_stopien == "nie" %}checked{% endif %}> NIE</label>
+          <div id="pole-stopien_sluzbowy"></div><div id="pole-rok_mianowania"></div><div id="pole-data_stopnia"></div>
+          <label>Rok mianowania <input type="text" inputmode="numeric" name="rok_mianowania" value="{{ pola.rok_mianowania|default_if_none:'' }}"></label>
+          <label>Posiadany stopień służbowy <select name="stopien_sluzbowy"><option value="">—</option>
+            {% for n in stopnie %}<option value="{{ n }}" {% if pola.stopien_sluzbowy == n %}selected{% endif %}>{{ n }}</option>{% endfor %}</select></label>
+          <label>Data przyznania stopnia <input type="date" name="data_stopnia" value="{{ pola.data_stopnia|date:'Y-m-d' }}"></label>
+          <label id="pole-umotywowanie_wniosku">Umotywowanie wniosku (część III)
+            <textarea name="umotywowanie_wniosku" rows="3">{{ pola.umotywowanie_wniosku }}</textarea></label>
+        </fieldset>
+      {% else %}
+        <p class="cicho">Wniosek o kolejny stopień służbowy: NIE DOTYCZY (oceniany jest pracownikiem służby cywilnej).</p>
+      {% endif %}
+      <label>Miejscowość <input type="text" name="miejscowosc" value="{{ pola.miejscowosc }}"></label>
+      <button type="submit">Potwierdzam dokonanie oceny i przekazuję ją do zapoznania</button>
     </form>
   {% else %}
     <p>Ocena jest w przygotowaniu.</p>

@@ -19,9 +19,9 @@ class ZapoznanieSprzeciwTest(TestCase):
         self.oceniany = User.objects.create_user("jan.testowy")
         self.oceniajacy = User.objects.create_user("anna.syntetyczna")
         self.o = Ocena.objects.create(arkusz="C", oceniany=self.oceniany, oceniajacy=self.oceniajacy, poczatek_okresu=date(2025, 3, 17))
-        self.o.zatwierdz_kryteria(timezone.localdate())
-        self.o.potwierdz_kryteria()
         ustaw_zegar(date(2026, 11, 2))  # poniedziałek
+        self.o.zatwierdz_kryteria(date(2025, 4, 1))
+        self.o.potwierdz_kryteria()
         self.komplet = {k: 5 for k in self.o.wszystkie_kryteria()}
 
     def sporzadz(self, czastkowe=None, uzasadnienie=""):

@@ -1,9 +1,13 @@
 <section id="zapoznanie">
   <h3>Zapoznanie z oceną (§ 12) i sprzeciw (art. 83)</h3>
+  <p class="cicho"><strong>Pouczenie.</strong> Na podstawie art. 83 ust. 1 ustawy z dnia 21 listopada 2008 r. o służbie cywilnej od oceny okresowej służy, w terminie 7 dni od dnia zapoznania się z oceną, sprzeciw do dyrektora generalnego urzędu.</p>
   {% for pole, komunikat in bledy_zapoznania.items %}<p role="alert">{{ komunikat }}</p>{% endfor %}
   {% if not ocena.zapoznany %}
     {% if jest_ocenianym %}
-      <button hx-post="{% url 'oceny:potwierdz_zapoznanie' ocena.pk %}" hx-target="#zapoznanie" hx-swap="outerHTML">Potwierdzam zapoznanie z oceną</button>
+      <form hx-post="{% url 'oceny:potwierdz_zapoznanie' ocena.pk %}" hx-target="#zapoznanie" hx-swap="outerHTML">
+        <label>Miejscowość <input type="text" name="miejscowosc" value="{{ miejscowosc_ocenianego }}"></label>
+        <button type="submit">Przeprowadzono ze mną rozmowę oceniającą oraz zapoznałem (-łam) się z oceną okresową i wnioskami dotyczącymi indywidualnego programu rozwoju zawodowego</button>
+      </form>
     {% elif jest_oceniajacym %}
       <p>Oczekuje na potwierdzenie zapoznania przez ocenianego.</p>
       <form hx-post="{% url 'oceny:fikcja_zapoznania' ocena.pk %}" hx-target="#zapoznanie" hx-swap="outerHTML">

@@ -116,7 +116,23 @@ class Ocena(models.Model):
     srednia = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
     poziom = models.CharField(max_length=40, blank=True)
     pozytywna = models.BooleanField(null=True, blank=True)
+    okres_od = models.DateField("okres podlegania ocenie od", null=True, blank=True)
+    okres_do = models.DateField("okres podlegania ocenie do", null=True, blank=True)
+    miejscowosc_czesc_ii = models.CharField(max_length=100, blank=True)
+    # Dane poprzedniej oceny okresowej urzędnika (z historii albo wpisane przez oceniającego)
+    poprz_ocena = models.CharField(max_length=12, blank=True,
+                                   choices=[("pozytywna", "pozytywna"), ("negatywna", "negatywna"), ("brak", "brak")])
+    poprz_poziom = models.CharField(max_length=40, blank=True)
+    poprz_data = models.DateField(null=True, blank=True)
+    # Część III: wniosek o kolejny stopień służbowy (art. 89 ust. 1)
+    wniosek_stopien = models.CharField(max_length=12, blank=True,
+                                       choices=[("tak", "TAK"), ("nie", "NIE"), ("nie_dotyczy", "NIE DOTYCZY")])
+    rok_mianowania = models.PositiveSmallIntegerField(null=True, blank=True)
+    stopien_sluzbowy = models.PositiveSmallIntegerField(null=True, blank=True)
+    data_stopnia = models.DateField(null=True, blank=True)
+    umotywowanie_wniosku = models.TextField(blank=True)
     data_zapoznania = models.DateField(null=True, blank=True)
+    miejscowosc_zapoznania = models.CharField(max_length=100, blank=True)
     sposob_zapoznania = models.CharField(
         max_length=20, blank=True,
         choices=[("potwierdzenie", "potwierdzenie przez ocenianego"), ("fikcja", "fikcja zapoznania")],
@@ -306,9 +322,37 @@ class Ocena(models.Model):
         except ValueError:
             return None
 
-    def bledy_formalne(self, czastkowe, data_rozmowy, uzasadnienie, wnioski) -> dict[str, str]:
-        """Strażnik formalny przed sporządzeniem oceny (§§ 10-11). Zwraca {pole: komunikat}."""
+    @property
+    def oceniany_urzednik(self) -> bool:
+        p = getattr(self.oceniany, "pracownik", None)
+        return bool(p and p.urzednik)
+
+    def poprzednia_z_historii(self) -> dict | None:
+        """Dane poprzedniej oceny, jeśli jest w systemie (pole uzupełniane automatycznie)."""
+        if not (self.poprzednia and self.poprzednia.sporzadzona):
+            return None
+        return {"poprz_ocena": "pozytywna" if self.poprzednia.pozytywna else "negatywna",
+                "poprz_poziom": self.poprzednia.poziom, "poprz_data": self.poprzednia.data_sporzadzenia}
+
+    def domyslne_pola(self) -> dict:
+        """Wartości domyślne pól części II i III ze schematu KPRM."""
+        dzis = zegar.dzis()
+        termin = self.termin_oceny
+        p = getattr(self.oceniany, "pracownik", None)
+        domyslne = {
+            "okres_od": self.data_rozmowy_rozpoczynajacej or self.poczatek_okresu,
+            "okres_do": min(dzis, termin) if termin else dzis,
+            "rok_mianowania": p and p.rok_mianowania, "stopien_sluzbowy": p and p.stopien_sluzbowy,
+            "data_stopnia": p and p.data_stopnia,
+        }
+        if not self.oceniany_urzednik:
+            domyslne["wniosek_stopien"] = "nie_dotyczy"
+        return domyslne | (self.poprzednia_z_historii() or {})
+
+    def bledy_formalne(self, czastkowe, data_rozmowy, uzasadnienie, wnioski, **pola) -> dict[str, str]:
+        """Strażnik formalny przed sporządzeniem oceny (§§ 10-11, art. 89 ust. 1). Zwraca {pole: komunikat}."""
         cfg = rules.load(self.wersja_regul)["punktacja"]
+        pola = self.domyslne_pola() | {k: v for k, v in pola.items() if v not in (None, "")}
         bledy = {}
         if not self.kryteria_zablokowane:
             bledy["kryteria"] = "Oceniany nie potwierdził jeszcze kryteriów (§ 7)."
@@ -320,11 +364,47 @@ class Ocena(models.Model):
             bledy["data_rozmowy"] = "Podaj datę rozmowy oceniającej (§ 10)."
         elif data_rozmowy > zegar.dzis():
             bledy["data_rozmowy"] = "Rozmowa oceniająca musi odbyć się przed sporządzeniem oceny lub tego samego dnia (§ 10)."
+        elif self.data_rozmowy_rozpoczynajacej and data_rozmowy < self.data_rozmowy_rozpoczynajacej:
+            bledy["data_rozmowy"] = "Rozmowa oceniająca nie może poprzedzać rozmowy o kryteriach."
+        od, do = pola.get("okres_od"), pola.get("okres_do")
+        if not (od and do):
+            bledy["okres"] = "Podaj okres, w którym oceniany podlegał ocenie."
+        elif od > do or do > zegar.dzis():
+            bledy["okres"] = "Okres podlegania ocenie: data „od” nie może być późniejsza niż „do”, a „do” nie może być z przyszłości."
         wynik = self.podglad_wyniku(czastkowe)
         if wynik and not wynik.pozytywna and not uzasadnienie.strip():
             bledy["uzasadnienie"] = "Uzupełnij uzasadnienie oceny negatywnej (§ 11 ust. 3)."
         if cfg["wnioski_iprz_obowiazkowe"] and not wnioski.strip():
             bledy["wnioski_iprz"] = "Wpisz wnioski do indywidualnego programu rozwoju zawodowego (§ 11 ust. 1 pkt 5)."
+        if self.oceniany_urzednik:
+            bledy |= self._bledy_urzednika(pola, wynik)
+        return bledy
+
+    def _bledy_urzednika(self, pola, wynik) -> dict[str, str]:
+        bledy = {}
+        if pola.get("poprz_ocena") not in ("pozytywna", "negatywna", "brak"):
+            bledy["poprz_ocena"] = "Wskaż poprzednią ocenę okresową urzędnika albo „brak”."
+        elif pola["poprz_ocena"] != "brak" and not (pola.get("poprz_poziom") and pola.get("poprz_data")):
+            bledy["poprz_ocena"] = "Uzupełnij poziom i datę sporządzenia poprzedniej oceny."
+        wniosek = pola.get("wniosek_stopien")
+        if wniosek not in ("tak", "nie"):
+            bledy["wniosek_stopien"] = "Zaznacz, czy do oceny dołączono wniosek o kolejny stopień służbowy."
+        elif wniosek == "tak":
+            if wynik and not wynik.pozytywna:
+                bledy["wniosek_stopien"] = "Wniosek o kolejny stopień służbowy wymaga oceny pozytywnej (art. 89 ust. 1)."
+            stopien = pola.get("stopien_sluzbowy")
+            if not stopien:
+                bledy["stopien_sluzbowy"] = "Wskaż posiadany stopień służbowy."
+            elif stopien >= 9:
+                bledy["stopien_sluzbowy"] = ("Ocenianemu nie można przyznać kolejnego stopnia służbowego. "
+                                             "Oceniany posiada już najwyższy możliwy stopień służbowy.")
+            rok = pola.get("rok_mianowania")
+            if not rok or not 2008 <= rok <= zegar.dzis().year:
+                bledy["rok_mianowania"] = f"Podaj rok mianowania (2008–{zegar.dzis().year})."
+            if not pola.get("data_stopnia"):
+                bledy["data_stopnia"] = "Podaj datę przyznania posiadanego stopnia służbowego."
+            if not (pola.get("umotywowanie_wniosku") or "").strip():
+                bledy["umotywowanie_wniosku"] = "Uzupełnij umotywowanie wniosku o kolejny stopień służbowy."
         return bledy
 
     def obserwacje_dla(self, user):
@@ -354,13 +434,31 @@ class Ocena(models.Model):
         return grupy
 
     @transaction.atomic
-    def sporzadz(self, czastkowe: dict[str, int], data_rozmowy, uzasadnienie: str, wnioski: str):
+    def sporzadz(self, czastkowe: dict[str, int], data_rozmowy, uzasadnienie: str, wnioski: str, **pola):
         if self.sporzadzona:
             raise PermissionDenied("Ocena została już sporządzona.")
-        bledy = self.bledy_formalne(czastkowe, data_rozmowy, uzasadnienie, wnioski)
+        bledy = self.bledy_formalne(czastkowe, data_rozmowy, uzasadnienie, wnioski, **pola)
         if bledy:
             raise ValidationError(bledy)
         wynik = self.podglad_wyniku(czastkowe)
+        pola = self.domyslne_pola() | {k: v for k, v in pola.items() if v not in (None, "")}
+        for nazwa in ("okres_od", "okres_do", "poprz_data", "rok_mianowania", "stopien_sluzbowy", "data_stopnia"):
+            setattr(self, nazwa, pola.get(nazwa))
+        if self.oceniany_urzednik:
+            self.poprz_ocena = pola["poprz_ocena"]
+            if self.poprz_ocena == "brak":
+                self.poprz_poziom, self.poprz_data = "", None
+            else:
+                self.poprz_poziom = pola.get("poprz_poziom") or ""
+        else:
+            # Sekcje dotyczące urzędnika są nieaktywne dla pracownika służby cywilnej.
+            self.poprz_data = self.rok_mianowania = self.stopien_sluzbowy = self.data_stopnia = None
+        self.miejscowosc_czesc_ii = (pola.get("miejscowosc") or "").strip()
+        if self.oceniany_urzednik:
+            self.wniosek_stopien = pola["wniosek_stopien"]
+            self.umotywowanie_wniosku = (pola.get("umotywowanie_wniosku") or "").strip() if self.wniosek_stopien == "tak" else ""
+        else:
+            self.wniosek_stopien = "nie_dotyczy"
         self.oceny_czastkowe = {k: czastkowe[k] for k in self.wszystkie_kryteria()}
         self.data_rozmowy_oceniajacej = data_rozmowy
         self.uzasadnienie = uzasadnienie.strip()
@@ -386,9 +484,10 @@ class Ocena(models.Model):
         self.data_zapoznania = zegar.dzis()
         self.sposob_zapoznania = sposob
         self.uwagi_zapoznania = uwagi
-        self.save(update_fields=["data_zapoznania", "sposob_zapoznania", "uwagi_zapoznania"])
+        self.save(update_fields=["data_zapoznania", "sposob_zapoznania", "uwagi_zapoznania", "miejscowosc_zapoznania"])
 
-    def potwierdz_zapoznanie(self):
+    def potwierdz_zapoznanie(self, miejscowosc: str = ""):
+        self.miejscowosc_zapoznania = miejscowosc.strip()
         self._zapoznaj("potwierdzenie")
 
     def odnotuj_fikcje_zapoznania(self, uwagi: str):
