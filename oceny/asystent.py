@@ -54,8 +54,15 @@ def _mapa_pseudonimow(ocena) -> dict[str, str]:
 
 
 def _zapytaj_ollama(prompt: str) -> str:
-    dane = json.dumps({"model": settings.OKRES_AI_MODEL, "stream": False, "format": "json",
-                       "messages": [{"role": "user", "content": prompt}]}).encode()
+    payload = {
+        "model": settings.OKRES_AI_MODEL,
+        "stream": False,
+        "format": "json",
+        "messages": [{"role": "user", "content": prompt}],
+    }
+    if settings.OKRES_AI_MODEL == "gemma4:12b":
+        payload["think"] = False
+    dane = json.dumps(payload).encode()
     req = urllib.request.Request(f"{settings.OKRES_OLLAMA_URL}/api/chat", data=dane,
                                  headers={"Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=settings.OKRES_AI_TIMEOUT) as odp:  # noqa: S310 - adres z konfiguracji urzędu

@@ -151,7 +151,7 @@ OKRES_POWIADOMIENIA_EMAIL = os.environ.get("OKRES_POWIADOMIENIA_EMAIL", "0") == 
 # Asystent AI (opcjonalny): wylaczone | ollama (model lokalny). Proces działa w całości bez AI.
 OKRES_AI = os.environ.get("OKRES_AI", "wylaczone")
 OKRES_OLLAMA_URL = os.environ.get("OKRES_OLLAMA_URL", "http://localhost:11434")
-OKRES_AI_MODEL = os.environ.get("OKRES_AI_MODEL", "SpeakLeash/bielik-11b-v2.3-instruct:Q4_K_M")
+OKRES_AI_MODEL = os.environ.get("OKRES_AI_MODEL", "gemma4:12b")
 OKRES_AI_TIMEOUT = int(os.environ.get("OKRES_AI_TIMEOUT", "30"))
 
 # Tryb demonstracyjny: zegar, dane syntetyczne i szybkie logowanie. Nigdy w profilu urzędu.
