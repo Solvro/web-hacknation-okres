@@ -49,6 +49,8 @@
         </tbody>
       </table>
       {% include "oceny/_wynik.html" %}
+      <p><button type="button" class="drugorzedny" hx-post="{% url 'oceny:asystent' ocena.pk %}" hx-include="closest form" hx-target="#asystent" hx-swap="innerHTML">Uporządkuj moje obserwacje i pokaż wymagane elementy</button></p>
+      <div id="asystent" aria-live="polite"></div>
       <label id="pole-uzasadnienie">Uzasadnienie przyznanej oceny (obowiązkowe przy ocenie negatywnej)
         <textarea name="uzasadnienie" rows="4">{{ pola.uzasadnienie }}</textarea></label>
       <label id="pole-wnioski_iprz">Wnioski dotyczące indywidualnego programu rozwoju zawodowego

@@ -1,0 +1,11 @@
+<div class="{% if z.tryb == 'ai' %}ai{% else %}potwierdzone{% endif %}">
+  <p><strong>{% if z.tryb == "ai" %}Pomoc AI (model lokalny){% else %}Zestawienie bez AI{% endif %}.</strong> {{ z.komunikat }}
+    Treść oceny piszesz samodzielnie; zestawienie niczego nie wpisuje do formularza.</p>
+  <h4>Wymagane elementy</h4>
+  <ul>{% for e in elementy %}<li>{{ e }}</li>{% endfor %}</ul>
+  <h4>Fakty z Twoich notatek według kryteriów</h4>
+  {% for g in z.kryteria %}
+    <p><strong>{{ g.nazwa }}</strong></p>
+    <ul>{% for p in g.punkty %}<li>{{ p.tekst }} {% for n in p.zrodla %}<a href="#obserwacja-{{ n }}" class="cicho">[notatka {{ n }}]</a> {% endfor %}</li>{% empty %}<li class="cicho">Brak notatek: zapytaj w rozmowie o przykład.</li>{% endfor %}</ul>
+  {% endfor %}
+</div>

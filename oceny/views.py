@@ -574,3 +574,18 @@ def eksport_sprawy(request, pk):
     odp = HttpResponse(bufor.getvalue(), content_type="application/zip")
     odp["Content-Disposition"] = f'attachment; filename="ocena-{ocena.pk}.zip"'
     return odp
+
+
+@login_required
+@require_POST
+def asystent(request, pk):
+    """Porządkowanie własnych obserwacji przełożonego przed sporządzeniem oceny (z odnośnikami do notatek)."""
+    from . import asystent as a
+
+    ocena = _tylko_oceniajacy(request, pk)
+    if ocena.sporzadzona:
+        raise PermissionDenied("Ocena została już sporządzona.")
+    czastkowe, *_ = _dane_formularza(request, ocena)
+    return render(request, "oceny/_asystent.html", {
+        "z": a.zestaw(ocena, request.user), "elementy": a.wymagane_elementy(ocena, ocena.podglad_wyniku(czastkowe)),
+    })
