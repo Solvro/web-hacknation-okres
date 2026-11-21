@@ -28,4 +28,5 @@ urlpatterns = [
     path('wyloguj/', auth_views.LogoutView.as_view(), name='logout'),
     path('admin/', admin.site.urls),
     path('oceny/', include('oceny.urls')),
+    path('partner/', include('partner.urls')),
 ]

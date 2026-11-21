@@ -1,0 +1,17 @@
+{% extends "oceny/base.html" %}
+{% block tytul %}Mój dobrostan i rozwój{% endblock %}
+{% block tresc %}
+<h1>Mój dobrostan i rozwój</h1>
+<p class="hr">Tu widzisz wszystkie dane o Tobie, które bierze pod uwagę wirtualny HR partner, i to, co z nich wynika. Nie przetwarzamy przyczyn nieobecności (np. danych o zdrowiu), tylko fakt nieobecności usprawiedliwionej. Sygnały nie trafiają do oceny okresowej ani do kadr, a decyzje zawsze podejmują ludzie.</p>
+<h2>Sygnały, które widzi Twój przełożony</h2>
+{% for s in sygnaly %}<article class="hr" style="margin-bottom:.5rem"><strong>{{ s.tytul }}</strong> · pytanie do rozmowy: „{{ s.pytanie }}”<ul>{% for z in s.zrodla %}<li>{{ z }}</li>{% endfor %}</ul></article>{% empty %}<p>Brak.</p>{% endfor %}
+<h2>Uzgodnienia z przełożonym</h2>
+{% for u in uzgodnienia %}{% include "partner/_uzgodnienie.html" with moje=True %}{% empty %}<p>Brak.</p>{% endfor %}
+<h2>Docenienia</h2>
+<ul>{% for d in docenienia %}<li>{{ d.data|date:"d.m.Y" }} · {{ d.autor.get_full_name }}: {{ d.za_co }}{% if d.skutek %} — {{ d.skutek }}{% endif %}</li>{% empty %}<li>Brak.</li>{% endfor %}</ul>
+<h2>Dane źródłowe</h2>
+<h3>Dziennik zadań</h3>
+<ul>{% for z in zdarzenia %}<li>{{ z.data|date:"d.m.Y" }} · {{ z.rodzaj_nazwa }}: {{ z.opis }}</li>{% empty %}<li>Brak wpisów.</li>{% endfor %}</ul>
+<h3>Okresy nieobecności usprawiedliwionej</h3>
+<ul>{% for n in nieobecnosci %}<li>{{ n.od|date:"d.m.Y" }}–{{ n.do|date:"d.m.Y" }}</li>{% empty %}<li>Brak.</li>{% endfor %}</ul>
+{% endblock %}

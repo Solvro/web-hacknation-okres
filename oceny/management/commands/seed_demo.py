@@ -5,7 +5,11 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from oceny.models import Nieobecnosc, Ocena, Pracownik, Urzad
+from datetime import timedelta
+
+from oceny import zegar
+from oceny.models import Nieobecnosc, Obserwacja, Ocena, Pracownik, Urzad
+from partner.models import ZdarzenieZadania
 
 # Dane wyłącznie syntetyczne. Hasło jest jawne, więc komenda działa tylko w trybie demo.
 HASLO = "demo"
@@ -57,4 +61,27 @@ class Command(BaseCommand):
         for p, poczatek, podstawa in sprawy:
             Ocena.objects.get_or_create(oceniany=p.user, poczatek_okresu=poczatek, defaults=dict(
                 arkusz=p.arkusz, oceniajacy=p.przelozony.user, podstawa_poczatku=podstawa))
+        self._hr_partner(prac)
         self.stdout.write(f"Konta: {', '.join(LOGINY_DEMO)} (hasło: {HASLO}). Logowanie: /logowanie/")
+
+    def _hr_partner(self, prac):
+        """Fakty do pokazu HR partnera, z datami względem bieżącej daty systemowej."""
+        dzis = zegar.dzis()
+        anna, piotr, jan = prac["oceniajaca"], prac["piotr"], prac["oceniany"]
+        ZdarzenieZadania.objects.filter(pracownik__in=[piotr, jan]).delete()
+        wpisy = [
+            (piotr, 40, "nowe_zadanie", "Przygotowanie sprawozdania z obsługi wniosków za III kwartał"),
+            (piotr, 33, "zmiana_priorytetu", "Sprawozdanie przed bieżącymi wnioskami (pilne dla wojewody)"),
+            (piotr, 19, "zmiana_priorytetu", "Wnioski o dowody osobiste przed sprawozdaniem (kolejka)"),
+            (piotr, 6, "zmiana_priorytetu", "Sprawozdanie znów pierwsze, termin skrócony o tydzień"),
+            (jan, 25, "przekazanie", "Przejęcie rejestru skarg po odejściu współpracownika"),
+        ]
+        for p, dni, rodzaj, opis in wpisy:
+            ZdarzenieZadania.objects.create(pracownik=p, autor=anna.user, data=dzis - timedelta(days=dni), rodzaj=rodzaj, opis=opis)
+        ocena_jana = Ocena.objects.filter(oceniany=jan.user).first()
+        if ocena_jana and not ocena_jana.obserwacje.exists():
+            Obserwacja.objects.create(ocena=ocena_jana, autor=jan.user, data=dzis - timedelta(days=20), kryterium="wspolpraca",
+                                      tresc="Przeszkoliłem dwie nowe osoby z obsługi rejestru skarg.",
+                                      skutek="Zastępstwa w rejestrze działają bez przerw.", udostepniona=True)
+            Obserwacja.objects.create(ocena=ocena_jana, autor=anna.user, data=dzis - timedelta(days=60), kryterium="rzetelnosc",
+                                      tresc="Raport kwartalny złożony 5 dni po terminie.", skutek="Opóźnienie zbiorczego raportu wydziału.")

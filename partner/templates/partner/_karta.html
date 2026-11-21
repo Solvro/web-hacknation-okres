@@ -1,0 +1,47 @@
+<section id="karta-{{ k.p.pk }}" style="border:1px solid var(--ramka);border-radius:4px;padding:1rem;margin-bottom:1.5rem">
+  <h2 style="margin-top:0">{{ k.p.imie_nazwisko }} <span class="cicho">· {{ k.p.stanowisko }}</span></h2>
+  {% for pole, komunikat in k.bledy.items %}<p role="alert">{{ komunikat }}</p>{% endfor %}
+  {% for s in k.sygnaly %}
+    <article class="hr" style="margin-bottom:.75rem">
+      <strong>{{ s.tytul }}</strong> <span class="znacznik">{{ s.obszar }}</span>
+      <details><summary>Zdarzenia źródłowe ({{ s.zrodla|length }})</summary><ul>{% for z in s.zrodla %}<li>{{ z }}</li>{% endfor %}</ul></details>
+      <p>Pytanie do rozmowy: <em>„{{ s.pytanie }}”</em></p>
+      {% if s.rodzaj == "osiagniecie_bez_docenienia" %}
+        <form hx-post="{% url 'partner:docen' k.p.pk %}" hx-target="#karta-{{ k.p.pk }}" hx-swap="outerHTML">
+          <input type="hidden" name="obserwacja" value="{{ s.obserwacja_id }}">
+          <label>Za co doceniasz <textarea name="za_co" rows="2" required></textarea></label>
+          <label>Jaki był skutek <input type="text" name="skutek"></label>
+          <button type="submit">Doceń</button>
+        </form>
+      {% else %}
+        <form hx-post="{% url 'partner:uzgodnij' k.p.pk %}" hx-target="#karta-{{ k.p.pk }}" hx-swap="outerHTML">
+          <input type="hidden" name="sygnal" value="{{ s.klucz }}">
+          <label>Uzgodnione działanie <select name="dzialanie">{% for kod, nazwa in s.dzialania %}<option value="{{ kod }}">{{ nazwa }}</option>{% endfor %}</select></label>
+          <label>Co ustaliliście <textarea name="ustalenie" rows="2" required></textarea></label>
+          <label>Kiedy sprawdzicie efekt <input type="date" name="data_sprawdzenia" required></label>
+          <button type="submit">Zapisz uzgodnienie</button>
+        </form>
+      {% endif %}
+    </article>
+  {% empty %}
+    <p class="cicho">Brak sygnałów do rozmowy.</p>
+  {% endfor %}
+  {% if k.uzgodnienia %}<h3>Uzgodnienia</h3>{% for u in k.uzgodnienia %}{% include "partner/_uzgodnienie.html" %}{% endfor %}{% endif %}
+  {% if k.docenienia %}<h3>Ostatnie docenienia</h3><ul>{% for d in k.docenienia %}<li>{{ d.data|date:"d.m.Y" }}: {{ d.za_co }}{% if d.skutek %} — {{ d.skutek }}{% endif %}</li>{% endfor %}</ul>{% endif %}
+  <details><summary>Dziennik zadań ({{ k.zdarzenia|length }} ostatnich)</summary>
+    <ul>{% for z in k.zdarzenia %}<li>{{ z.data|date:"d.m.Y" }} · {{ z.rodzaj_nazwa }}: {{ z.opis }}</li>{% empty %}<li>Brak wpisów.</li>{% endfor %}</ul>
+    <form hx-post="{% url 'partner:dodaj_zdarzenie' k.p.pk %}" hx-target="#karta-{{ k.p.pk }}" hx-swap="outerHTML">
+      <label>Data <input type="date" name="data"></label>
+      <label>Rodzaj <select name="rodzaj">{% for kod, nazwa in k.rodzaje.items %}<option value="{{ kod }}">{{ nazwa }}</option>{% endfor %}</select></label>
+      <label>Opis <input type="text" name="opis" required></label>
+      <button type="submit">Dodaj do dziennika</button>
+    </form>
+  </details>
+  <details><summary>Doceń bez sygnału</summary>
+    <form hx-post="{% url 'partner:docen' k.p.pk %}" hx-target="#karta-{{ k.p.pk }}" hx-swap="outerHTML">
+      <label>Za co doceniasz <textarea name="za_co" rows="2" required></textarea></label>
+      <label>Jaki był skutek <input type="text" name="skutek"></label>
+      <button type="submit">Doceń</button>
+    </form>
+  </details>
+</section>
