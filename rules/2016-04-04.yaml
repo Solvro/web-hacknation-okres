@@ -50,3 +50,11 @@ punktacja:  # § 11 ust. 1
   czastkowa_wykluczajaca: 1  # pkt 3-4: choć jedna taka cząstkowa daje ocenę negatywną
   uzasadnienie_obowiazkowe_przy: negatywna  # § 11 ust. 3
   wnioski_iprz_obowiazkowe: true  # pkt 5
+
+terminy:
+  okres_oceny_miesiace: 24  # art. 81 ust. 1 ustawy
+  kryteria_dni: 30  # § 7 ust. 1: wyznaczenie kryteriów i rozmowa
+  kryteria_po_negatywnej_dni: 7  # § 7 ust. 2
+  sprzeciw_dni: 7  # art. 83 ust. 1 ustawy, od zapoznania
+  ponowna_po_negatywnej_miesiace: 6  # art. 81 ust. 9, od zapoznania
+  nieobecnosc_przedluza_powyzej_miesiecy: 1  # art. 81 ust. 7: usprawiedliwiona, ciągła, dłuższa niż miesiąc
