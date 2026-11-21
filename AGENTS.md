@@ -137,5 +137,6 @@ Jury: eksperci Departamentu Służby Cywilnej (merytorycznie bardzo mocni w prze
 
 1. `CONCEPT.md` przed kodem i aktualizowany przy każdej zmianie zakresu.
 2. Krótkie notatki postępu w `PROGRESS.md`.
-3. Scenariusz demo z czasami i planem awaryjnym (działa offline, bez AI).
-4. Na końcu README: uruchomienie jedną komendą, lista modeli, usług i licencji, **lista rzeczy zamockowanych**, sekcja „gdzie użyto AI”, instrukcja aktualizacji pakietu przepisów.
+3. **Małe iteracje, commit od razu:** każdy działający przyrost (z przechodzącymi testami) to osobny commit, od razu wypchnięty na `origin` (`git push`). Nie trzymamy niewypchniętej pracy.
+4. Scenariusz demo z czasami i planem awaryjnym (działa offline, bez AI).
+5. Na końcu README: uruchomienie jedną komendą, lista modeli, usług i licencji, **lista rzeczy zamockowanych**, sekcja „gdzie użyto AI”, instrukcja aktualizacji pakietu przepisów.
