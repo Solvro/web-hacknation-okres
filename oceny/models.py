@@ -98,6 +98,7 @@ class Ocena(models.Model):
     poprzednia = models.OneToOneField("self", null=True, blank=True, on_delete=models.PROTECT, related_name="nastepna",
                                       help_text="Poprzednia ocena, od której liczy się ten okres.")
     kryteria_dodatkowe = models.JSONField(default=list, blank=True)
+    wersja = models.PositiveSmallIntegerField(default=1, help_text="2 = ocena sporządzona po raz drugi po sprzeciwie.")
     # Część I: rozmowa z § 5 ust. 1, potwierdzenie oceniającego, potem ocenianego (§ 6)
     data_rozmowy_rozpoczynajacej = models.DateField(null=True, blank=True)
     kryteria_zatwierdzone_at = models.DateTimeField(null=True, blank=True)
@@ -195,8 +196,9 @@ class Ocena(models.Model):
             return "ocena"
         if not self.zapoznany:
             return "zapoznanie"
-        if self.sprzeciwy.exists():
-            return "sprzeciw"
+        sprzeciw = self.sprzeciw_biezacy
+        if sprzeciw:
+            return "zakonczona" if sprzeciw.decyzja else "sprzeciw"
         if zegar.dzis() <= self.termin_sprzeciwu:
             return "termin_sprzeciwu"
         return "zakonczona"
@@ -231,7 +233,8 @@ class Ocena(models.Model):
         elif etap == "termin_sprzeciwu":
             opis, kto, termin = "Możliwość wniesienia sprzeciwu", self.oceniany, self.termin_sprzeciwu
         elif etap == "sprzeciw":
-            opis, kto, termin = "Sprzeciw czeka na rozpatrzenie przez dyrektora generalnego", None, None
+            dg = Pracownik.objects.filter(dyrektor_generalny=True).select_related("user").first()
+            opis, kto, termin = "Rozpatrz sprzeciw (art. 83 ust. 3)", dg and dg.user, self.sprzeciw_biezacy.termin_rozpatrzenia
         else:
             return None
         return {"opis": opis, "kto": kto, "termin": termin, "moj": kto is not None and kto.id == user.id}
@@ -512,16 +515,75 @@ class Ocena(models.Model):
             wynik["ponowna_ocena"] = terminy.termin_miesieczny(self.data_zapoznania, cfg["ponowna_po_negatywnej_miesiace"])
         return wynik
 
+    @property
+    def sprzeciw_biezacy(self) -> "Sprzeciw | None":
+        return self.sprzeciwy.filter(wersja=self.wersja).first()
+
     def zloz_sprzeciw(self, tresc: str) -> "Sprzeciw":
         if not self.zapoznany:
             raise PermissionDenied("Sprzeciw przysługuje od zapoznania z oceną.")
-        if self.sprzeciwy.exists():
+        if self.sprzeciw_biezacy:
             raise PermissionDenied("Sprzeciw od tej oceny został już złożony.")
         if zegar.dzis() > self.termin_sprzeciwu:
             raise PermissionDenied(f"Termin na sprzeciw upłynął {self.termin_sprzeciwu:%d.%m.%Y} (art. 83 ust. 1).")
         if not tresc.strip():
             raise ValidationError({"tresc": "Podaj treść sprzeciwu."})
-        return Sprzeciw.objects.create(ocena=self, data_zlozenia=zegar.dzis(), tresc=tresc.strip())
+        return Sprzeciw.objects.create(ocena=self, wersja=self.wersja, data_zlozenia=zegar.dzis(), tresc=tresc.strip())
+
+    POLA_WERSJI = ("oceny_czastkowe", "data_rozmowy_oceniajacej", "okres_od", "okres_do", "uzasadnienie", "wnioski_iprz",
+                   "data_sporzadzenia", "srednia", "poziom", "pozytywna", "data_zapoznania", "sposob_zapoznania",
+                   "wniosek_stopien", "umotywowanie_wniosku")
+
+    def _archiwizuj(self, powod: str):
+        dane = {p: getattr(self, p) for p in self.POLA_WERSJI}
+        dane = {k: (v.isoformat() if hasattr(v, "isoformat") else str(v) if isinstance(v, Decimal) else v) for k, v in dane.items()}
+        WersjaOceny.objects.create(ocena=self, wersja=self.wersja, dane=dane, powod=powod, utworzona=zegar.dzis())
+
+    @transaction.atomic
+    def rozpatrz_sprzeciw(self, kto, decyzja: str, uzasadnienie: str, nowe_czastkowe: dict | None = None):
+        """Decyzja dyrektora generalnego (art. 83 ust. 3-4)."""
+        if not (getattr(kto, "pracownik", None) and kto.pracownik.dyrektor_generalny):
+            raise PermissionDenied("Sprzeciw rozpatruje dyrektor generalny urzędu.")
+        sprzeciw = self.sprzeciw_biezacy
+        if not sprzeciw or sprzeciw.decyzja:
+            raise PermissionDenied("Brak sprzeciwu oczekującego na rozpatrzenie.")
+        if decyzja not in dict(Sprzeciw.DECYZJE):
+            raise ValidationError({"decyzja": "Wybierz rozstrzygnięcie."})
+        if not uzasadnienie.strip():
+            raise ValidationError({"uzasadnienie": "Uzasadnij rozstrzygnięcie sprzeciwu."})
+        if decyzja == "ponowne" and self.wersja > 1:
+            raise ValidationError({"decyzja": "Ocenę można sporządzić po raz drugi tylko raz (art. 83 ust. 4)."})
+        if decyzja == "zmiana":
+            nowe_czastkowe = nowe_czastkowe or {}
+            wynik = self.podglad_wyniku(nowe_czastkowe)
+            if wynik is None:
+                raise ValidationError({"czastkowe": "Przyznaj zmienione oceny cząstkowe za wszystkie kryteria."})
+            self._archiwizuj(f"zmiana oceny po uwzględnieniu sprzeciwu z {sprzeciw.data_zlozenia:%d.%m.%Y}")
+            self.oceny_czastkowe = {k: nowe_czastkowe[k] for k in self.wszystkie_kryteria()}
+            self.srednia = (Decimal(wynik.srednia.numerator) / wynik.srednia.denominator).quantize(Decimal("0.01"), ROUND_HALF_UP)
+            self.poziom, self.pozytywna = wynik.poziom_nazwa, wynik.pozytywna
+            if not wynik.pozytywna and not self.uzasadnienie:
+                self.uzasadnienie = uzasadnienie.strip()
+            if not wynik.pozytywna:
+                self.wniosek_stopien = "nie" if self.oceniany_urzednik else "nie_dotyczy"
+                self.umotywowanie_wniosku = ""
+            self.save()
+        elif decyzja == "ponowne":
+            self._archiwizuj(f"sporządzenie po raz drugi po uwzględnieniu sprzeciwu z {sprzeciw.data_zlozenia:%d.%m.%Y}")
+            # Powrót do etapu „rozmowa oceniająca i dokonanie oceny”; część I i kryteria bez zmian.
+            for pole in self.POLA_WERSJI:
+                pole_modelu = self._meta.get_field(pole)
+                setattr(self, pole, {} if pole == "oceny_czastkowe" else None if pole_modelu.null else "")
+            self.sporzadzona_at = None
+            self.uwagi_zapoznania = self.miejscowosc_zapoznania = ""
+            self.wersja += 1
+            self.save()
+            # Kolejny okres liczony od tej oceny założy scheduler po ponownym sporządzeniu.
+            Ocena.objects.filter(poprzednia=self, kryteria_zatwierdzone_at__isnull=True).delete()
+        sprzeciw.decyzja, sprzeciw.data_decyzji = decyzja, zegar.dzis()
+        sprzeciw.uzasadnienie_decyzji, sprzeciw.rozpatrujacy = uzasadnienie.strip(), kto
+        sprzeciw.save()
+        return sprzeciw
 
 
 class Korekta(models.Model):
@@ -541,14 +603,55 @@ class Korekta(models.Model):
 
 
 class Sprzeciw(models.Model):
-    """Sprzeciw do dyrektora generalnego urzędu (art. 83 ust. 1)."""
+    """Sprzeciw do dyrektora generalnego urzędu (art. 83). Jeden na każdą wersję oceny."""
 
+    DECYZJE = [
+        ("zmiana", "uwzględniony: zmiana oceny"),
+        ("ponowne", "uwzględniony: sporządzenie oceny po raz drugi"),
+        ("nieuwzgledniony", "nieuwzględniony"),
+    ]
     ocena = models.ForeignKey(Ocena, on_delete=models.CASCADE, related_name="sprzeciwy")
+    wersja = models.PositiveSmallIntegerField(default=1)
     data_zlozenia = models.DateField()
     tresc = models.TextField()
+    decyzja = models.CharField(max_length=20, choices=DECYZJE, blank=True)
+    data_decyzji = models.DateField(null=True, blank=True)
+    uzasadnienie_decyzji = models.TextField(blank=True)
+    rozpatrujacy = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT)
 
     class Meta:
         verbose_name_plural = "sprzeciwy"
+
+    def _dni(self, klucz):
+        return rules.load(self.ocena.wersja_regul)["terminy"][klucz]
+
+    @property
+    def termin_rozpatrzenia(self):
+        return terminy.termin_dniowy(self.data_zlozenia, self._dni("rozpatrzenie_sprzeciwu_dni"))
+
+    @property
+    def termin_odwolania(self):
+        """Art. 83 ust. 5: 14 dni od doręczenia decyzji o nieuwzględnieniu albo od upływu terminu rozpatrzenia."""
+        dni = self._dni("odwolanie_do_sadu_dni")
+        if self.decyzja == "nieuwzgledniony":
+            return terminy.termin_dniowy(self.data_decyzji, dni)
+        if not self.decyzja and zegar.dzis() > self.termin_rozpatrzenia:
+            return terminy.termin_dniowy(self.termin_rozpatrzenia, dni)
+        return None
+
+
+class WersjaOceny(models.Model):
+    """Zapis oceny sprzed zmiany lub ponownego sporządzenia po sprzeciwie (historia do akt)."""
+
+    ocena = models.ForeignKey(Ocena, on_delete=models.CASCADE, related_name="wersje")
+    wersja = models.PositiveSmallIntegerField()
+    dane = models.JSONField()
+    powod = models.CharField(max_length=200)
+    utworzona = models.DateField()
+
+    class Meta:
+        verbose_name_plural = "wersje ocen"
+        ordering = ["wersja"]
 
 
 class ZegarDemo(models.Model):

@@ -20,4 +20,5 @@ urlpatterns = [
     path("powiadomienia/<int:pk>/przeczytane/", views.przeczytane, name="przeczytane"),
     path("scheduler/", views.uruchom_scheduler, name="uruchom_scheduler"),
     path("<int:pk>/zaproszenie.ics", views.zaproszenie_ics, name="zaproszenie_ics"),
+    path("<int:pk>/sprzeciw/rozpatrz/", views.rozpatrz_sprzeciw, name="rozpatrz_sprzeciw"),
 ]

@@ -16,11 +16,18 @@ def kontekst_globalny(request):
     return {"okres_demo": settings.OKRES_DEMO, "urzad": Urzad.biezacy(), "demo_konta": demo_konta}
 
 
+def _jest_dg(user) -> bool:
+    return bool(getattr(user, "pracownik", None) and user.pracownik.dyrektor_generalny)
+
+
 def _sprawy_widoczne(user):
-    """Oceniany i oceniający widzą swoje sprawy, kadry wszystkie (art. 4 i § 12: akta osobowe)."""
+    """Oceniany i oceniający widzą swoje sprawy, kadry wszystkie (akta osobowe), DG sprawy ze sprzeciwem."""
     if user.is_staff:
         return Ocena.objects.all()
-    return Ocena.objects.filter(Q(oceniany=user) | Q(oceniajacy=user))
+    warunek = Q(oceniany=user) | Q(oceniajacy=user)
+    if _jest_dg(user):
+        warunek |= Q(sprzeciwy__isnull=False)
+    return Ocena.objects.filter(warunek).distinct()
 
 
 def _ocena_dla(request, pk) -> Ocena:
@@ -116,6 +123,7 @@ def _kontekst(request, ocena, bledy=()):
         "miejscowosc_domyslna": _miejscowosc(ocena.oceniajacy),
         "jest_oceniajacym": ocena.oceniajacy_id == request.user.id,
         "jest_ocenianym": ocena.oceniany_id == request.user.id,
+        "jest_dg": _jest_dg(request.user),
         "bledy": bledy,
     }
 
@@ -386,3 +394,20 @@ def wydruk(request, pk):
         "przedzialy": _przedzialy(ocena),
         "stopien_slownie": STOPNIE_SLOWNIE[ocena.stopien_sluzbowy + 1] if ocena.stopien_sluzbowy and ocena.stopien_sluzbowy < 9 else "",
     })
+
+
+@login_required
+@require_POST
+def rozpatrz_sprzeciw(request, pk):
+    ocena = _ocena_dla(request, pk)
+    if not _jest_dg(request.user):
+        raise PermissionDenied("Sprzeciw rozpatruje dyrektor generalny.")
+    czastkowe, *_ = _dane_formularza(request, ocena)
+    bledy = {}
+    try:
+        ocena.rozpatrz_sprzeciw(request.user, request.POST.get("decyzja", ""), request.POST.get("uzasadnienie_decyzji", ""),
+                                czastkowe)
+    except ValidationError as e:
+        bledy = {k: v[0] for k, v in e.message_dict.items()}
+    ocena.refresh_from_db()
+    return render(request, "oceny/_ocena.html", _kontekst_oceny(request, ocena) | {"bledy_zapoznania": bledy})

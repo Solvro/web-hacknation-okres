@@ -141,6 +141,8 @@ terminy:
   kryteria_dni: 30  # § 7 ust. 1: wyznaczenie kryteriów i rozmowa
   kryteria_po_negatywnej_dni: 7  # § 7 ust. 2
   sprzeciw_dni: 7  # art. 83 ust. 1 ustawy, od zapoznania
+  rozpatrzenie_sprzeciwu_dni: 14  # art. 83 ust. 3, od wniesienia
+  odwolanie_do_sadu_dni: 14  # art. 83 ust. 5, od doręczenia decyzji albo upływu terminu rozpatrzenia
   ponowna_po_negatywnej_miesiace: 6  # art. 81 ust. 9, od zapoznania
   nieobecnosc_przedluza_powyzej_miesiecy: 1  # art. 81 ust. 7: usprawiedliwiona, ciągła, dłuższa niż miesiąc
 

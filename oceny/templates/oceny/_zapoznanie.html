@@ -18,9 +18,34 @@
     {% endif %}
   {% else %}
     <p>Zapoznanie: {{ ocena.data_zapoznania|date:"d.m.Y" }} ({{ ocena.get_sposob_zapoznania_display }}){% if ocena.uwagi_zapoznania %}: {{ ocena.uwagi_zapoznania }}{% endif %}.</p>
-    {% with sprzeciw=ocena.sprzeciwy.first %}
+    {% with sprzeciw=ocena.sprzeciw_biezacy %}
       {% if sprzeciw %}
-        <p>Sprzeciw złożony {{ sprzeciw.data_zlozenia|date:"d.m.Y" }}, przekazany do dyrektora generalnego.</p>
+        <div class="potwierdzone">
+          <p><strong>Sprzeciw</strong> złożony {{ sprzeciw.data_zlozenia|date:"d.m.Y" }}. Termin rozpatrzenia: {{ sprzeciw.termin_rozpatrzenia|date:"d.m.Y" }} (art. 83 ust. 3).</p>
+          {% if jest_ocenianym or jest_dg or jest_oceniajacym %}<p>{{ sprzeciw.tresc|linebreaksbr }}</p>{% endif %}
+          {% if sprzeciw.decyzja %}
+            <p>Rozstrzygnięcie {{ sprzeciw.data_decyzji|date:"d.m.Y" }}: <strong>{{ sprzeciw.get_decyzja_display }}</strong>. {{ sprzeciw.uzasadnienie_decyzji|linebreaksbr }}</p>
+          {% endif %}
+          {% if sprzeciw.termin_odwolania %}
+            <p><strong>Pouczenie:</strong> oceniany może odwołać się do sądu pracy do {{ sprzeciw.termin_odwolania|date:"d.m.Y" }} (14 dni od doręczenia decyzji albo od upływu terminu rozpatrzenia, art. 83 ust. 5).</p>
+          {% endif %}
+        </div>
+        {% if jest_dg and not sprzeciw.decyzja %}
+          <form hx-post="{% url 'oceny:rozpatrz_sprzeciw' ocena.pk %}" hx-target="#ocena" hx-swap="outerHTML">
+            <fieldset><legend>Rozstrzygnięcie sprzeciwu (dyrektor generalny)</legend>
+              <label><input type="radio" name="decyzja" value="nieuwzgledniony"> Nie uwzględniam sprzeciwu</label>
+              <label><input type="radio" name="decyzja" value="zmiana"> Uwzględniam i zmieniam ocenę (wpisz zmienione oceny cząstkowe)</label>
+              {% if ocena.wersja == 1 %}<label><input type="radio" name="decyzja" value="ponowne"> Uwzględniam; ocenę sporządza się po raz drugi (powrót do rozmowy oceniającej)</label>{% endif %}
+              <table>
+                <thead><tr><th>Kryterium</th>{% for pkt, opis in skala.items %}<th title="{{ opis }}">{{ pkt }}</th>{% endfor %}</tr></thead>
+                <tbody>{% for kod, nazwa, wybrane in kryteria_oceny %}<tr><td>{{ nazwa }}</td>
+                  {% for pkt, opis in skala.items %}<td><input type="radio" name="kryterium_{{ kod }}" value="{{ pkt }}" aria-label="{{ nazwa }}: {{ opis }}" {% if wybrane == pkt %}checked{% endif %}></td>{% endfor %}</tr>{% endfor %}</tbody>
+              </table>
+              <label>Uzasadnienie rozstrzygnięcia <textarea name="uzasadnienie_decyzji" rows="3" required></textarea></label>
+              <button type="submit">Zapisz rozstrzygnięcie</button>
+            </fieldset>
+          </form>
+        {% endif %}
       {% else %}
         <p>Termin na sprzeciw do dyrektora generalnego: <strong>{{ ocena.termin_sprzeciwu|date:"d.m.Y" }}</strong>.</p>
         {% if jest_ocenianym %}
@@ -35,4 +60,9 @@
   {% with t=ocena.terminy_po_negatywnej %}{% if t %}
     <p>Po ocenie negatywnej: kryteria nowego okresu do {{ t.kryteria_nowego_okresu|date:"d.m.Y" }} (§ 7 ust. 2){% if t.ponowna_ocena %}, ponowna ocena {{ t.ponowna_ocena|date:"d.m.Y" }} (art. 81 ust. 9){% endif %}.</p>
   {% endif %}{% endwith %}
+  {% if ocena.wersje.exists %}
+    <details><summary>Historia wersji oceny</summary><ul>
+      {% for w in ocena.wersje.all %}<li>Wersja {{ w.wersja }} ({{ w.utworzona|date:"d.m.Y" }}, {{ w.powod }}): średnia {{ w.dane.srednia }}, {{ w.dane.poziom }}, ocena {% if w.dane.pozytywna %}pozytywna{% else %}negatywna{% endif %}</li>{% endfor %}
+    </ul></details>
+  {% endif %}
 </section>

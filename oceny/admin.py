@@ -49,7 +49,12 @@ class KorektaAdmin(admin.ModelAdmin):
 
 @admin.register(Sprzeciw)
 class SprzeciwAdmin(admin.ModelAdmin):
-    list_display = ("ocena", "data_zlozenia")
+    list_display = ("ocena", "wersja", "data_zlozenia", "decyzja", "data_decyzji")
+    readonly_fields = ("ocena", "wersja", "data_zlozenia", "tresc", "decyzja", "data_decyzji", "uzasadnienie_decyzji",
+                       "rozpatrujacy")
+
+    def has_add_permission(self, request):
+        return False
 
 
 @admin.register(ZegarDemo)
