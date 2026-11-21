@@ -49,7 +49,7 @@ class Ocena(models.Model):
 
     def wszystkie_kryteria(self) -> dict[str, str]:
         """Obowiązkowe z arkusza, potem wybrane dodatkowe, w kolejności ze wzoru."""
-        dodatkowe = rules.extra_criteria(self.wersja_regul)
+        dodatkowe = rules.extra_criteria(self.arkusz, self.wersja_regul)
         return rules.mandatory_criteria(self.arkusz, self.wersja_regul) | {k: dodatkowe[k] for k in self.kryteria_dodatkowe}
 
     def clean(self):
@@ -59,9 +59,9 @@ class Ocena(models.Model):
             raise ValidationError(f"Można wybrać maksymalnie {cfg['max']} kryteria dodatkowe.")
         if len(set(wybrane)) != len(wybrane):
             raise ValidationError("Kryteria dodatkowe nie mogą się powtarzać.")
-        nieznane = set(wybrane) - rules.extra_criteria(self.wersja_regul).keys()
+        nieznane = set(wybrane) - rules.extra_criteria(self.arkusz, self.wersja_regul).keys()
         if nieznane:
-            raise ValidationError(f"Kryteria spoza wykazu: {', '.join(sorted(nieznane))}.")
+            raise ValidationError(f"Kryteria spoza wykazu lub powielające obowiązkowe: {', '.join(sorted(nieznane))}.")
 
     def _zapisz_korekte(self, kto, pole: str, przed, po, powod: str):
         if not (kto and kto.is_staff):

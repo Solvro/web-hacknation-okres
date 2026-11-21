@@ -18,7 +18,7 @@ def _ocena_dla(request, pk) -> Ocena:
 def _kontekst(request, ocena, bledy=()):
     return {
         "ocena": ocena,
-        "wykaz": rules.extra_criteria(ocena.wersja_regul),
+        "wykaz": rules.extra_criteria(ocena.arkusz, ocena.wersja_regul),
         "maks": rules.load(ocena.wersja_regul)["kryteria_dodatkowe"]["max"],
         "jest_oceniajacym": ocena.oceniajacy_id == request.user.id,
         "jest_ocenianym": ocena.oceniany_id == request.user.id,

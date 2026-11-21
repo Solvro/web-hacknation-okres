@@ -12,13 +12,17 @@ def load(version: str = DOMYSLNA_WERSJA) -> dict:
     return yaml.safe_load((RULES_DIR / f"{version}.yaml").read_text(encoding="utf-8"))
 
 
-def _slownik(lista: list[dict]) -> dict[str, str]:
-    return {k: v for item in lista for k, v in item.items()}
-
-
-def extra_criteria(version: str = DOMYSLNA_WERSJA) -> dict[str, str]:
-    return _slownik(load(version)["kryteria_dodatkowe"]["wykaz"])
+def criteria(version: str = DOMYSLNA_WERSJA) -> dict[str, dict]:
+    """Pełny wykaz kryteriów z Załącznika nr 1: {kod: {nazwa, opis}}."""
+    return load(version)["kryteria"]
 
 
 def mandatory_criteria(arkusz: str, version: str = DOMYSLNA_WERSJA) -> dict[str, str]:
-    return _slownik(load(version)["arkusze"][arkusz])
+    wykaz = criteria(version)
+    return {k: wykaz[k]["nazwa"] for k in load(version)["arkusze"][arkusz]["obowiazkowe"]}
+
+
+def extra_criteria(arkusz: str, version: str = DOMYSLNA_WERSJA) -> dict[str, str]:
+    """Kryteria, które można wybrać jako dodatkowe: wykaz bez obowiązkowych danego arkusza."""
+    obowiazkowe = load(version)["arkusze"][arkusz]["obowiazkowe"]
+    return {k: v["nazwa"] for k, v in criteria(version).items() if k not in obowiazkowe}

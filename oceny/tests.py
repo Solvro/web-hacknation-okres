@@ -17,15 +17,29 @@ class KryteriaDodatkoweTest(TestCase):
         self.o = Ocena.objects.create(arkusz="C", oceniany=self.oceniany, oceniajacy=self.oceniajacy)
 
     def test_maks_trzy(self):
-        self.o.ustaw_kryteria(["kreatywnosc", "negocjowanie", "analiza_informacji"])
+        self.o.ustaw_kryteria(["kreatywnosc", "negocjowanie", "wystapienia_publiczne"])
         with self.assertRaises(ValidationError):
-            self.o.ustaw_kryteria(["kreatywnosc", "negocjowanie", "analiza_informacji", "myslenie_analityczne"])
+            self.o.ustaw_kryteria(["kreatywnosc", "negocjowanie", "wystapienia_publiczne", "myslenie_analityczne"])
 
     def test_bez_powtorzen_i_spoza_wykazu(self):
         with self.assertRaises(ValidationError):
             self.o.ustaw_kryteria(["kreatywnosc", "kreatywnosc"])
         with self.assertRaises(ValidationError):
             self.o.ustaw_kryteria(["wymyslone"])
+        with self.assertRaises(ValidationError):
+            self.o.ustaw_kryteria(["rzetelnosc"])  # obowiązkowe w arkuszu C (§ 4 ust. 3)
+
+    def test_zgodnosc_z_rozporzadzeniem(self):
+        from . import rules
+        self.assertEqual(len(rules.criteria()), 14)  # Załącznik nr 1
+        self.assertEqual(list(rules.mandatory_criteria("C").values()), [
+            "Wykorzystywanie wiedzy i doskonalenie zawodowe", "Rzetelność",
+            "Organizacja pracy i orientacja na osiąganie celów", "Współpraca", "Komunikacja"])
+        self.assertEqual(len(rules.mandatory_criteria("A")), 6)
+        self.assertEqual(list(rules.mandatory_criteria("B")), list(rules.mandatory_criteria("A"))[:5])
+        self.assertIn("rzetelnosc", rules.extra_criteria("B"))
+        self.assertNotIn("zarzadzanie_ludzmi", rules.extra_criteria("B"))
+        self.assertEqual(len(rules.extra_criteria("C")), 9)
 
     def test_blokada_po_potwierdzeniu(self):
         self.o.ustaw_kryteria(["kreatywnosc"])
@@ -62,14 +76,14 @@ class WidokiKryteriowTest(TestCase):
         r = self.client.post(self.url_potwierdz)
         self.assertContains(r, "Potwierdzone przez ocenianego")
         self.client.force_login(self.oceniajacy)
-        r = self.client.post(self.url_ustaw, {"kryteria": ["analiza_informacji"]})
+        r = self.client.post(self.url_ustaw, {"kryteria": ["wystapienia_publiczne"]})
         self.assertEqual(r.status_code, 403)
         self.o.refresh_from_db()
         self.assertEqual(self.o.kryteria_dodatkowe, ["kreatywnosc", "negocjowanie"])
 
     def test_blad_walidacji_wraca_w_formularzu(self):
         self.client.force_login(self.oceniajacy)
-        r = self.client.post(self.url_ustaw, {"kryteria": ["kreatywnosc", "negocjowanie", "analiza_informacji", "myslenie_analityczne"]})
+        r = self.client.post(self.url_ustaw, {"kryteria": ["kreatywnosc", "negocjowanie", "wystapienia_publiczne", "myslenie_analityczne"]})
         self.assertContains(r, "maksymalnie 3")
         self.o.refresh_from_db()
         self.assertEqual(self.o.kryteria_dodatkowe, [])
