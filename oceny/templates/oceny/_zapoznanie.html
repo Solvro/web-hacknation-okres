@@ -1,0 +1,34 @@
+<section id="zapoznanie">
+  <h3>Zapoznanie z oceną (§ 12) i sprzeciw (art. 83)</h3>
+  {% for pole, komunikat in bledy_zapoznania.items %}<p role="alert">{{ komunikat }}</p>{% endfor %}
+  {% if not ocena.zapoznany %}
+    {% if jest_ocenianym %}
+      <button hx-post="{% url 'oceny:potwierdz_zapoznanie' ocena.pk %}" hx-target="#zapoznanie" hx-swap="outerHTML">Potwierdzam zapoznanie z oceną</button>
+    {% elif jest_oceniajacym %}
+      <p>Oczekuje na potwierdzenie zapoznania przez ocenianego.</p>
+      <form hx-post="{% url 'oceny:fikcja_zapoznania' ocena.pk %}" hx-target="#zapoznanie" hx-swap="outerHTML">
+        <label>Fikcja zapoznania: informacja o ocenie dotarła, a oceniany nie mógł lub nie chciał potwierdzić
+          <textarea name="uwagi" rows="2" placeholder="np. przekazano osobiście, odmowa podpisu w obecności świadka"></textarea></label>
+        <button type="submit">Odnotuj fikcję zapoznania</button>
+      </form>
+    {% endif %}
+  {% else %}
+    <p>Zapoznanie: {{ ocena.data_zapoznania|date:"d.m.Y" }} ({{ ocena.get_sposob_zapoznania_display }}){% if ocena.uwagi_zapoznania %}: {{ ocena.uwagi_zapoznania }}{% endif %}.</p>
+    {% with sprzeciw=ocena.sprzeciwy.first %}
+      {% if sprzeciw %}
+        <p>Sprzeciw złożony {{ sprzeciw.data_zlozenia|date:"d.m.Y" }}, przekazany do dyrektora generalnego.</p>
+      {% else %}
+        <p>Termin na sprzeciw do dyrektora generalnego: <strong>{{ ocena.termin_sprzeciwu|date:"d.m.Y" }}</strong>.</p>
+        {% if jest_ocenianym %}
+          <form hx-post="{% url 'oceny:zloz_sprzeciw' ocena.pk %}" hx-target="#zapoznanie" hx-swap="outerHTML">
+            <label>Treść sprzeciwu <textarea name="tresc" rows="3"></textarea></label>
+            <button type="submit">Złóż sprzeciw</button>
+          </form>
+        {% endif %}
+      {% endif %}
+    {% endwith %}
+  {% endif %}
+  {% with t=ocena.terminy_po_negatywnej %}{% if t %}
+    <p>Po ocenie negatywnej: kryteria nowego okresu do {{ t.kryteria_nowego_okresu|date:"d.m.Y" }} (§ 7 ust. 2){% if t.ponowna_ocena %}, ponowna ocena {{ t.ponowna_ocena|date:"d.m.Y" }} (art. 81 ust. 9){% endif %}.</p>
+  {% endif %}{% endwith %}
+</section>

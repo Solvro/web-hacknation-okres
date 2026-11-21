@@ -1,7 +1,7 @@
 <section id="ocena"{% if oob %} hx-swap-oob="true"{% endif %}>
   <h2>Część II · ocena</h2>
   {% if ocena.sporzadzona %}
-    <p>Sporządzona {{ ocena.sporzadzona_at|date:"d.m.Y" }} po rozmowie oceniającej {{ ocena.data_rozmowy_oceniajacej|date:"d.m.Y" }}.</p>
+    <p>Sporządzona {{ ocena.data_sporzadzenia|date:"d.m.Y" }} po rozmowie oceniającej {{ ocena.data_rozmowy_oceniajacej|date:"d.m.Y" }}.</p>
     <table>
       <thead><tr><th>Kryterium</th><th>Ocena cząstkowa</th></tr></thead>
       <tbody>{% for kod, nazwa, pkt in kryteria_oceny %}<tr><td>{{ nazwa }}</td><td>{{ pkt }}</td></tr>{% endfor %}</tbody>
@@ -9,6 +9,7 @@
     <p>Średnia {{ ocena.srednia }} · poziom: {{ ocena.poziom }} · <strong>ocena {% if ocena.pozytywna %}pozytywna{% else %}negatywna{% endif %}</strong></p>
     {% if ocena.uzasadnienie %}<h3>Uzasadnienie</h3><p>{{ ocena.uzasadnienie|linebreaksbr }}</p>{% endif %}
     <h3>Wnioski do IPRZ</h3><p>{{ ocena.wnioski_iprz|linebreaksbr }}</p>
+    {% include "oceny/_zapoznanie.html" %}
   {% elif not ocena.kryteria_zablokowane %}
     <p>Ocenę można sporządzić po potwierdzeniu kryteriów przez ocenianego.</p>
   {% elif jest_oceniajacym %}

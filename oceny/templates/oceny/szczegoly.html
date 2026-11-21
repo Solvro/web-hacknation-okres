@@ -6,6 +6,7 @@
   <script src="{% static 'oceny/htmx.min.js' %}" defer></script>
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  {% if zegar_przesuniety %}<p role="status"><strong>DEMO: zegar systemowy przesunięty na {{ zegar_przesuniety|date:"d.m.Y" }}.</strong> Terminy liczone od tej daty.</p>{% endif %}
   <h1>Ocena okresowa · arkusz {{ ocena.arkusz }}</h1>
   <p>Oceniany: {{ ocena.oceniany.get_full_name|default:ocena.oceniany }} · Oceniający: {{ ocena.oceniajacy.get_full_name|default:ocena.oceniajacy }}</p>
   {% include "oceny/_kryteria.html" %}

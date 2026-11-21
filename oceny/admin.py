@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Korekta, Ocena
+from .models import Korekta, Ocena, Sprzeciw, ZegarDemo
 
 
 class KorektaInline(admin.TabularInline):
@@ -25,7 +25,9 @@ class OcenaAdmin(admin.ModelAdmin):
         if obj and obj.kryteria_zablokowane:
             zawsze += ["arkusz", "oceniany", "oceniajacy", "kryteria_dodatkowe"]
         if obj and obj.sporzadzona:
-            zawsze += ["oceny_czastkowe", "data_rozmowy_oceniajacej", "uzasadnienie", "wnioski_iprz"]
+            zawsze += ["oceny_czastkowe", "data_rozmowy_oceniajacej", "uzasadnienie", "wnioski_iprz", "data_sporzadzenia"]
+        if obj and obj.zapoznany:
+            zawsze += ["data_zapoznania", "sposob_zapoznania", "uwagi_zapoznania"]
         return zawsze
 
 
@@ -41,3 +43,13 @@ class KorektaAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+@admin.register(Sprzeciw)
+class SprzeciwAdmin(admin.ModelAdmin):
+    list_display = ("ocena", "data_zlozenia")
+
+
+@admin.register(ZegarDemo)
+class ZegarDemoAdmin(admin.ModelAdmin):
+    list_display = ("data",)

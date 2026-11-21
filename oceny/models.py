@@ -5,7 +5,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import models, transaction
 from django.utils import timezone
 
-from . import punktacja, rules
+from . import punktacja, rules, terminy, zegar
 
 
 class Ocena(models.Model):
@@ -22,9 +22,16 @@ class Ocena(models.Model):
     uzasadnienie = models.TextField(blank=True)
     wnioski_iprz = models.TextField(blank=True)
     sporzadzona_at = models.DateTimeField(null=True, blank=True)
+    data_sporzadzenia = models.DateField(null=True, blank=True)
     srednia = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
     poziom = models.CharField(max_length=40, blank=True)
     pozytywna = models.BooleanField(null=True, blank=True)
+    data_zapoznania = models.DateField(null=True, blank=True)
+    sposob_zapoznania = models.CharField(
+        max_length=20, blank=True,
+        choices=[("potwierdzenie", "potwierdzenie przez ocenianego"), ("fikcja", "fikcja zapoznania")],
+    )
+    uwagi_zapoznania = models.TextField(blank=True)
 
     class Meta:
         verbose_name_plural = "oceny"
@@ -103,7 +110,7 @@ class Ocena(models.Model):
                 bledy[f"kryterium_{kod}"] = f"Przyznaj ocenę cząstkową za kryterium „{nazwa}” (§ 11 ust. 1 pkt 1)."
         if data_rozmowy is None:
             bledy["data_rozmowy"] = "Podaj datę rozmowy oceniającej (§ 10)."
-        elif data_rozmowy > timezone.localdate():
+        elif data_rozmowy > zegar.dzis():
             bledy["data_rozmowy"] = "Rozmowa oceniająca musi odbyć się przed sporządzeniem oceny lub tego samego dnia (§ 10)."
         wynik = self.podglad_wyniku(czastkowe)
         if wynik and not wynik.pozytywna and not uzasadnienie.strip():
@@ -128,7 +135,59 @@ class Ocena(models.Model):
         self.poziom = wynik.poziom_nazwa
         self.pozytywna = wynik.pozytywna
         self.sporzadzona_at = timezone.now()
+        self.data_sporzadzenia = zegar.dzis()
         self.save()
+
+    # § 12 i art. 83 ustawy: zapoznanie i sprzeciw
+
+    @property
+    def zapoznany(self) -> bool:
+        return self.data_zapoznania is not None
+
+    def _zapoznaj(self, sposob: str, uwagi: str = ""):
+        if not self.sporzadzona:
+            raise PermissionDenied("Ocena nie została jeszcze sporządzona.")
+        if self.zapoznany:
+            raise PermissionDenied("Zapoznanie zostało już odnotowane.")
+        self.data_zapoznania = zegar.dzis()
+        self.sposob_zapoznania = sposob
+        self.uwagi_zapoznania = uwagi
+        self.save(update_fields=["data_zapoznania", "sposob_zapoznania", "uwagi_zapoznania"])
+
+    def potwierdz_zapoznanie(self):
+        self._zapoznaj("potwierdzenie")
+
+    def odnotuj_fikcje_zapoznania(self, uwagi: str):
+        if not uwagi.strip():
+            raise ValidationError({"uwagi": "Opisz, jak informacja o ocenie dotarła do ocenianego i dlaczego nie potwierdził zapoznania."})
+        self._zapoznaj("fikcja", uwagi.strip())
+
+    @property
+    def termin_sprzeciwu(self):
+        if not self.zapoznany:
+            return None
+        return terminy.termin_dniowy(self.data_zapoznania, rules.load(self.wersja_regul)["terminy"]["sprzeciw_dni"])
+
+    def terminy_po_negatywnej(self) -> dict:
+        """Kryteria w 7 dni od sporządzenia (§ 7 ust. 2), ponowna ocena po 6 mies. od zapoznania (art. 81 ust. 9)."""
+        if self.pozytywna is not False:
+            return {}
+        cfg = rules.load(self.wersja_regul)["terminy"]
+        wynik = {"kryteria_nowego_okresu": terminy.termin_dniowy(self.data_sporzadzenia, cfg["kryteria_po_negatywnej_dni"])}
+        if self.zapoznany:
+            wynik["ponowna_ocena"] = terminy.termin_miesieczny(self.data_zapoznania, cfg["ponowna_po_negatywnej_miesiace"])
+        return wynik
+
+    def zloz_sprzeciw(self, tresc: str) -> "Sprzeciw":
+        if not self.zapoznany:
+            raise PermissionDenied("Sprzeciw przysługuje od zapoznania z oceną.")
+        if self.sprzeciwy.exists():
+            raise PermissionDenied("Sprzeciw od tej oceny został już złożony.")
+        if zegar.dzis() > self.termin_sprzeciwu:
+            raise PermissionDenied(f"Termin na sprzeciw upłynął {self.termin_sprzeciwu:%d.%m.%Y} (art. 83 ust. 1).")
+        if not tresc.strip():
+            raise ValidationError({"tresc": "Podaj treść sprzeciwu."})
+        return Sprzeciw.objects.create(ocena=self, data_zlozenia=zegar.dzis(), tresc=tresc.strip())
 
 
 class Korekta(models.Model):
@@ -145,3 +204,27 @@ class Korekta(models.Model):
     class Meta:
         verbose_name_plural = "korekty"
         ordering = ["-kiedy"]
+
+
+class Sprzeciw(models.Model):
+    """Sprzeciw do dyrektora generalnego urzędu (art. 83 ust. 1)."""
+
+    ocena = models.ForeignKey(Ocena, on_delete=models.CASCADE, related_name="sprzeciwy")
+    data_zlozenia = models.DateField()
+    tresc = models.TextField()
+
+    class Meta:
+        verbose_name_plural = "sprzeciwy"
+
+
+class ZegarDemo(models.Model):
+    """Przesunięta data systemowa, działa tylko przy DJANGO_DEBUG=1. Jeden wiersz (pk=1)."""
+
+    data = models.DateField(null=True, blank=True, help_text="Puste = data rzeczywista.")
+
+    class Meta:
+        verbose_name = verbose_name_plural = "zegar demo"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)

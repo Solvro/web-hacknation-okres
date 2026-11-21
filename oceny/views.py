@@ -111,3 +111,41 @@ def sporzadz(request, pk):
         ctx["bledy_pol"] = {k: v[0] for k, v in e.message_dict.items()}
         return render(request, "oceny/_ocena.html", ctx)
     return render(request, "oceny/_ocena.html", _kontekst_oceny(request, ocena))
+
+
+def _zapoznanie(request, ocena, bledy=None):
+    return render(request, "oceny/_zapoznanie.html", _kontekst_oceny(request, ocena) | {"bledy_zapoznania": bledy or {}})
+
+
+@login_required
+@require_POST
+def potwierdz_zapoznanie(request, pk):
+    ocena = _ocena_dla(request, pk)
+    if ocena.oceniany_id != request.user.id:
+        raise PermissionDenied("Zapoznanie potwierdza oceniany.")
+    ocena.potwierdz_zapoznanie()
+    return _zapoznanie(request, ocena)
+
+
+@login_required
+@require_POST
+def fikcja_zapoznania(request, pk):
+    ocena = _tylko_oceniajacy(request, pk)
+    try:
+        ocena.odnotuj_fikcje_zapoznania(request.POST.get("uwagi", ""))
+    except ValidationError as e:
+        return _zapoznanie(request, ocena, {k: v[0] for k, v in e.message_dict.items()})
+    return _zapoznanie(request, ocena)
+
+
+@login_required
+@require_POST
+def zloz_sprzeciw(request, pk):
+    ocena = _ocena_dla(request, pk)
+    if ocena.oceniany_id != request.user.id:
+        raise PermissionDenied("Sprzeciw składa oceniany.")
+    try:
+        ocena.zloz_sprzeciw(request.POST.get("tresc", ""))
+    except ValidationError as e:
+        return _zapoznanie(request, ocena, {k: v[0] for k, v in e.message_dict.items()})
+    return _zapoznanie(request, ocena)
