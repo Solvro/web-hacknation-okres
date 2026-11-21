@@ -39,3 +39,5 @@ details summary { cursor: pointer; color: var(--link); }
 .rachunek li { margin: .2rem 0; }
 .cicho { color: var(--potw-tekst); font-size: .875rem; }
 @media print { .demo, header.gora, button, form, details { display: none !important; } }
+label > input:not([type=checkbox]):not([type=radio]), label > select, label > textarea { display: block; margin-top: .25rem; }
+.po-terminie { color: var(--blad); font-weight: 700; }

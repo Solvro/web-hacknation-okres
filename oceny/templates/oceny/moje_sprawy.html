@@ -30,7 +30,7 @@
       <td>{{ w.ocena.arkusz }}</td>
       <td>{{ w.ocena.etap_nazwa }}</td>
       <td>{% if w.krok %}{{ w.krok.opis }}{% if w.krok.moj %} <span class="znacznik moj">Ty</span>{% endif %}{% else %}—{% endif %}</td>
-      <td>{{ w.krok.termin|date:"d.m.Y"|default:"—" }}</td>
+      <td>{{ w.krok.termin|date:"d.m.Y"|default:"—" }}{% if w.ocena.po_terminie %} <span class="po-terminie">po terminie</span>{% endif %}</td>
       <td>{{ w.krok.kto.get_full_name|default:"—" }}</td>
     </tr>
   {% empty %}

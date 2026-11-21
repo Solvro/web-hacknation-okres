@@ -86,3 +86,15 @@ class SprawyTest(TestCase):
         self.assertContains(r, "DANE FIKCYJNE")
         self.assertContains(r, "Organizacja pracy i orientacja na osiąganie celów")
         self.assertContains(r, "19.04.2027")
+
+
+@override_settings(OKRES_DEMO=True)
+class PoTerminieTest(TestCase):
+    def test_oznaczenie_po_terminie(self):
+        jan = User.objects.create_user("jan")
+        anna = User.objects.create_user("anna")
+        o = Ocena.objects.create(arkusz="C", oceniany=jan, oceniajacy=anna, poczatek_okresu=date(2025, 3, 17))
+        ZegarDemo(data=date(2025, 4, 16)).save()  # termin kryteriów 16.04.2025
+        self.assertFalse(o.po_terminie)
+        ZegarDemo(data=date(2025, 4, 17)).save()
+        self.assertTrue(o.po_terminie)

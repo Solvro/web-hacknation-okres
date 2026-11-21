@@ -249,6 +249,14 @@ class Ocena(models.Model):
     }
 
     @property
+    def po_terminie(self) -> bool:
+        """Bieżąca czynność oceniającego lub ocenianego jest po terminie (do wyróżnienia w interfejsie)."""
+        if self.etap not in ("kryteria", "ocena"):
+            return False
+        r = self.rachunek_kryteriow() if self.etap == "kryteria" else self.rachunek_oceny()
+        return bool(r and r.termin < zegar.dzis())
+
+    @property
     def etap_nazwa(self) -> str:
         return self.ETAPY[self.etap]
 
