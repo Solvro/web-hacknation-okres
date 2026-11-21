@@ -44,6 +44,7 @@ class HRPartnerTest(TestCase):
         s = self.rodzaje(self.jan)["powrot_po_nieobecnosci"]
         self.assertIn("33 dniach", s.tytul)
         self.assertIn("bez przyczyny", s.zrodla[0])
+        self.assertIn("szkolenie", dict(s.dzialania))  # zmiany przepisów i procedur w czasie nieobecności
 
     def test_osiagniecie_czeka_na_docenienie_i_znika_po_docenieniu(self):
         s = self.rodzaje(self.jan)["osiagniecie_bez_docenienia"]

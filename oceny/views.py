@@ -6,9 +6,10 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 
-from . import rules, zegar
+from . import rozwoj, rules, zegar
 from .models import Ocena, Urzad, ZegarDemo
 
 
@@ -235,6 +236,7 @@ def _kontekst_oceny(request, ocena, czastkowe=None, bledy=None, **pola):
         "obserwacje_bez_kryterium": grupy.get("", []),
         "skala": rules.load(ocena.wersja_regul)["punktacja"]["skala_czastkowa"],
         "wynik": ocena.podglad_wyniku(czastkowe),
+        "podpowiedzi_rozwoju": rozwoj.podpowiedzi(ocena.wszystkie_kryteria(), czastkowe),
         "bledy_pol": bledy or {},
         "pola": ocena.domyslne_pola() | {"miejscowosc": _miejscowosc(ocena.oceniajacy)}
                 | {k: v for k, v in pola.items() if v not in (None, "")},
@@ -258,7 +260,10 @@ def podglad_wyniku(request, pk):
     """Podgląd średniej, poziomu i wyniku w trakcie wypełniania (bez zapisu)."""
     ocena = _tylko_oceniajacy(request, pk)
     czastkowe, *_ = _dane_formularza(request, ocena)
-    return render(request, "oceny/_wynik.html", _kontekst_oceny(request, ocena, czastkowe))
+    ctx = _kontekst_oceny(request, ocena, czastkowe)
+    # Wynik w miejscu tabeli, podpowiedzi rozwojowe obok (out-of-band), bez przeładowania formularza.
+    html = render_to_string("oceny/_wynik.html", ctx, request) + render_to_string("oceny/_rozwoj.html", ctx | {"rozwoj_oob": True}, request)
+    return HttpResponse(html)
 
 
 @login_required

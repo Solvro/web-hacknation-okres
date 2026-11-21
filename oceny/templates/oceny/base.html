@@ -8,6 +8,7 @@
   <link rel="icon" href="{% static 'oceny/znak.png' %}" type="image/png">
   <link rel="stylesheet" href="{% static 'oceny/okres.css' %}">
   <script src="{% static 'oceny/htmx.min.js' %}" defer></script>
+  <script src="{% static 'oceny/okres.js' %}" defer></script>
 </head>
 <body class="{% block klasa_strony %}{% endblock %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
   <a class="pomin" href="#tresc">Przejdź do treści</a>

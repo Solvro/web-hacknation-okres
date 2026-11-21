@@ -18,7 +18,7 @@ sygnaly:
     tytul: "{n} nowe zadania w ciągu {dni} dni"
     pytanie: "Które z nowych zadań można przekazać komuś innemu albo rozłożyć w czasie?"
     obszar: obciążenie
-    dzialania: [odciazenie, priorytety, mentoring]
+    dzialania: [odciazenie, priorytety, mentoring, szkolenie]  # szkolenie: nowe zadania mogą oznaczać nowy zakres wiedzy
   powrot_po_nieobecnosci:
     # tylko fakt i okres nieobecności usprawiedliwionej; przyczyny nie są przetwarzane
     min_dni_nieobecnosci: 30
@@ -26,7 +26,7 @@ sygnaly:
     tytul: "Powrót po {dni_nieobecnosci} dniach nieobecności"
     pytanie: "Co zmieniło się w zadaniach zespołu i czego potrzebujesz na start?"
     obszar: dobrostan
-    dzialania: [rozmowa_wspierajaca, wdrozenie_po_powrocie]
+    dzialania: [rozmowa_wspierajaca, wdrozenie_po_powrocie, szkolenie]  # szkolenie: zmiany przepisów i procedur w czasie nieobecności
   osiagniecie_bez_docenienia:
     dni_bez_reakcji: 14
     tytul: "Osiągnięcie zgłoszone {data} czeka na docenienie"
@@ -39,7 +39,7 @@ dzialania:
   priorytety: {nazwa: "Wspólne ustalenie priorytetów", opis: "Krótka lista zadań w kolejności ważności na najbliższe tygodnie."}
   rozmowa_wspierajaca: {nazwa: "Rozmowa wspierająca", opis: "Rozmowa o obciążeniu i potrzebach, bez oceniania; ustalenie jednego kroku."}
   mentoring: {nazwa: "Mentoring", opis: "Wsparcie doświadczonej osoby z zespołu lub innej komórki."}
-  szkolenie: {nazwa: "Szkolenie lub działanie rozwojowe", opis: "Działanie wpisywane też do wniosków do IPRZ przy najbliższej ocenie."}
+  szkolenie: {nazwa: "Szkolenie lub działanie rozwojowe", opis: "Uzupełnienie wiedzy potrzebnej do nowych lub zmienionych zadań; propozycje form w katalogu rozwoju (rules/rozwoj.yaml), do uwzględnienia we wnioskach do IPRZ przy najbliższej ocenie."}
   wdrozenie_po_powrocie: {nazwa: "Wdrożenie po powrocie", opis: "Przegląd zmian w zadaniach i procedurach, wskazanie osoby do kontaktu."}
   docenienie: {nazwa: "Docenienie", opis: "Konkretne podziękowanie: co zrobiono i jaki był skutek."}
   informacja_zwrotna: {nazwa: "Informacja zwrotna", opis: "Opis zachowania, jego skutku i oczekiwanego kolejnego kroku."}

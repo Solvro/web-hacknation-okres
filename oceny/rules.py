@@ -11,7 +11,7 @@ import yaml
 
 RULES_DIR = Path(__file__).resolve().parent.parent / "rules"
 DOMYSLNA_WERSJA = "2016-04-04"
-PLIKI_POMOCNICZE = {"hr_partner", "rozmowy"}
+PLIKI_POMOCNICZE = {"hr_partner", "rozmowy", "rozwoj"}
 WYMAGANE_KLUCZE = ("wersja", "obowiazuje_od", "kryteria", "arkusze", "kryteria_dodatkowe", "punktacja", "terminy", "przypomnienia")
 
 

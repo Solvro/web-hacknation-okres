@@ -1,0 +1,102 @@
+# Część rozwojowa oceny: podpowiedzi do wniosków dotyczących indywidualnego programu rozwoju zawodowego
+# (art. 81 ust. 5 i art. 108 ust. 1 pkt 1 ustawy; § 11 ust. 1 pkt 5 rozporządzenia). Katalog edytuje urząd (kadry)
+# bez zmiany kodu. To punkt wyjścia do rozmowy, nie treść oceny: oceniający sam decyduje, co wpisuje do arkusza.
+# Kryteria i ich kody odpowiadają wykazowi z Załącznika nr 1 (pakiet 2016-04-04). Walidacja: `manage.py sprawdz_reguly`.
+wersja: "2026-11-21"
+pakiet_kryteriow: "2016-04-04"
+
+# Przy jakich ocenach cząstkowych pokazywać podpowiedź (skala z § 11 ust. 1 pkt 1)
+obszar_do_rozwoju_przy: [1, 3]
+mocna_strona_przy: [7, 9]
+
+formy:  # dozwolone formy działań rozwojowych
+  szkolenie: szkolenie
+  mentoring: mentoring
+  zadanie: zadanie rozwojowe
+  samoksztalcenie: samokształcenie
+
+kryteria:
+  komunikacja:
+    dzialania:
+      - {forma: szkolenie, opis: "Szkolenie z prostego języka w pismach urzędowych; po nim przeredagowanie dwóch własnych pism."}
+      - {forma: mentoring, opis: "Wspólne przygotowanie z doświadczoną osobą trudnej rozmowy z interesantem lub inną komórką."}
+      - {forma: zadanie, opis: "Prowadzenie notatek ze spotkań zespołu przez kwartał, z akceptacją uczestników."}
+    mocna_strona: "Powierz przygotowanie wzorów pism lub odpowiedzi dla zespołu; poproś o krótkie wskazówki dla nowych osób."
+  kreatywnosc:
+    dzialania:
+      - {forma: zadanie, opis: "Przygotowanie jednej propozycji usprawnienia procedury w swoim zakresie, z oceną kosztu i ryzyka."}
+      - {forma: samoksztalcenie, opis: "Przegląd dobrych praktyk z innego urzędu w podobnej sprawie i omówienie ich w zespole."}
+      - {forma: szkolenie, opis: "Warsztat z metod rozwiązywania problemów (np. analiza przyczyn, burza mózgów z zasadami)."}
+    mocna_strona: "Włącz do zespołu przeglądającego procedury; daj czas na przetestowanie jednego pomysłu w małej skali."
+  negocjowanie:
+    dzialania:
+      - {forma: szkolenie, opis: "Szkolenie z przygotowania stanowiska negocjacyjnego i zakresu ustępstw."}
+      - {forma: mentoring, opis: "Udział jako obserwator w negocjacjach prowadzonych przez doświadczoną osobę, z omówieniem po spotkaniu."}
+      - {forma: zadanie, opis: "Samodzielne przygotowanie projektu stanowiska do najbliższych uzgodnień międzyresortowych."}
+    mocna_strona: "Powierz prowadzenie uzgodnień w sprawach o większej wadze; poproś o podzielenie się sposobem przygotowania."
+  organizacja_pracy:
+    dzialania:
+      - {forma: szkolenie, opis: "Szkolenie z planowania i ustalania priorytetów; po nim tygodniowy plan zadań omawiany z przełożonym."}
+      - {forma: zadanie, opis: "Prowadzenie listy zadań z terminami i krótki przegląd co dwa tygodnie przez kwartał."}
+      - {forma: mentoring, opis: "Wsparcie osoby, która dobrze planuje pracę w podobnym zakresie zadań."}
+    mocna_strona: "Powierz koordynację zadania z udziałem kilku osób lub komórek; poproś o pokazanie sposobu planowania zespołowi."
+  orientacja_na_klienta:
+    dzialania:
+      - {forma: szkolenie, opis: "Szkolenie z obsługi klienta, w tym trudnego interesanta i komunikacji bez barier."}
+      - {forma: zadanie, opis: "Analiza najczęstszych pytań interesantów i przygotowanie odpowiedzi do strony urzędu."}
+      - {forma: mentoring, opis: "Dyżur w punkcie obsługi z doświadczoną osobą i omówienie wybranych sytuacji."}
+    mocna_strona: "Powierz zbieranie opinii interesantów i propozycje zmian w obsłudze; włącz do wdrażania nowych osób."
+  podejmowanie_decyzji:
+    dzialania:
+      - {forma: szkolenie, opis: "Szkolenie z analizy ryzyka i przygotowania wariantów rozwiązań."}
+      - {forma: zadanie, opis: "Przygotowanie do jednej decyzji dwóch wariantów z oceną ryzyka i rekomendacją."}
+      - {forma: mentoring, opis: "Omawianie z przełożonym podjętych decyzji i ich skutków raz w miesiącu."}
+    mocna_strona: "Rozszerz zakres samodzielnych decyzji lub zastępstw; poproś o udział w analizie ryzyka dla komórki."
+  sytuacje_kryzysowe:
+    dzialania:
+      - {forma: szkolenie, opis: "Szkolenie z zarządzania kryzysowego lub ciągłości działania w urzędzie."}
+      - {forma: zadanie, opis: "Udział w ćwiczeniu lub przeglądzie procedury na wypadek awarii w swoim obszarze."}
+      - {forma: samoksztalcenie, opis: "Opracowanie wniosków z ostatniej sytuacji kryzysowej w komórce i omówienie ich w zespole."}
+    mocna_strona: "Włącz do zespołu aktualizującego procedury awaryjne; powierz prowadzenie omówienia po zdarzeniu."
+  rzetelnosc:
+    dzialania:
+      - {forma: zadanie, opis: "Lista kontrolna do najczęstszego rodzaju sprawy i sprawdzanie z nią wyników przez kwartał."}
+      - {forma: szkolenie, opis: "Szkolenie z przepisów i procedur stosowanych na stanowisku, z naciskiem na typowe błędy."}
+      - {forma: mentoring, opis: "Krótkie przeglądy wybranych spraw z doświadczoną osobą przed ich zakończeniem."}
+    mocna_strona: "Powierz kontrolę jakości wybranych spraw lub przygotowanie listy kontrolnej dla zespołu."
+  myslenie_analityczne:
+    dzialania:
+      - {forma: szkolenie, opis: "Szkolenie z analizy danych w arkuszu kalkulacyjnym lub z wnioskowania na podstawie danych."}
+      - {forma: zadanie, opis: "Przygotowanie krótkiej analizy (jedna strona) z danych komórki z wnioskami dla przełożonego."}
+      - {forma: samoksztalcenie, opis: "Kurs e-learningowy z analizy informacji, z zastosowaniem w jednej bieżącej sprawie."}
+    mocna_strona: "Powierz przygotowanie analiz lub zestawień dla kierownictwa; poproś o pomoc innym w pracy z danymi."
+  wykorzystywanie_wiedzy:
+    dzialania:
+      - {forma: szkolenie, opis: "Szkolenie z nowych lub zmienionych przepisów stosowanych na stanowisku."}
+      - {forma: samoksztalcenie, opis: "Stały przegląd zmian w przepisach i orzecznictwie w swoim zakresie, z krótką informacją dla zespołu."}
+      - {forma: mentoring, opis: "Wymiana doświadczeń z osobą z innej komórki lub urzędu, która prowadzi podobne sprawy."}
+    mocna_strona: "Powierz prowadzenie krótkiego szkolenia wewnętrznego lub opiekę nad nową osobą w zespole."
+  wspolpraca:
+    dzialania:
+      - {forma: zadanie, opis: "Udział w zadaniu realizowanym z inną komórką, z jasno określoną własną rolą."}
+      - {forma: szkolenie, opis: "Warsztat z pracy zespołowej i przekazywania informacji."}
+      - {forma: mentoring, opis: "Wsparcie osoby, która dobrze współpracuje z innymi komórkami, przy wspólnym zadaniu."}
+    mocna_strona: "Powierz rolę łącznika z inną komórką lub koordynację wspólnego zadania; doceń wkład wobec zespołu."
+  wystapienia_publiczne:
+    dzialania:
+      - {forma: szkolenie, opis: "Szkolenie z wystąpień publicznych i przygotowania prezentacji."}
+      - {forma: zadanie, opis: "Krótka prezentacja wyników pracy na spotkaniu zespołu, z informacją zwrotną po wystąpieniu."}
+      - {forma: mentoring, opis: "Przygotowanie wystąpienia z osobą, która często prezentuje na zewnątrz."}
+    mocna_strona: "Powierz prezentowanie stanowiska urzędu na spotkaniach zewnętrznych lub szkoleniach."
+  zarzadzanie_ludzmi:
+    dzialania:
+      - {forma: szkolenie, opis: "Szkolenie z udzielania informacji zwrotnej i delegowania zadań."}
+      - {forma: mentoring, opis: "Mentoring doświadczonego kierownika z innej komórki, spotkania raz w miesiącu."}
+      - {forma: zadanie, opis: "Regularne rozmowy indywidualne z członkami zespołu i ustalenie z każdym jednego celu rozwojowego."}
+    mocna_strona: "Poproś o udział jako mentor dla nowych kierowników lub o podzielenie się praktykami zarządzania zespołem."
+  zarzadzanie_strategiczne:
+    dzialania:
+      - {forma: szkolenie, opis: "Szkolenie z planowania strategicznego i zarządzania ryzykiem w administracji."}
+      - {forma: zadanie, opis: "Przegląd celów operacyjnych urzędu pod kątem zgodności z celami strategicznymi, z wnioskami."}
+      - {forma: mentoring, opis: "Wymiana doświadczeń z kierownikiem innego urzędu w zakresie planowania strategicznego."}
+    mocna_strona: "Poproś o prowadzenie prac nad strategią lub planem działalności i o udział w projektach międzyresortowych."

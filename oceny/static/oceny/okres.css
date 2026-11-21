@@ -266,3 +266,12 @@ details > :last-child:not(summary) { margin-bottom: 0; }
   }
 }
 @media print { .demo, .gora, .pomin, button, form, details, .filtry, .skroty { display: none !important; } }
+
+/* Część rozwojowa oceny (podpowiedzi z katalogu rules/rozwoj.yaml) */
+.karta-rozwoj:empty { display: none; }
+.podpowiedz-rozwoj, .podpowiedz-mocna { padding: .6rem 1rem; border-radius: .65rem; margin: .5rem 0; }
+.podpowiedz-rozwoj { background: var(--hr-tlo); color: #12403f; border-left: 3px solid var(--hr); }
+.podpowiedz-mocna { background: #eef5ea; color: #24461a; border-left: 3px solid #3f7a2c; }
+.podpowiedz-rozwoj ul { margin: .3rem 0 0; }
+.podpowiedz-rozwoj li { margin-bottom: .35rem; }
+button.maly { padding: .15rem .55rem; font-size: .85em; margin-left: .35rem; }
