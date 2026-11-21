@@ -8,12 +8,14 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from . import rules
+from . import rules, zegar
 from .models import Ocena, Urzad, ZegarDemo
 
 
 def kontekst_globalny(request):
-    return {"okres_demo": settings.OKRES_DEMO, "urzad": Urzad.biezacy(), "demo_konta": demo_konta}
+    u = request.user
+    return {"okres_demo": settings.OKRES_DEMO, "urzad": Urzad.biezacy(), "demo_konta": demo_konta,
+            "moze_statystyki": u.is_authenticated and _moze_statystyki(u)}
 
 
 def _jest_dg(user) -> bool:
@@ -502,3 +504,73 @@ def porownanie_regul(request, pk):
         wiersze.append({"wersja": w, "kryteria": kopia.rachunek_kryteriow(), "ocena": kopia.rachunek_oceny(),
                         "biezaca": w["kod"] == ocena.wersja_regul, "bledy": rules.sprawdz(w["kod"])})
     return render(request, "oceny/porownanie_regul.html", {"ocena": ocena, "wiersze": wiersze, "aktywna": rules.aktywna()})
+
+
+def _moze_statystyki(user) -> bool:
+    return user.is_staff or _jest_dg(user)
+
+
+@login_required
+def statystyki(request):
+    if not _moze_statystyki(request.user):
+        raise PermissionDenied("Statystyki są dostępne dla kierownictwa i kadr.")
+    from . import statystyki as st
+
+    dane = st.zbierz()
+    if request.GET.get("format") == "csv":
+        import csv
+
+        odp = HttpResponse(content_type="text/csv; charset=utf-8")
+        odp["Content-Disposition"] = 'attachment; filename="okres-statystyki.csv"'
+        w = csv.writer(odp, delimiter=";")
+        w.writerow(["wskaźnik", "wartość"])
+        for k in ("liczba_spraw", "po_terminie", "w_30_dni", "pozytywne", "negatywne", "wnioski_o_stopien", "sprzeciwy",
+                  "fikcje_zapoznania"):
+            w.writerow([k, dane[k]])
+        for grupa in ("etapy", "arkusze", "komorki", "poziomy", "sprzeciwy_decyzje"):
+            for nazwa, liczba in dane[grupa]:
+                w.writerow([f"{grupa}: {nazwa}", liczba])
+        return odp
+    return render(request, "oceny/statystyki.html", dane)
+
+
+@login_required
+def eksport_sprawy(request, pk):
+    """UC-21: paczka do akt osobowych / ręcznego przekazania do EZD: arkusz HTML, dane JSON, historia."""
+    import io
+    import json
+    import zipfile
+
+    from django.contrib.staticfiles import finders
+    from django.core.serializers.json import DjangoJSONEncoder
+
+    ocena = _ocena_dla(request, pk)
+    if not (request.user.is_staff or request.user.id == ocena.oceniany_id):
+        raise PermissionDenied("Eksport do akt wykonuje komórka kadrowa (oceniany może pobrać własną sprawę).")
+    arkusz = wydruk(request, pk).content.decode()
+    css = open(finders.find("oceny/wydruk.css"), encoding="utf-8").read()
+    arkusz = arkusz.replace('<link rel="stylesheet" href="/static/oceny/wydruk.css">', f"<style>{css}</style>")
+    pola = {f.name: getattr(ocena, f.attname) for f in ocena._meta.fields}
+    r_oceny, r_kryt = ocena.rachunek_oceny(), ocena.rachunek_kryteriow()
+    dane = {
+        "format": "okres-sprawa/1", "wygenerowano": zegar.dzis(), "pakiet_regul": ocena.wersja_regul,
+        "ocena": pola, "kryteria": ocena.wszystkie_kryteria(),
+        "terminy": {"kryteria": r_kryt and r_kryt.termin, "ocena": r_oceny and r_oceny.termin,
+                    "rachunek_oceny": [k.__dict__ for k in r_oceny.kroki] if r_oceny else []},
+        "zdarzenia_kadrowe": list(ocena.zdarzenia_kadrowe.values("data", "rodzaj", "opis", "podstawa", "dane")),
+        "sprzeciwy": list(ocena.sprzeciwy.values("wersja", "data_zlozenia", "tresc", "decyzja", "data_decyzji",
+                                                  "uzasadnienie_decyzji")),
+        "wersje": list(ocena.wersje.values("wersja", "utworzona", "powod", "dane")),
+        "korekty": list(ocena.korekty.values("kiedy", "kto__username", "pole", "przed", "po", "powod")),
+    }
+    bufor = io.BytesIO()
+    with zipfile.ZipFile(bufor, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("arkusz.html", arkusz)
+        z.writestr("dane.json", json.dumps(dane, cls=DjangoJSONEncoder, ensure_ascii=False, indent=2))
+        z.writestr("CZYTAJ.txt", "Paczka sprawy oceny okresowej z systemu OKRES.\n"
+                                 "arkusz.html: arkusz do druku lub zapisu PDF (wzór z rozporządzenia).\n"
+                                 "dane.json: komplet danych sprawy, terminy z rachunkiem, zdarzenia, sprzeciwy, wersje i korekty.\n"
+                                 "Notatki przełożonego i dane HR partnera nie są częścią akt.\n")
+    odp = HttpResponse(bufor.getvalue(), content_type="application/zip")
+    odp["Content-Disposition"] = f'attachment; filename="ocena-{ocena.pk}.zip"'
+    return odp

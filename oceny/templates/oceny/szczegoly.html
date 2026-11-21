@@ -4,7 +4,8 @@
 <p><a href="{% url 'oceny:moje_sprawy' %}">← Moje sprawy</a></p>
 <h1>Ocena okresowa · arkusz {{ ocena.arkusz }}</h1>
 <p><a class="przycisk" href="{% url 'oceny:wydruk' ocena.pk %}">{% if ocena.sporzadzona %}Arkusz do druku / PDF{% else %}Część I do druku / PDF{% endif %}</a>
-  {% if ocena.sporzadzona %}<a href="{% url 'oceny:wydruk' ocena.pk %}?czesc=I">Kopia części I</a>{% endif %}</p>
+  {% if ocena.sporzadzona %}<a href="{% url 'oceny:wydruk' ocena.pk %}?czesc=I">Kopia części I</a>{% endif %}
+  {% if user.is_staff or jest_ocenianym %} · <a href="{% url 'oceny:eksport_sprawy' ocena.pk %}">Paczka do akt / EZD (ZIP)</a>{% endif %}</p>
 {% with p=ocena.oceniany.pracownik %}
 <dl class="naglowek-sprawy">
   <div><dt>Oceniany</dt><dd>{{ ocena.oceniany.get_full_name|default:ocena.oceniany }}</dd></div>

@@ -18,6 +18,7 @@
         <a href="{% url 'oceny:moje_sprawy' %}">Moje sprawy</a>
         {% if user.pracownik.podwladni.exists %}<a href="{% url 'partner:zespol' %}">Zespół · HR partner</a>{% endif %}
         {% if user.pracownik %}<a href="{% url 'partner:moje' %}">Mój dobrostan i rozwój</a>{% endif %}
+        {% if moze_statystyki %}<a href="{% url 'oceny:statystyki' %}">Statystyki</a>{% endif %}
         {% if user.is_staff %}<a href="{% url 'admin:index' %}">Panel kadr</a>{% endif %}
       {% endif %}
     </nav>

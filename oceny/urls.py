@@ -25,4 +25,6 @@ urlpatterns = [
     path("<int:pk>/zawiadomienie/<int:zdarzenie_pk>/", views.zawiadomienie, name="zawiadomienie"),
     path("<int:pk>/przygotowanie/<str:rodzaj>/", views.przygotowanie, name="przygotowanie"),
     path("<int:pk>/reguly/", views.porownanie_regul, name="porownanie_regul"),
+    path("statystyki/", views.statystyki, name="statystyki"),
+    path("<int:pk>/eksport.zip", views.eksport_sprawy, name="eksport_sprawy"),
 ]
