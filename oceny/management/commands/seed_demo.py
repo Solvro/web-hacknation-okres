@@ -7,7 +7,6 @@ from django.db import transaction
 
 from datetime import timedelta
 
-from oceny import zegar
 from oceny.models import Nieobecnosc, Obserwacja, Ocena, Pracownik, Urzad
 from partner.models import Uzgodnienie, ZdarzenieZadania
 
@@ -25,6 +24,10 @@ OSOBY = [
      False, False, None),
 ]
 LOGINY_DEMO = [o[0] for o in OSOBY]
+
+
+# Dzień, względem którego datowane są dane HR partnera; w pokazie zegar demo ustawia się na ten dzień.
+DZIEN_DANYCH_HR = date(2026, 11, 21)
 
 
 class Command(BaseCommand):
@@ -65,8 +68,9 @@ class Command(BaseCommand):
         self.stdout.write(f"Konta: {', '.join(LOGINY_DEMO)} (hasło: {HASLO}). Logowanie: /logowanie/")
 
     def _hr_partner(self, prac):
-        """Fakty do pokazu HR partnera, z datami względem bieżącej daty systemowej."""
-        dzis = zegar.dzis()
+        """Fakty do pokazu HR partnera, datowane względem stałego dnia DZIEN_DANYCH_HR (scenariusz w DEMO.md),
+        niezależnie od dnia wczytania danych."""
+        dzis = DZIEN_DANYCH_HR
         anna, piotr, jan = prac["oceniajaca"], prac["piotr"], prac["oceniany"]
         ZdarzenieZadania.objects.filter(pracownik__in=[piotr, jan]).delete()
         wpisy = [

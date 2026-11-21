@@ -2,22 +2,21 @@
   {% if podpowiedzi_rozwoju %}
     <h3>Część rozwojowa · podpowiedzi z katalogu urzędu</h3>
     <p class="cicho">Propozycje z katalogu działań rozwojowych (rules/rozwoj.yaml), bez AI. Nic nie trafia do arkusza samo: „Wstaw” dopisuje propozycję do pola wniosków jako punkt wyjścia, który przeredagowujesz po rozmowie (§ 11 ust. 2).</p>
-    {% for p in podpowiedzi_rozwoju %}
-      {% if p.rodzaj == "rozwoj" %}
-        <div class="podpowiedz-rozwoj">
-          <p><strong>{{ p.nazwa }}</strong> ({{ p.punkty }} pkt) · obszar do rozwoju: propozycje do wniosków IPRZ</p>
-          <ul>
-            {% for d in p.dzialania %}
-              <li>{{ d.forma|capfirst }}: {{ d.opis }}
-                <button type="button" class="drugorzedny maly" data-wstaw-iprz="{{ d.do_iprz }}">Wstaw do wniosków IPRZ</button></li>
-            {% endfor %}
-          </ul>
-        </div>
-      {% else %}
-        <div class="podpowiedz-mocna">
-          <p><strong>{{ p.nazwa }}</strong> ({{ p.punkty }} pkt) · mocna strona: {{ p.wskazowka }}</p>
-        </div>
-      {% endif %}
-    {% endfor %}
+    {% for p in podpowiedzi_rozwoju %}{% if p.rodzaj == "rozwoj" %}
+      <div class="podpowiedz-rozwoj">
+        <p><strong>{{ p.nazwa }}</strong> ({{ p.punkty }} pkt) · obszar do rozwoju: propozycje do wniosków IPRZ</p>
+        <ul>
+          {% for d in p.dzialania %}
+            <li>{{ d.forma|capfirst }}: {{ d.opis }}
+              <button type="button" class="drugorzedny maly" data-wstaw-iprz="{{ d.do_iprz }}">Wstaw do wniosków IPRZ</button></li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}{% endfor %}
+    {% if podpowiedzi_mocne %}
+      <details class="podpowiedz-mocna"><summary><strong>Mocne strony ({{ podpowiedzi_mocne|length }})</strong>: jak je wykorzystać</summary>
+        <ul>{% for p in podpowiedzi_mocne %}<li><strong>{{ p.nazwa }}</strong> ({{ p.punkty }} pkt): {{ p.wskazowka }}</li>{% endfor %}</ul>
+      </details>
+    {% endif %}
   {% endif %}
 </section>

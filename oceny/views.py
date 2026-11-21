@@ -238,6 +238,7 @@ def _kontekst_oceny(request, ocena, czastkowe=None, bledy=None, **pola):
         "skala": rules.load(ocena.wersja_regul)["punktacja"]["skala_czastkowa"],
         "wynik": ocena.podglad_wyniku(czastkowe),
         "podpowiedzi_rozwoju": rozwoj.podpowiedzi(ocena.wszystkie_kryteria(), czastkowe),
+        "podpowiedzi_mocne": [p for p in rozwoj.podpowiedzi(ocena.wszystkie_kryteria(), czastkowe) if p["rodzaj"] == "mocna"],
         "bledy_pol": bledy or {},
         "pola": ocena.domyslne_pola() | {"miejscowosc": _miejscowosc(ocena.oceniajacy)}
                 | {k: v for k, v in pola.items() if v not in (None, "")},

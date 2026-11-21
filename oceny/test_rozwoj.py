@@ -55,7 +55,7 @@ class RozwojWFormularzuTest(TestCase):
         self.assertContains(r, 'hx-swap-oob="true"')
         self.assertContains(r, "propozycje do wniosków IPRZ")
         self.assertContains(r, "data-wstaw-iprz=\"Rzetelność: ")
-        self.assertContains(r, "mocna strona:")
+        self.assertContains(r, "Mocne strony (1)")
         self.assertContains(r, "ocena negatywna")
 
     def test_system_nie_wpisuje_wnioskow_sam(self):
