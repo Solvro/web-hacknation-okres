@@ -5,7 +5,7 @@
 <h1>Mój dobrostan i rozwój</h1>
 <p class="hr">Tu widzisz wszystkie dane o Tobie, które bierze pod uwagę wirtualny HR partner, i to, co z nich wynika. Nie przetwarzamy przyczyn nieobecności (np. danych o zdrowiu), tylko fakt nieobecności usprawiedliwionej. Sygnały nie trafiają do oceny okresowej ani do kadr, a decyzje zawsze podejmują ludzie.</p>
 <h2>Sygnały, które widzi Twój przełożony</h2>
-{% for s in sygnaly %}<article class="hr" style="margin-bottom:.5rem"><strong>{{ s.tytul }}</strong> · pytanie do rozmowy: „{{ s.pytanie }}”<ul>{% for z in s.zrodla %}<li>{{ z }}</li>{% endfor %}</ul></article>{% empty %}<p>Brak.</p>{% endfor %}
+{% for s in sygnaly %}<article class="hr" style="margin-bottom:.5rem"><strong>{{ s.tytul }}</strong> · pytanie do rozmowy: „{{ s.pytanie }}”{% if s.uwaga %}<br><span class="cicho">{{ s.uwaga }}</span>{% endif %}<ul>{% for z in s.zrodla %}<li>{{ z }}</li>{% endfor %}</ul></article>{% empty %}<p>Brak.</p>{% endfor %}
 <h2>Uzgodnienia z przełożonym</h2>
 {% for u in uzgodnienia %}{% include "partner/_uzgodnienie.html" with moje=True %}{% empty %}<p>Brak.</p>{% endfor %}
 <h2>Docenienia</h2>

@@ -33,6 +33,19 @@ sygnaly:
     pytanie: "Jaki był skutek tego działania dla zespołu lub interesantów?"
     obszar: kultura doceniania
     dzialania: [docenienie]
+  mozliwy_spadek_zaangazowania:
+    # Wskazówka do rozmowy, nie diagnoza: dwa niezależne warunki, każdy z własnymi źródłami.
+    obszar: motywacja
+    pytanie: "Co w obecnych zadaniach daje Ci satysfakcję, a co ją odbiera?"
+    uwaga: "To nie jest ocena ani diagnoza. Brak wpisów może oznaczać brak czasu albo potrzeby, a nie spadek zaangażowania."
+    dzialania: [rozmowa_wspierajaca, informacja_zwrotna, mentoring, szkolenie]
+    nieskuteczne_uzgodnienie:  # uzgodnione działanie oznaczone „nie pomogło”
+      okno_dni: 60  # od daty sprawdzenia efektu
+      tytul: "Możliwy spadek zaangażowania: uzgodnione działanie „{dzialanie}” nie pomogło"
+    zadania_bez_osiagniec:  # rosnąca liczba zadań przy długim braku zgłoszonych osiągnięć
+      okno_dni: 90
+      min_nowych_zadan: 5
+      tytul: "Możliwy spadek zaangażowania: {n} nowych zadań w {dni} dni bez zgłoszonego osiągnięcia"
 
 dzialania:
   odciazenie: {nazwa: "Odciążenie: przekazanie lub przesunięcie zadania", opis: "Uzgodnij, które zadanie przechodzi do innej osoby albo dostaje późniejszy termin."}

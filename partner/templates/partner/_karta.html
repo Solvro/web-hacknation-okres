@@ -6,6 +6,7 @@
       <strong>{{ s.tytul }}</strong> <span class="znacznik">{{ s.obszar }}</span>
       <details><summary>Zdarzenia źródłowe ({{ s.zrodla|length }})</summary><ul>{% for z in s.zrodla %}<li>{{ z }}</li>{% endfor %}</ul></details>
       <p>Pytanie do rozmowy: <em>„{{ s.pytanie }}”</em></p>
+      {% if s.uwaga %}<p class="cicho">{{ s.uwaga }}</p>{% endif %}
       {% if s.rodzaj == "osiagniecie_bez_docenienia" %}
         <form hx-post="{% url 'partner:docen' k.p.pk %}" hx-target="#karta-{{ k.p.pk }}" hx-swap="outerHTML">
           <input type="hidden" name="obserwacja" value="{{ s.obserwacja_id }}">

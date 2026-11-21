@@ -9,7 +9,7 @@ from datetime import timedelta
 
 from oceny import zegar
 from oceny.models import Nieobecnosc, Obserwacja, Ocena, Pracownik, Urzad
-from partner.models import ZdarzenieZadania
+from partner.models import Uzgodnienie, ZdarzenieZadania
 
 # Dane wyłącznie syntetyczne. Hasło jest jawne, więc komenda działa tylko w trybie demo.
 HASLO = "demo"
@@ -78,6 +78,12 @@ class Command(BaseCommand):
         ]
         for p, dni, rodzaj, opis in wpisy:
             ZdarzenieZadania.objects.create(pracownik=p, autor=anna.user, data=dzis - timedelta(days=dni), rodzaj=rodzaj, opis=opis)
+        # Wcześniejsze uzgodnienie Piotra, które nie pomogło (sygnał „możliwy spadek zaangażowania”)
+        Uzgodnienie.objects.filter(pracownik=piotr, sygnal="seed:priorytety").delete()
+        Uzgodnienie.objects.create(pracownik=piotr, autor=anna.user, sygnal="seed:priorytety", dzialanie="priorytety",
+                                   ustalenie="Lista priorytetów na sierpień uzgadniana w poniedziałki.",
+                                   data=dzis - timedelta(days=95), data_sprawdzenia=dzis - timedelta(days=50),
+                                   wynik="nie_pomoglo", notatka_z_wyniku="Priorytety zmieniały się w trakcie tygodnia.")
         ocena_jana = Ocena.objects.filter(oceniany=jan.user).first()
         if ocena_jana and not ocena_jana.obserwacje.exists():
             Obserwacja.objects.create(ocena=ocena_jana, autor=jan.user, data=dzis - timedelta(days=20), kryterium="wspolpraca",

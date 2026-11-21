@@ -87,3 +87,63 @@ class HRPartnerTest(TestCase):
 def obserwacja_id_lookup(s):
     from oceny.models import Obserwacja
     return Obserwacja.objects.get(pk=s.obserwacja_id)
+
+
+@override_settings(OKRES_DEMO=True)
+class SpadekZaangazowaniaTest(TestCase):
+    def setUp(self):
+        from oceny.models import Ocena, Pracownik
+
+        ZegarDemo(data=DZIS).save()
+        self.anna_u = User.objects.create_user("anna")
+        self.anna = Pracownik.objects.create(user=self.anna_u, stanowisko="Naczelniczka", rodzaj_stanowiska="kierujacy")
+        self.ewa_u = User.objects.create_user("ewa")
+        self.ewa = Pracownik.objects.create(user=self.ewa_u, stanowisko="Specjalistka", rodzaj_stanowiska="pozostale",
+                                            przelozony=self.anna)
+        self.ocena = Ocena.objects.create(arkusz="C", oceniany=self.ewa_u, oceniajacy=self.anna_u,
+                                          poczatek_okresu=date(2025, 1, 2))
+
+    def sygnaly(self):
+        return [s for s in sygnaly.dla_pracownika(self.ewa) if s.rodzaj == "mozliwy_spadek_zaangazowania"]
+
+    def uzgodnienie(self, ustalenie, data, sprawdzenie):
+        return Uzgodnienie.objects.create(pracownik=self.ewa, autor=self.anna_u, sygnal="k", dzialanie="odciazenie",
+                                          ustalenie=ustalenie, data=data, data_sprawdzenia=sprawdzenie)
+
+    def test_uzgodnienie_nie_pomoglo_daje_sygnal_ze_zrodlami(self):
+        u = self.uzgodnienie("Rejestr przejmuje Jan.", DZIS - timedelta(days=30), DZIS - timedelta(days=5))
+        self.assertEqual(self.sygnaly(), [])
+        u.zapisz_wynik(self.anna_u, "nie_pomoglo", "Nadal zaległości")
+        [s] = self.sygnaly()
+        self.assertIn("nie pomogło", s.tytul)
+        self.assertIn("Nadal zaległości", s.zrodla[1])
+        self.assertIn("ani diagnoza", s.uwaga)
+        self.assertNotIn("zdrow", " ".join(s.zrodla).lower())
+
+    def test_stare_nieskuteczne_uzgodnienie_poza_oknem(self):
+        u = self.uzgodnienie("x", DZIS - timedelta(days=90), DZIS - timedelta(days=61))
+        u.zapisz_wynik(self.anna_u, "nie_pomoglo")
+        self.assertEqual(self.sygnaly(), [])
+
+    def test_wiele_nowych_zadan_bez_osiagniec(self):
+        for d in (80, 60, 40, 20):
+            ZdarzenieZadania.objects.create(pracownik=self.ewa, autor=self.anna_u, data=DZIS - timedelta(days=d),
+                                            rodzaj="nowe_zadanie", opis=f"Zadanie {d}")
+        self.assertEqual(self.sygnaly(), [])  # 4 zadania: poniżej progu
+        ZdarzenieZadania.objects.create(pracownik=self.ewa, autor=self.anna_u, data=DZIS - timedelta(days=10),
+                                        rodzaj="nowe_zadanie", opis="Zadanie 10")
+        [s] = self.sygnaly()
+        self.assertIn("5 nowych zadań w 90 dni", s.tytul)
+        self.assertEqual(s.zrodla[-1], "Brak zgłoszonych osiągnięć w systemie")
+        # Zgłoszone osiągnięcie w oknie wygasza sygnał
+        self.ocena.dodaj_obserwacje(self.ewa_u, DZIS - timedelta(days=3), "Uporządkowałam rejestr.")
+        self.assertEqual(self.sygnaly(), [])
+
+    def test_uzgodnienie_zamyka_sygnal(self):
+        for d in (80, 60, 40, 20, 10):
+            ZdarzenieZadania.objects.create(pracownik=self.ewa, autor=self.anna_u, data=DZIS - timedelta(days=d),
+                                            rodzaj="nowe_zadanie", opis=f"Zadanie {d}")
+        [s] = self.sygnaly()
+        Uzgodnienie.zapisz(self.anna_u, self.ewa, s.klucz, "rozmowa_wspierajaca", "Rozmowa 1:1 co dwa tygodnie.",
+                           DZIS + timedelta(days=14))
+        self.assertEqual(self.sygnaly(), [])

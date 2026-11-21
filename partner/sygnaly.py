@@ -23,6 +23,7 @@ class Sygnal:
     dzialania: list[tuple[str, str]]
     zrodla: list[str] = field(default_factory=list)
     obserwacja_id: int | None = None
+    uwaga: str = ""
 
 
 def _dzialania(kody):
@@ -63,6 +64,33 @@ def _osiagniecia(pracownik, cfg, dzis):
     return wynik
 
 
+def _zaangazowanie(pracownik, cfg, dzis) -> list[Sygnal]:
+    """Możliwy spadek zaangażowania: tylko fakty z dziennika i uzgodnień, bez ocen osoby i bez danych o zdrowiu."""
+    wynik = []
+    c = cfg["nieskuteczne_uzgodnienie"]
+    od = dzis - timedelta(days=c["okno_dni"])
+    for u in pracownik.uzgodnienia.filter(wynik="nie_pomoglo", data_sprawdzenia__gt=od, data_sprawdzenia__lte=dzis):
+        zrodla = [f"{u.data:%d.%m.%Y}: uzgodniono „{u.dzialanie_nazwa}”: {u.ustalenie}",
+                  f"{u.data_sprawdzenia:%d.%m.%Y}: sprawdzenie efektu: nie pomogło" + (f" ({u.notatka_z_wyniku})" if u.notatka_z_wyniku else "")]
+        wynik.append(Sygnal(f"zaangazowanie:uzgodnienie:{u.pk}", "mozliwy_spadek_zaangazowania",
+                            c["tytul"].format(dzialanie=u.dzialanie_nazwa), cfg["pytanie"], cfg["obszar"],
+                            _dzialania(cfg["dzialania"]), zrodla, uwaga=cfg["uwaga"]))
+    c = cfg["zadania_bez_osiagniec"]
+    od = dzis - timedelta(days=c["okno_dni"])
+    nowe = list(pracownik.zdarzenia_zadan.filter(rodzaj="nowe_zadanie", data__gt=od, data__lte=dzis).order_by("data"))
+    osiagniecia = Obserwacja.objects.filter(ocena__oceniany=pracownik.user, autor=pracownik.user, data__gt=od, data__lte=dzis)
+    if len(nowe) >= c["min_nowych_zadan"] and not osiagniecia.exists():
+        ostatnie = (Obserwacja.objects.filter(ocena__oceniany=pracownik.user, autor=pracownik.user, data__lte=dzis)
+                    .order_by("-data").first())
+        zrodla = [f"{z.data:%d.%m.%Y}: nowe zadanie: {z.opis}" for z in nowe]
+        zrodla.append(f"Ostatnie zgłoszone osiągnięcie: {ostatnie.data:%d.%m.%Y}" if ostatnie
+                      else "Brak zgłoszonych osiągnięć w systemie")
+        wynik.append(Sygnal(f"zaangazowanie:zadania:{nowe[-1].pk}", "mozliwy_spadek_zaangazowania",
+                            c["tytul"].format(n=len(nowe), dni=c["okno_dni"]), cfg["pytanie"], cfg["obszar"],
+                            _dzialania(cfg["dzialania"]), zrodla, uwaga=cfg["uwaga"]))
+    return wynik
+
+
 def dla_pracownika(pracownik) -> list[Sygnal]:
     dzis = zegar.dzis()
     cfg = reguly.sygnaly()
@@ -72,5 +100,6 @@ def dla_pracownika(pracownik) -> list[Sygnal]:
         _powrot(pracownik, cfg["powrot_po_nieobecnosci"], dzis),
     ) if s]
     wynik += _osiagniecia(pracownik, cfg["osiagniecie_bez_docenienia"], dzis)
+    wynik += _zaangazowanie(pracownik, cfg["mozliwy_spadek_zaangazowania"], dzis)
     obsluzone = set(pracownik.uzgodnienia.values_list("sygnal", flat=True))
     return [s for s in wynik if s.klucz not in obsluzone]

@@ -125,6 +125,13 @@ W pakiecie można zmienić bez kodu: kryteria i ich opisy, przypisanie do arkusz
 - Uprawnienia sprawdza serwer przy każdym widoku i pobraniu pliku. Oceniany i oceniający widzą swoje sprawy, kadry wszystkie, DG sprawy ze sprzeciwem. Notatek i danych HR nie widzą ani kadry, ani DG.
 - HR partner nie przetwarza przyczyn nieobecności, tylko fakt i okres. Nie podejmuje decyzji, a jego sygnały nie trafiają do oceny ani do kadr.
 
+## Dane HR partnera: zakres, podstawa i retencja
+
+- **Zakres.** Dziennik zadań (nowe zadanie, zmiana priorytetu lub terminu, przekazanie, zakończenie), uzgodnione działania z datą sprawdzenia i wynikiem, perspektywa pracownika, docenienia, osiągnięcia zgłoszone przez pracownika oraz fakt i okres nieobecności usprawiedliwionej. Bez przyczyn nieobecności, danych o zdrowiu (art. 9 RODO), ocen nastroju i profilowania.
+- **Kto widzi.** Bezpośredni przełożony i pracownik, którego dane dotyczą. Pracownik widzi te same zdarzenia źródłowe i sygnały co przełożony („Mój dobrostan i rozwój”). Kadry i DG nie mają dostępu, a sygnały nie trafiają do oceny okresowej ani statystyk.
+- **Podstawa (propozycja do potwierdzenia z IOD urzędu).** Art. 6 ust. 1 lit. c RODO w związku z obowiązkami pracodawcy dotyczącymi organizacji pracy i rozwoju zawodowego (art. 94 Kodeksu pracy) oraz z indywidualnym programem rozwoju zawodowego (art. 108 ustawy o służbie cywilnej). Sygnały są wskazówką do rozmowy, a nie zautomatyzowaną decyzją (art. 22 RODO).
+- **Retencja (propozycja).** Dziennik zadań i uzgodnienia przechowujemy przez bieżący i jeden poprzedni okres oceny, a potem usuwamy. Do akt osobowych nie trafiają. Prototyp nie usuwa danych automatycznie. Zadanie retencji w schedulerze i okres przechowywania ustalony z IOD należą do planu pilotażu.
+
 ## Co jest zamockowane lub uproszczone
 
 - **Dane:** wszystkie osoby, urząd i treści są syntetyczne. Materiały partnera służyły tylko do sprawdzenia zgodności pól i nie są w repozytorium.
