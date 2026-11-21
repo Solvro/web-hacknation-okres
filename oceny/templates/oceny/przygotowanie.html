@@ -1,7 +1,10 @@
 {% extends "oceny/base.html" %}
 {% block tytul %}{{ r.nazwa }}{% endblock %}
 {% block tresc %}
-<p><a href="{% url 'oceny:szczegoly' ocena.pk %}">← Wróć do sprawy</a> · <a href="#" onclick="window.print();return false">Drukuj</a></p>
+<div class="akcje akcje-druku">
+  <a href="{% url 'oceny:szczegoly' ocena.pk %}#{% if rodzaj == 'oceniajaca' %}ocena{% else %}kryteria{% endif %}">{% include "oceny/_ikona.html" with ikona="wstecz" %} Otwórz sprawę</a>
+  <button class="drugorzedny" type="button" data-drukuj>Drukuj przygotowanie</button>
+</div>
 <h1>{{ r.nazwa }} · {{ ocena.oceniany.get_full_name }}</h1>
 <p><strong>Cel:</strong> {{ r.cel }} <span class="cicho">({{ r.podstawa }})</span></p>
 <h2>Agenda (zagadnienia wymagane przepisami)</h2>

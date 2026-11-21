@@ -110,6 +110,7 @@ h3 { font-size: 1.05rem; margin-bottom: .65rem; }
 .powrot { display: inline-block; font-size: .9rem; font-weight: 650; margin: 0 0 .65rem; }
 .akcje, .filtry { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem .9rem; }
 .akcje { font-size: .9rem; }
+.akcje-druku { margin-bottom: 1rem; }
 .filtry { gap: .3rem; margin: 1rem 0; }
 .filtry a {
   background: var(--tlo);
@@ -194,7 +195,7 @@ button:hover, .przycisk:hover { background: #154e87; }
 .drugorzedny:hover { background: #eaf2fb; color: var(--glowny); }
 button:disabled { cursor: wait; opacity: .65; }
 label { display: block; margin: .7rem 0; font-size: .94rem; font-weight: 600; }
-input[type=text], input[type=date], input[type=password], select, textarea {
+input[type=text], input[type=date], input[type=time], input[type=password], select, textarea {
   background: #fff;
   color: var(--tekst);
   font: inherit;
@@ -395,7 +396,7 @@ details > :last-child:not(summary) { margin-bottom: 0; }
     to { opacity: 1; transform: translateY(0); }
   }
 }
-@media print { .demo, .gora, .pomin, button, form, details, .filtry { display: none !important; } }
+@media print { .demo, .gora, .pomin, button, form, details, .filtry, .akcje-druku { display: none !important; } }
 
 /* Część rozwojowa oceny (podpowiedzi z katalogu rules/rozwoj.yaml) */
 .karta-rozwoj:empty { display: none; }

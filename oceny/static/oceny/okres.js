@@ -90,3 +90,7 @@ document.addEventListener("change", function (event) {
 document.addEventListener("htmx:load", function (event) {
   event.target.querySelectorAll("[data-wybor-kryteriow]").forEach(odswiezDostepneKryteria);
 });
+
+document.addEventListener("click", function (event) {
+  if (event.target.closest("[data-drukuj]")) window.print();
+});

@@ -86,7 +86,19 @@ class SchedulerTest(TestCase):
         tresc = r.content.decode()
         self.assertEqual(r["Content-Type"], "text/calendar; charset=utf-8")
         self.assertIn("DTSTART;TZID=Europe/Warsaw:20261201T093000", tresc)
+        self.assertRegex(tresc, r"DTSTAMP:\d{8}T\d{6}Z\r\n")
         self.assertIn("SUMMARY:Spotkanie z przełożonym", tresc)
         self.assertNotIn("ocen", tresc.split("SUMMARY:")[1].split("\r\n")[0].lower())
         self.client.force_login(self.jan)
         self.assertEqual(self.client.get(reverse("oceny:zaproszenie_ics", args=[o.pk]), {"data": "2026-12-01"}).status_code, 403)
+
+    def test_nieprawidlowa_godzina_zaproszenia(self):
+        o = Ocena.objects.get(oceniany=self.jan)
+        self.client.force_login(self.anna)
+        url = reverse("oceny:zaproszenie_ics", args=[o.pk])
+        for godzina in ("", "24:00", "29:00", "12:60", "10:00+02:00"):
+            with self.subTest(godzina=godzina):
+                self.assertContains(
+                    self.client.get(url, {"data": "2026-12-01", "godzina": godzina}),
+                    "Podaj poprawną datę i godzinę spotkania", status_code=400,
+                )

@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -81,10 +81,12 @@ def zaproszenie_ics(request, pk):
     ocena = _ocena_dla(request, pk)
     if ocena.oceniajacy_id != request.user.id:
         raise PermissionDenied("Zaproszenie wysyła oceniający.")
+    data = request.GET.get("data", "")
+    godzina = request.GET.get("godzina", "10:00")
     try:
-        start = datetime.fromisoformat(f"{request.GET['data']}T{request.GET.get('godzina', '10:00')}")
-    except (KeyError, ValueError):
-        return HttpResponse("Podaj datę i godzinę spotkania.", status=400)
+        start = datetime.strptime(f"{data} {godzina}", "%Y-%m-%d %H:%M")
+    except ValueError:
+        return HttpResponse("Podaj poprawną datę i godzinę spotkania (np. 10:00).", status=400)
     try:
         minuty = max(15, min(240, int(request.GET.get("minuty", 60))))
     except ValueError:
@@ -96,7 +98,7 @@ def zaproszenie_ics(request, pk):
     adresy = [u.email for u in (ocena.oceniany, ocena.oceniajacy) if u.email]
     linie = [
         "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//OKRES//PL", "METHOD:REQUEST", "BEGIN:VEVENT",
-        f"UID:{uid}", f"DTSTAMP:{datetime.now():{fmt}}", f"DTSTART;TZID=Europe/Warsaw:{start:{fmt}}",
+        f"UID:{uid}", f"DTSTAMP:{datetime.now(UTC):{fmt}}Z", f"DTSTART;TZID=Europe/Warsaw:{start:{fmt}}",
         f"DTEND;TZID=Europe/Warsaw:{koniec:{fmt}}", "SUMMARY:Spotkanie z przełożonym",
         "DESCRIPTION:Szczegóły w systemie OKRES po zalogowaniu.",
         *[f"ATTENDEE;RSVP=TRUE:mailto:{a}" for a in adresy], "END:VEVENT", "END:VCALENDAR",
