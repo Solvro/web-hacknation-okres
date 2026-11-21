@@ -21,11 +21,11 @@
       {% if user.is_authenticated %}
         {% with trasa=request.resolver_match.url_name obszar=request.resolver_match.namespace %}
           <nav aria-label="Główna">
-            <a href="{% url 'oceny:moje_sprawy' %}"{% if obszar == 'oceny' and trasa != 'statystyki' %} aria-current="{% if trasa == 'moje_sprawy' %}page{% else %}true{% endif %}"{% endif %}>Moje sprawy</a>
-            {% if user.pracownik.podwladni.exists %}<a href="{% url 'partner:zespol' %}"{% if trasa == 'zespol' and obszar == 'partner' %} aria-current="page"{% endif %}>Zespół · HR partner</a>{% endif %}
-            {% if user.pracownik %}<a href="{% url 'partner:moje' %}"{% if trasa == 'moje' and obszar == 'partner' %} aria-current="page"{% endif %}>Mój dobrostan i rozwój</a>{% endif %}
-            {% if moze_statystyki %}<a href="{% url 'oceny:statystyki' %}"{% if trasa == 'statystyki' %} aria-current="page"{% endif %}>Statystyki</a>{% endif %}
-            {% if user.is_staff %}<a href="{% url 'admin:index' %}">Panel kadr</a>{% endif %}
+            <a href="{% url 'oceny:moje_sprawy' %}"{% if obszar == 'oceny' and trasa != 'statystyki' %} aria-current="{% if trasa == 'moje_sprawy' %}page{% else %}true{% endif %}"{% endif %}>{% include "oceny/_ikona.html" with ikona="lista" %} Moje sprawy</a>
+            {% if user.pracownik.podwladni.exists %}<a href="{% url 'partner:zespol' %}"{% if trasa == 'zespol' and obszar == 'partner' %} aria-current="page"{% endif %}>{% include "oceny/_ikona.html" with ikona="zespol" %} Zespół · HR partner</a>{% endif %}
+            {% if user.pracownik %}<a href="{% url 'partner:moje' %}"{% if trasa == 'moje' and obszar == 'partner' %} aria-current="page"{% endif %}>{% include "oceny/_ikona.html" with ikona="serce" %} Mój dobrostan i rozwój</a>{% endif %}
+            {% if moze_statystyki %}<a href="{% url 'oceny:statystyki' %}"{% if trasa == 'statystyki' %} aria-current="page"{% endif %}>{% include "oceny/_ikona.html" with ikona="wykres" %} Statystyki</a>{% endif %}
+            {% if user.is_staff %}<a href="{% url 'admin:index' %}">{% include "oceny/_ikona.html" with ikona="teczka" %} Panel kadr</a>{% endif %}
           </nav>
         {% endwith %}
         <div class="konto">

@@ -4,12 +4,12 @@
 <div class="naglowek-strony statystyki-naglowek">
   <div><h1>Statystyki ocen okresowych</h1>
     <p class="cicho">Stan na {{ dzis|date:"d.m.Y" }}. Podsumowanie formalnego procesu ocen.</p></div>
-  <a class="przycisk drugorzedny" href="?format=csv">Pobierz CSV</a>
+  <a class="przycisk drugorzedny" href="?format=csv">{% include "oceny/_ikona.html" with ikona="pobierz" %} Pobierz CSV</a>
 </div>
 <dl class="naglowek-sprawy statystyki-karty">
   <div><dt>Sprawy w systemie</dt><dd>{{ liczba_spraw }}</dd></div>
-  <div><dt>Po terminie</dt><dd>{{ po_terminie }}</dd></div>
-  <div><dt>Termin w ciągu 30 dni</dt><dd>{{ w_30_dni }}</dd></div>
+  <div class="statystyka-zalegle"><dt>{% include "oceny/_ikona.html" with ikona="alert" %} Po terminie</dt><dd>{{ po_terminie }}</dd></div>
+  <div class="statystyka-termin"><dt>{% include "oceny/_ikona.html" with ikona="kalendarz" %} Termin w ciągu 30 dni</dt><dd>{{ w_30_dni }}</dd></div>
   <div><dt>Oceny pozytywne / negatywne</dt><dd>{{ pozytywne }} / {{ negatywne }}</dd></div>
   <div><dt>Wnioski o kolejny stopień</dt><dd>{{ wnioski_o_stopien }}</dd></div>
   <div><dt>Sprzeciwy</dt><dd>{{ sprzeciwy }}</dd></div>

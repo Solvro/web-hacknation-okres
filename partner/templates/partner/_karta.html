@@ -2,19 +2,22 @@
   <h2>{{ k.p.imie_nazwisko }} <span class="cicho">{{ k.p.stanowisko }}</span></h2>
   {% for pole, komunikat in k.bledy.items %}<p role="alert">{{ komunikat }}</p>{% endfor %}
   {% for s in k.sygnaly %}
-    <article class="hr" style="margin-bottom:.75rem">
-      <strong>{{ s.tytul }}</strong> <span class="znacznik">{{ s.obszar }}</span>
+    <article class="hr sygnal-hr">
+      <h3>{% include "oceny/_ikona.html" with ikona="notatka" %} {{ s.tytul }}</h3> <span class="znacznik">{{ s.obszar }}</span>
       <details><summary>Zdarzenia źródłowe ({{ s.zrodla|length }})</summary><ul>{% for z in s.zrodla %}<li>{{ z }}</li>{% endfor %}</ul></details>
       <p>Pytanie do rozmowy: <em>„{{ s.pytanie }}”</em></p>
       {% if s.uwaga %}<p class="cicho">{{ s.uwaga }}</p>{% endif %}
       {% if s.rodzaj == "osiagniecie_bez_docenienia" %}
+        <details class="dzialanie-hr"><summary>{% include "oceny/_ikona.html" with ikona="serce" %} Dodaj docenienie</summary>
         <form hx-post="{% url 'partner:docen' k.p.pk %}" hx-target="#karta-{{ k.p.pk }}" hx-swap="outerHTML">
           <input type="hidden" name="obserwacja" value="{{ s.obserwacja_id }}">
           <label>Za co doceniasz <textarea name="za_co" rows="2" required></textarea></label>
           <label>Jaki był skutek <input type="text" name="skutek"></label>
           <button type="submit">Doceń</button>
         </form>
+        </details>
       {% else %}
+        <details class="dzialanie-hr"><summary>{% include "oceny/_ikona.html" with ikona="sprawdz" %} Ustal działanie</summary>
         <form hx-post="{% url 'partner:uzgodnij' k.p.pk %}" hx-target="#karta-{{ k.p.pk }}" hx-swap="outerHTML">
           <input type="hidden" name="sygnal" value="{{ s.klucz }}">
           <label>Uzgodnione działanie <select name="dzialanie">{% for kod, nazwa in s.dzialania %}<option value="{{ kod }}">{{ nazwa }}</option>{% endfor %}</select></label>
@@ -22,6 +25,7 @@
           <label>Kiedy sprawdzicie efekt <input type="date" name="data_sprawdzenia" required></label>
           <button type="submit">Zapisz uzgodnienie</button>
         </form>
+        </details>
       {% endif %}
     </article>
   {% empty %}

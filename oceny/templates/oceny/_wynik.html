@@ -1,7 +1,11 @@
 <output id="wynik" aria-live="polite">
   {% if wynik %}
     Średnia {{ wynik.srednia_wyswietlana }} · poziom: {{ wynik.poziom_nazwa }} ·
-    <strong>ocena {% if wynik.pozytywna %}pozytywna{% else %}negatywna{% endif %}</strong>
+    {% if wynik.pozytywna %}
+      <strong class="znacznik etap-zakonczona">{% include "oceny/_ikona.html" with ikona="sprawdz" %} ocena pozytywna</strong>
+    {% else %}
+      <strong class="znacznik etap-sprzeciw">{% include "oceny/_ikona.html" with ikona="alert" %} ocena negatywna</strong>
+    {% endif %}
     {% if not wynik.pozytywna %}<br>Ocena negatywna wymaga uzasadnienia (§ 11 ust. 3).{% endif %}
   {% else %}
     Wynik pojawi się po przyznaniu wszystkich ocen cząstkowych.

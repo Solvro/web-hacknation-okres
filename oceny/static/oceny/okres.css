@@ -57,6 +57,9 @@ a:hover { text-decoration-thickness: 2px; }
 .znak img { flex: none; }
 .gora nav { display: flex; gap: .2rem; flex: 1 1 auto; flex-wrap: wrap; }
 .gora nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
   color: #e0eafb;
   text-decoration: none;
   border-radius: .55rem;
@@ -65,6 +68,7 @@ a:hover { text-decoration-thickness: 2px; }
   font-weight: 600;
 }
 .gora nav a:hover, .gora nav a[aria-current] { background: #284662; color: #fff; }
+.gora nav a[aria-current] .ikona { color: var(--mieta); }
 .gora nav a[aria-current] { box-shadow: inset 0 -2px var(--mieta); }
 .gora :focus-visible { outline-color: var(--mieta); }
 .konto { display: flex; gap: .6rem; align-items: center; margin-left: auto; font-size: .85rem; }
@@ -229,6 +233,10 @@ ul[role=alert] { padding-inline-start: 2rem; }
 .statystyki-naglowek { display: flex; justify-content: space-between; flex-wrap: wrap; align-items: center; gap: .4rem 1rem; }
 .statystyki-naglowek p { margin: 0; }
 .statystyki-karty { grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr)); }
+.statystyki-karty .statystyka-zalegle { background: #fff4f6; }
+.statystyki-karty .statystyka-zalegle dd { color: var(--blad); }
+.statystyki-karty .statystyka-termin { background: #fffaed; }
+.statystyki-karty .statystyka-termin dd { color: var(--demo); }
 .statystyki-karty dd { font-size: 1.65rem; line-height: 1.2; color: var(--granat); font-variant-numeric: tabular-nums; }
 .statystyki-uklad { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 27rem), 1fr)); gap: 1rem; align-items: start; }
 .statystyki-uklad > section { margin: 0; }
@@ -308,11 +316,27 @@ summary:hover { background: #eef4fc; }
 .tabela-punktacji :is(td, th) { overflow-wrap: break-word; }
 .tabela-punktacji :is(td, th):not(:first-child) { text-align: center; width: clamp(1.8rem, 5vw, 3.25rem); padding-inline: .15rem; }
 .tabela-punktacji input { margin-inline: 0; }
+.zakres-dat { display: flex; flex-wrap: wrap; gap: 0 1rem; }
+.zakres-dat label { flex: 0 1 12rem; }
+#wynik { display: block; padding: .65rem .8rem; margin-top: .65rem; background: #eef4fc; border-radius: .65rem; color: var(--granat); }
+#wynik small { color: var(--potw-tekst); }
+.dane-wniosku { display: grid; }
+.dane-wniosku > div { min-height: 0; overflow: clip; }
+@supports selector(:has(*)) {
+  .dane-wniosku { grid-template-rows: 0fr; visibility: hidden; }
+  #pole-wniosek_stopien:has([value="tak"]:checked) > .dane-wniosku { grid-template-rows: 1fr; visibility: visible; }
+}
 details > :last-child:not(summary) { margin-bottom: 0; }
 .rachunek li { margin: .2rem 0; }
 .cicho { color: var(--potw-tekst); font-size: .875rem; }
 .po-terminie { color: var(--blad); font-size: .85rem; font-weight: 750; }
 .karta-hr { border-top: 3px solid var(--hr); }
+.sygnal-hr { margin-bottom: .75rem; border: 1px solid #c3e2de; }
+.sygnal-hr h3 { display: inline; color: #124c4a; }
+.sygnal-hr .znacznik { background: #cce8e4; color: #124c4a; }
+.sygnal-hr p { margin-block: .45rem; }
+.dzialanie-hr { border: 1px solid #a6cfcb; padding: .15rem .6rem; border-radius: .6rem; background: #fff; }
+.partner .dane-hr { margin-top: 1rem; }
 .karta-hr h2 .cicho { display: block; margin-top: .25rem; font-weight: 500; letter-spacing: normal; }
 .partner main > p.hr { border-left: 3px solid var(--hr); margin-bottom: 1.25rem; }
 
@@ -359,6 +383,9 @@ details > :last-child:not(summary) { margin-bottom: 0; }
   button:active, .przycisk:active { transform: translateY(1px); }
   summary::after { transition: transform .18s ease; }
   input, textarea, select { transition: border-color .16s, box-shadow .16s; }
+  .dane-wniosku { transition: grid-template-rows .18s ease, visibility .18s; }
+  .konta-lista .ikona { transition: transform .16s; }
+  .konta-lista button:hover .ikona { transform: translateX(.2rem); }
   .powiadomienia li { transition: opacity .14s, transform .14s; }
   .powiadomienia li.htmx-swapping { opacity: 0; transform: translateX(.3rem); }
   .lista-spraw tr, .sprawa-link { transition: background-color .16s, color .16s; }
