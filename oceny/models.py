@@ -91,6 +91,38 @@ class Nieobecnosc(models.Model):
         if self.od and self.do and self.do < self.od:
             raise ValidationError({"do": "Koniec nieobecności nie może poprzedzać jej początku."})
 
+    # U3: dodanie, zmiana albo usunięcie nieobecności może przesunąć termin oceny (art. 81 ust. 7).
+    # Strony dostają powiadomienie z nowym terminem; rachunek pokazuje „Jak obliczono termin?”.
+
+    def _sprawy_w_toku(self):
+        return list(Ocena.objects.filter(oceniany_id=self.pracownik.user_id, sporzadzona_at__isnull=True,
+                                         anulowana_powod=""))
+
+    @staticmethod
+    def _powiadom_o_zmianach(przed: dict):
+        for ocena, stary in przed.items():
+            nowy = ocena.termin_oceny
+            if stary and nowy and nowy != stary:
+                ocena._powiadom([ocena.oceniany, ocena.oceniajacy],
+                                f"Termin oceny zmienił się z {stary:%d.%m.%Y} na {nowy:%d.%m.%Y} po aktualizacji okresów "
+                                "nieobecności usprawiedliwionej (art. 81 ust. 7). Rachunek: „Jak obliczono termin?”.",
+                                f"termin_nieobecnosc:{ocena.pk}:{stary:%Y%m%d}:{nowy:%Y%m%d}", termin=nowy)
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        sprawy = self._sprawy_w_toku()
+        przed = {o: o.termin_oceny for o in sprawy}
+        super().save(*args, **kwargs)
+        self._powiadom_o_zmianach(przed)
+
+    @transaction.atomic
+    def delete(self, *args, **kwargs):
+        sprawy = self._sprawy_w_toku()
+        przed = {o: o.termin_oceny for o in sprawy}
+        wynik = super().delete(*args, **kwargs)
+        self._powiadom_o_zmianach(przed)
+        return wynik
+
 
 class Ocena(models.Model):
     arkusz = models.CharField(max_length=1, choices=[("A", "A"), ("B", "B"), ("C", "C")])
@@ -529,6 +561,12 @@ class Ocena(models.Model):
         self.sporzadzona_at = timezone.now()
         self.data_sporzadzenia = zegar.dzis()
         self.save()
+        if self.wniosek_stopien == "tak":
+            # Art. 89 ust. 1: o przyznaniu kolejnego stopnia na wniosek z oceny rozstrzyga dyrektor generalny.
+            self._powiadom(self._dg_i_kadry(),
+                           f"Wniosek o przyznanie {(self.stopien_sluzbowy or 0) + 1}. stopnia służbowego w ocenie z "
+                           f"{self.data_sporzadzenia:%d.%m.%Y}: {self.oceniany.get_full_name()} (art. 89 ust. 1)",
+                           f"wniosek_stopien:{self.pk}:{self.wersja}", termin=None)
 
     # § 12 i art. 83 ustawy: zapoznanie i sprzeciw
 
@@ -614,10 +652,19 @@ class Ocena(models.Model):
         return ZdarzenieKadrowe.objects.create(ocena=self, kto=kto, rodzaj=rodzaj, data=data, opis=opis,
                                                podstawa=podstawa, dane=dane)
 
-    def _powiadom(self, odbiorcy, tresc, klucz):
+    def _powiadom(self, odbiorcy, tresc, klucz, termin=...):
+        termin = self.termin_oceny if termin is ... else termin
         for u in odbiorcy:
             Przypomnienie.objects.get_or_create(klucz=f"{klucz}:{u.pk}", defaults=dict(
-                ocena=self, odbiorca=u, tresc=tresc, termin=self.termin_oceny, utworzone=zegar.dzis()))
+                ocena=self, odbiorca=u, tresc=tresc, termin=termin, utworzone=zegar.dzis()))
+
+    def _dg_i_kadry(self) -> list:
+        """Dyrektor generalny i komórka kadrowa, bez stron tej oceny."""
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        odbiorcy = User.objects.filter(models.Q(pracownik__dyrektor_generalny=True) | models.Q(is_staff=True), is_active=True)
+        return list(odbiorcy.exclude(pk__in=(self.oceniany_id, self.oceniajacy_id)).distinct())
 
     @transaction.atomic
     def zmien_oceniajacego(self, kto, nowy, data, powod: str = ""):

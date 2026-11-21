@@ -48,3 +48,69 @@ class CeleIOczekiwaniaTest(TestCase):
         z = self.o.zmiana_stanowiska(kadry, date(2025, 4, 1))
         self.assertEqual(self.o.cele_i_oczekiwania, "")
         self.assertEqual(z.dane["poprzednie"]["cele_i_oczekiwania"], "Stare cele.")
+
+
+@override_settings(OKRES_DEMO=True)
+class PowiadomieniaTest(TestCase):
+    def setUp(self):
+        ZegarDemo(data=date(2026, 11, 23)).save()
+        self.anna = User.objects.create_user("anna", first_name="Anna", last_name="Syntetyczna")
+        self.jan = User.objects.create_user("jan", first_name="Jan", last_name="Testowy")
+        self.kadry = User.objects.create_user("kadry", is_staff=True)
+        self.dg = User.objects.create_user("dg", first_name="Dorota", last_name="Generalna")
+        Pracownik.objects.create(user=self.dg, stanowisko="Dyrektor generalny", rodzaj_stanowiska="kierujacy",
+                                 dyrektor_generalny=True)
+        self.prac = Pracownik.objects.create(user=self.jan, stanowisko="Starszy specjalista", rodzaj_stanowiska="pozostale",
+                                             urzednik=True, rok_mianowania=2019, stopien_sluzbowy=2,
+                                             data_stopnia=date(2021, 5, 4))
+        self.o = Ocena.objects.create(oceniany=self.jan, oceniajacy=self.anna, poczatek_okresu=date(2025, 3, 16))
+
+    def test_wniosek_o_stopien_powiadamia_dg_i_kadry(self):
+        self.o.zatwierdz_kryteria(date(2025, 3, 20))
+        self.o.potwierdz_kryteria()
+        komplet = {k: 7 for k in self.o.wszystkie_kryteria()}
+        self.o.sporzadz(komplet, date(2026, 11, 23), "", "Kurs", poprz_ocena="brak", wniosek_stopien="tak",
+                        umotywowanie_wniosku="Prowadzi wdrożenie nowych procedur.")
+        odbiorcy = set(self.o.przypomnienia.filter(klucz__startswith="wniosek_stopien").values_list("odbiorca__username",
+                                                                                                    flat=True))
+        self.assertEqual(odbiorcy, {"dg", "kadry"})
+        tresc = self.o.przypomnienia.get(odbiorca=self.dg, klucz__startswith="wniosek_stopien").tresc
+        self.assertIn("3. stopnia służbowego", tresc)
+        self.assertIn("art. 89 ust. 1", tresc)
+        self.client.force_login(self.dg)  # DG widzi sprawę, o której dostał powiadomienie
+        self.assertEqual(self.client.get(reverse("oceny:szczegoly", args=[self.o.pk])).status_code, 200)
+
+    def test_bez_wniosku_bez_powiadomienia_i_dg_nie_widzi_sprawy(self):
+        self.o.zatwierdz_kryteria(date(2025, 3, 20))
+        self.o.potwierdz_kryteria()
+        self.o.sporzadz({k: 7 for k in self.o.wszystkie_kryteria()}, date(2026, 11, 23), "", "Kurs",
+                        poprz_ocena="brak", wniosek_stopien="nie")
+        self.assertFalse(self.o.przypomnienia.filter(klucz__startswith="wniosek_stopien").exists())
+        self.client.force_login(self.dg)
+        self.assertEqual(self.client.get(reverse("oceny:szczegoly", args=[self.o.pk])).status_code, 404)
+
+    def test_nieobecnosc_przesuwajaca_termin_powiadamia_strony(self):
+        from .models import Nieobecnosc
+
+        self.assertEqual(self.o.termin_oceny, date(2027, 3, 16))
+        Nieobecnosc.objects.create(pracownik=self.prac, od=date(2026, 10, 5), do=date(2026, 10, 16))
+        self.assertFalse(self.o.przypomnienia.exists())  # 12 dni: termin bez zmian
+        n = Nieobecnosc.objects.create(pracownik=self.prac, od=date(2026, 10, 19), do=date(2026, 11, 6))
+        p = self.o.przypomnienia.filter(klucz__startswith="termin_nieobecnosc")
+        self.assertEqual(set(p.values_list("odbiorca__username", flat=True)), {"jan", "anna"})
+        self.assertIn("z 16.03.2027 na 19.04.2027", p.first().tresc)
+        self.assertEqual(p.first().termin, date(2027, 4, 19))
+        n.save()  # ponowny zapis bez zmiany: bez duplikatów
+        self.assertEqual(p.count(), 2)
+        n.delete()  # usunięcie przywraca termin: nowe powiadomienie
+        self.assertTrue(self.o.przypomnienia.filter(tresc__contains="z 19.04.2027 na 16.03.2027").exists())
+
+    def test_nieobecnosc_nie_dotyczy_sporzadzonej_oceny(self):
+        from .models import Nieobecnosc
+
+        self.o.zatwierdz_kryteria(date(2025, 3, 20))
+        self.o.potwierdz_kryteria()
+        self.o.sporzadz({k: 5 for k in self.o.wszystkie_kryteria()}, date(2026, 11, 23), "", "Kurs",
+                        poprz_ocena="brak", wniosek_stopien="nie")
+        Nieobecnosc.objects.create(pracownik=self.prac, od=date(2026, 9, 1), do=date(2026, 10, 30))
+        self.assertFalse(self.o.przypomnienia.filter(klucz__startswith="termin_nieobecnosc").exists())

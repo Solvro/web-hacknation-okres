@@ -24,12 +24,13 @@ def _jest_dg(user) -> bool:
 
 
 def _sprawy_widoczne(user):
-    """Oceniany i oceniający widzą swoje sprawy, kadry wszystkie (akta osobowe), DG sprawy ze sprzeciwem."""
+    """Oceniany i oceniający widzą swoje sprawy, kadry wszystkie (akta osobowe), DG sprawy ze sprzeciwem,
+    z wnioskiem o kolejny stopień służbowy (art. 89) i te, o których dostał powiadomienie."""
     if user.is_staff:
         return Ocena.objects.all()
     warunek = Q(oceniany=user) | Q(oceniajacy=user)
     if _jest_dg(user):
-        warunek |= Q(sprzeciwy__isnull=False)
+        warunek |= Q(sprzeciwy__isnull=False) | Q(wniosek_stopien="tak") | Q(przypomnienia__odbiorca=user)
     return Ocena.objects.filter(warunek).distinct()
 
 
