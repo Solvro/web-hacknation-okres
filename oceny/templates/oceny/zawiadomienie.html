@@ -1,0 +1,15 @@
+{% load static %}<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><title>Zawiadomienie o zmianie terminu oceny</title>
+<link rel="stylesheet" href="{% static 'oceny/wydruk.css' %}"></head>
+<body>
+<div class="pasek"><button type="button" onclick="window.print()">Drukuj / zapisz jako PDF</button><a href="{% url 'oceny:szczegoly' ocena.pk %}">Wróć do sprawy</a></div>
+<div class="arkusz">
+  <p style="text-align:right">{{ urzad.miejscowosc }}, {{ z.data|date:"d.m.Y" }}</p>
+  <p>{{ urzad.nazwa }}</p>
+  <p style="margin-left:55%">Pani/Pan<br><strong>{{ ocena.oceniany.get_full_name }}</strong><br>{{ ocena.oceniany.pracownik.stanowisko }}</p>
+  <h1>Zawiadomienie o zmianie terminu sporządzenia oceny okresowej</h1>
+  <p>Na podstawie § 8 rozporządzenia Prezesa Rady Ministrów z dnia 4 kwietnia 2016 r. w sprawie warunków i sposobu przeprowadzania ocen okresowych urzędników służby cywilnej i pracowników służby cywilnej (Dz. U. poz. 470) zawiadamiam, że termin sporządzenia oceny okresowej {% if stary %}wyznaczony na dzień {{ stary|date:"d.m.Y" }} {% endif %}został zmieniony na dzień <strong>{{ nowy|date:"d.m.Y" }}</strong>.</p>
+  <p>Podstawa zmiany: {{ z.opis }}</p>
+  <p>Kopię niniejszego pisma dołącza się do arkusza oceny okresowej.</p>
+  <div class="podpisy" style="margin-top:20mm"><div></div><div></div><div><div class="wartosc">{{ z.kto.get_full_name }}</div><div class="opis">podpis oceniającego</div></div></div>
+</div></body></html>

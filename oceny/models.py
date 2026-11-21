@@ -1,3 +1,4 @@
+from datetime import timedelta
 from decimal import ROUND_HALF_UP, Decimal
 
 from django.conf import settings
@@ -100,6 +101,10 @@ class Ocena(models.Model):
     kryteria_dodatkowe = models.JSONField(default=list, blank=True)
     wersja = models.PositiveSmallIntegerField(default=1, help_text="2 = ocena sporządzona po raz drugi po sprzeciwie.")
     anulowana_powod = models.CharField(max_length=300, blank=True)
+    # Zdarzenia kadrowe: terminy ustalone poza regułą podstawową (z podstawą w ZdarzenieKadrowe)
+    termin_oceny_zmieniony = models.DateField(null=True, blank=True)
+    termin_kryteriow_zmieniony = models.DateField(null=True, blank=True)
+    najwczesniej_sporzadzenia = models.DateField(null=True, blank=True)
     # Część I: rozmowa z § 5 ust. 1, potwierdzenie oceniającego, potem ocenianego (§ 6)
     data_rozmowy_rozpoczynajacej = models.DateField(null=True, blank=True)
     kryteria_zatwierdzone_at = models.DateTimeField(null=True, blank=True)
@@ -159,7 +164,16 @@ class Ocena(models.Model):
     def po_negatywnej(self) -> bool:
         return bool(self.poprzednia and self.poprzednia.pozytywna is False)
 
+    def _ostatnie_zdarzenie(self, *rodzaje):
+        return self.zdarzenia_kadrowe.filter(rodzaj__in=rodzaje).order_by("-pk").first()
+
     def rachunek_kryteriow(self) -> terminy.Rachunek | None:
+        if self.termin_kryteriow_zmieniony:
+            z = self._ostatnie_zdarzenie("zmiana_stanowiska")
+            return terminy.Rachunek(self.termin_kryteriow_zmieniony, (
+                terminy.Krok("Zmiana stanowiska z istotną zmianą obowiązków", z.data if z else self.termin_kryteriow_zmieniony),
+                terminy.Krok("+ 30 dni na ponowne ustalenie kryteriów i rozmowę", self.termin_kryteriow_zmieniony,
+                             "§ 9 ust. 1 rozporządzenia")))
         cfg = rules.load(self.wersja_regul)["terminy"]
         if self.po_negatywnej:
             return terminy.rachunek_dniowy(self.poprzednia.data_sporzadzenia, cfg["kryteria_po_negatywnej_dni"],
@@ -170,6 +184,16 @@ class Ocena(models.Model):
                                        f"Początek okresu oceny ({self.get_podstawa_poczatku_display()})", "§ 7 ust. 1 rozporządzenia")
 
     def rachunek_oceny(self) -> terminy.Rachunek | None:
+        if self.termin_oceny_zmieniony:
+            z = self._ostatnie_zdarzenie("zmiana_terminu", "zmiana_stanowiska")
+            bazowy = self._rachunek_oceny_bazowy()
+            kroki = list(bazowy.kroki) if bazowy else []
+            kroki.append(terminy.Krok(f"Zmiana terminu: {z.opis if z else 'zdarzenie kadrowe'}", self.termin_oceny_zmieniony,
+                                      z.podstawa if z else ""))
+            return terminy.Rachunek(self.termin_oceny_zmieniony, tuple(kroki))
+        return self._rachunek_oceny_bazowy()
+
+    def _rachunek_oceny_bazowy(self) -> terminy.Rachunek | None:
         cfg = rules.load(self.wersja_regul)["terminy"]
         if self.po_negatywnej:
             if not self.poprzednia.zapoznany:
@@ -381,7 +405,10 @@ class Ocena(models.Model):
             bledy["okres"] = "Okres podlegania ocenie: data „od” nie może być późniejsza niż „do”, a „do” nie może być z przyszłości."
         elif self.poczatek_okresu and od < self.poczatek_okresu:
             bledy["okres"] = "Okres podlegania ocenie nie może zaczynać się przed początkiem okresu oceny."
-        if self.po_negatywnej and (r := self.rachunek_oceny()) and zegar.dzis() < r.termin:
+        if self.najwczesniej_sporzadzenia and zegar.dzis() < self.najwczesniej_sporzadzenia:
+            bledy["termin"] = (f"Przy zmianie stanowiska ocenę sporządza się nie wcześniej niż 7 dni przed zmianą "
+                               f"(§ 9 ust. 2), tj. od {self.najwczesniej_sporzadzenia:%d.%m.%Y}.")
+        if self.po_negatywnej and not self.termin_oceny_zmieniony and (r := self.rachunek_oceny()) and zegar.dzis() < r.termin:
             bledy["termin"] = (f"Ponowną ocenę po ocenie negatywnej sporządza się po upływie 6 miesięcy od zapoznania "
                                f"(art. 81 ust. 9), tj. od {r.termin:%d.%m.%Y}.")
         wynik = self.podglad_wyniku(czastkowe)
@@ -529,6 +556,122 @@ class Ocena(models.Model):
         if self.zapoznany:
             wynik["ponowna_ocena"] = terminy.termin_miesieczny(self.data_zapoznania, cfg["ponowna_po_negatywnej_miesiace"])
         return wynik
+
+    # Zdarzenia kadrowe (art. 81 ust. 6 i 8, §§ 8–9 rozporządzenia)
+
+    def data_bazowa_szesciu_miesiecy(self) -> tuple:
+        """Od kiedy liczyć „więcej niż 6 miesięcy”: ostatnia ocena albo, przy pierwszej, ustalenie kryteriów."""
+        if self.poprzednia and self.poprzednia.data_sporzadzenia:
+            return self.poprzednia.data_sporzadzenia, "sporządzenie ostatniej oceny"
+        return (self.data_rozmowy_rozpoczynajacej or self.poczatek_okresu,
+                "ustalenie kryteriów oceny sporządzanej po raz pierwszy")
+
+    def ponad_szesc_miesiecy(self, na_dzien) -> bool:
+        baza, _ = self.data_bazowa_szesciu_miesiecy()
+        return bool(baza) and na_dzien > terminy.dodaj_miesiace(baza, 6)
+
+    def _zdarzenie(self, kto, rodzaj, data, opis, podstawa, **dane):
+        return ZdarzenieKadrowe.objects.create(ocena=self, kto=kto, rodzaj=rodzaj, data=data, opis=opis,
+                                               podstawa=podstawa, dane=dane)
+
+    def _powiadom(self, odbiorcy, tresc, klucz):
+        for u in odbiorcy:
+            Przypomnienie.objects.get_or_create(klucz=f"{klucz}:{u.pk}", defaults=dict(
+                ocena=self, odbiorca=u, tresc=tresc, termin=self.termin_oceny, utworzone=zegar.dzis()))
+
+    @transaction.atomic
+    def zmien_oceniajacego(self, kto, nowy, data, powod: str = ""):
+        if not kto.is_staff:
+            raise PermissionDenied("Zmianę podległości wprowadza komórka kadrowa.")
+        if self.sporzadzona or self.anulowana_powod:
+            raise PermissionDenied("Ocena została już sporządzona.")
+        if nowy.pk in (self.oceniany_id, self.oceniajacy_id):
+            raise ValidationError({"nowy": "Wskaż innego oceniającego niż obecny i niż oceniany."})
+        poprzedni = self.oceniajacy
+        z = self._zdarzenie(kto, "zmiana_oceniajacego", data or zegar.dzis(),
+                            f"Zmiana oceniającego: {poprzedni.get_full_name()} → {nowy.get_full_name()}. {powod}".strip(),
+                            "§ 9 ust. 3 rozporządzenia (ocena według wcześniej wybranych kryteriów)",
+                            poprzedni=poprzedni.pk, nowy=nowy.pk)
+        self.oceniajacy = nowy
+        self.save(update_fields=["oceniajacy"])
+        self._powiadom([self.oceniany, nowy], f"Nowy oceniający: {nowy.get_full_name()}. Kryteria oceny bez zmian.",
+                       f"zdarzenie:{z.pk}")
+        return z
+
+    @transaction.atomic
+    def zmiana_stanowiska(self, kto, data_zmiany, nowe_stanowisko: str = "", rodzaj_stanowiska: str = ""):
+        """UC-26: art. 81 ust. 6 albo § 9 ust. 1 — rozgałęzienie według progu sześciu miesięcy."""
+        if not kto.is_staff:
+            raise PermissionDenied("Zmianę stanowiska wprowadza komórka kadrowa.")
+        if self.sporzadzona or self.anulowana_powod:
+            raise PermissionDenied("Ocena została już sporządzona.")
+        if not data_zmiany:
+            raise ValidationError({"data_zmiany": "Podaj datę zmiany stanowiska."})
+        baza, opis_bazy = self.data_bazowa_szesciu_miesiecy()
+        pracownik = getattr(self.oceniany, "pracownik", None)
+        dane = {}
+        if pracownik and (nowe_stanowisko or rodzaj_stanowiska):
+            pracownik.stanowisko = nowe_stanowisko or pracownik.stanowisko
+            pracownik.rodzaj_stanowiska = rodzaj_stanowiska or pracownik.rodzaj_stanowiska
+            pracownik.save()
+        if self.ponad_szesc_miesiecy(data_zmiany):
+            self.termin_oceny_zmieniony = terminy.termin_dniowy(data_zmiany, 30)
+            self.najwczesniej_sporzadzenia = data_zmiany - timedelta(days=7)
+            self.save(update_fields=["termin_oceny_zmieniony", "najwczesniej_sporzadzenia"])
+            wariant = (f"od {opis_bazy} ({baza:%d.%m.%Y}) upłynęło więcej niż 6 miesięcy: ocenę sporządza się "
+                       f"między {self.najwczesniej_sporzadzenia:%d.%m.%Y} a {self.termin_oceny_zmieniony:%d.%m.%Y}")
+            podstawa = "art. 81 ust. 6 ustawy, § 9 ust. 2 rozporządzenia"
+        else:
+            # Ponowne czynności z §§ 5–6; termin oceny bez zmian. Dotychczasowe kryteria zostają w zdarzeniu.
+            dane["poprzednie"] = {"kryteria_dodatkowe": self.kryteria_dodatkowe, "arkusz": self.arkusz}
+            self.kryteria_zatwierdzone_at = self.kryteria_potwierdzone_at = None
+            self.data_zatwierdzenia_kryteriow = self.data_potwierdzenia_kryteriow = None
+            self.data_rozmowy_rozpoczynajacej = None
+            if pracownik:
+                self.arkusz = pracownik.arkusz
+            if set(self.kryteria_dodatkowe) - rules.extra_criteria(self.arkusz, self.wersja_regul).keys():
+                self.kryteria_dodatkowe = []
+            self.termin_kryteriow_zmieniony = terminy.termin_dniowy(data_zmiany, 30)
+            self.save()
+            wariant = (f"w okresie 6 miesięcy od {opis_bazy} ({baza:%d.%m.%Y}): ponowne ustalenie kryteriów i rozmowa "
+                       f"do {self.termin_kryteriow_zmieniony:%d.%m.%Y}, termin oceny bez zmian")
+            podstawa = "§ 9 ust. 1 rozporządzenia"
+        z = self._zdarzenie(kto, "zmiana_stanowiska", data_zmiany, f"Zmiana stanowiska {data_zmiany:%d.%m.%Y}; {wariant}",
+                            podstawa, **dane)
+        self._powiadom([self.oceniany, self.oceniajacy], f"Zmiana stanowiska: {wariant}.", f"zdarzenie:{z.pk}")
+        return z
+
+    PODSTAWY_ZMIANY_TERMINU = {
+        "1": "zmiana na stanowisku oceniającego w trakcie okresu oceny (art. 81 ust. 8 pkt 1)",
+        "2": "przewidywana dłuższa usprawiedliwiona nieobecność ocenianego (art. 81 ust. 8 pkt 2)",
+        "3": "przewidywana dłuższa usprawiedliwiona nieobecność oceniającego (art. 81 ust. 8 pkt 3)",
+        "4": "wniosek ocenianego o zmianę terminu (art. 81 ust. 8 pkt 4)",
+    }
+
+    @transaction.atomic
+    def zmien_termin(self, kto, nowy_termin, podstawa: str, uzasadnienie: str = ""):
+        if kto.id != self.oceniajacy_id:
+            raise PermissionDenied("Termin oceny zmienia oceniający (art. 81 ust. 8).")
+        if self.sporzadzona or self.anulowana_powod:
+            raise PermissionDenied("Ocena została już sporządzona.")
+        if podstawa not in self.PODSTAWY_ZMIANY_TERMINU:
+            raise ValidationError({"podstawa": "Wskaż podstawę zmiany terminu z art. 81 ust. 8."})
+        if not nowy_termin or nowy_termin <= zegar.dzis():
+            raise ValidationError({"nowy_termin": "Nowy termin musi przypadać w przyszłości."})
+        if podstawa == "4" and not self.ponad_szesc_miesiecy(zegar.dzis()):
+            baza, opis = self.data_bazowa_szesciu_miesiecy()
+            raise ValidationError({"podstawa": f"Wniosek ocenianego można uwzględnić, gdy od {opis} ({baza:%d.%m.%Y}) "
+                                               "upłynęło więcej niż 6 miesięcy (art. 81 ust. 8 pkt 4)."})
+        stary = self.termin_oceny
+        self.termin_oceny_zmieniony = nowy_termin
+        self.save(update_fields=["termin_oceny_zmieniony"])
+        z = self._zdarzenie(kto, "zmiana_terminu", zegar.dzis(),
+                            f"{self.PODSTAWY_ZMIANY_TERMINU[podstawa]}. {uzasadnienie}".strip(),
+                            "art. 81 ust. 8 ustawy, § 8 rozporządzenia (zawiadomienie ocenianego)",
+                            stary=stary.isoformat() if stary else None, nowy=nowy_termin.isoformat())
+        self._powiadom([self.oceniany], f"Zmiana terminu oceny na {nowy_termin:%d.%m.%Y}. Zawiadomienie (§ 8) w sprawie.",
+                       f"zdarzenie:{z.pk}")
+        return z
 
     @property
     def sprzeciw_biezacy(self) -> "Sprzeciw | None":
@@ -742,3 +885,21 @@ class Przypomnienie(models.Model):
     class Meta:
         verbose_name_plural = "przypomnienia"
         ordering = ["przeczytane", "termin"]
+
+
+class ZdarzenieKadrowe(models.Model):
+    """Zmiana oceniającego, stanowiska albo terminu: z podstawą prawną, do akt i do zawiadomień."""
+
+    RODZAJE = [("zmiana_oceniajacego", "zmiana oceniającego"), ("zmiana_stanowiska", "zmiana stanowiska"),
+               ("zmiana_terminu", "zmiana terminu oceny")]
+    ocena = models.ForeignKey(Ocena, on_delete=models.CASCADE, related_name="zdarzenia_kadrowe")
+    rodzaj = models.CharField(max_length=30, choices=RODZAJE)
+    data = models.DateField()
+    kto = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    opis = models.TextField()
+    podstawa = models.CharField(max_length=200)
+    dane = models.JSONField(default=dict)
+
+    class Meta:
+        verbose_name_plural = "zdarzenia kadrowe"
+        ordering = ["data", "pk"]

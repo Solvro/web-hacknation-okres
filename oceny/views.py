@@ -137,7 +137,7 @@ def _kontekst(request, ocena, bledy=()):
 @login_required
 def szczegoly(request, pk):
     ocena = _ocena_dla(request, pk)
-    return render(request, "oceny/szczegoly.html", _kontekst_oceny(request, ocena))
+    return render(request, "oceny/szczegoly.html", _kontekst_oceny(request, ocena) | _kontekst_kadrowe(request, ocena))
 
 
 @login_required
@@ -419,3 +419,51 @@ def rozpatrz_sprzeciw(request, pk):
         bledy = {k: v[0] for k, v in e.message_dict.items()}
     ocena.refresh_from_db()
     return render(request, "oceny/_ocena.html", _kontekst_oceny(request, ocena) | {"bledy_zapoznania": bledy})
+
+
+@login_required
+@require_POST
+def zdarzenie_kadrowe(request, pk, rodzaj):
+    ocena = _ocena_dla(request, pk)
+    bledy = {}
+    try:
+        if rodzaj == "oceniajacy":
+            from django.contrib.auth.models import User
+            nowy = get_object_or_404(User, pk=_liczba(request.POST.get("nowy")) or 0)
+            ocena.zmien_oceniajacego(request.user, nowy, _data(request.POST.get("data")), request.POST.get("powod", ""))
+        elif rodzaj == "stanowisko":
+            ocena.zmiana_stanowiska(request.user, _data(request.POST.get("data_zmiany")), request.POST.get("stanowisko", ""),
+                                    request.POST.get("rodzaj_stanowiska", ""))
+        elif rodzaj == "termin":
+            ocena.zmien_termin(request.user, _data(request.POST.get("nowy_termin")), request.POST.get("podstawa", ""),
+                               request.POST.get("uzasadnienie", ""))
+        else:
+            raise PermissionDenied("Nieznane zdarzenie.")
+    except ValidationError as e:
+        bledy = {k: v[0] for k, v in e.message_dict.items()}
+    ocena.refresh_from_db()
+    if ocena.oceniajacy_id != request.user.id and not request.user.is_staff:
+        return redirect("oceny:moje_sprawy")
+    return render(request, "oceny/_kadrowe.html", _kontekst_kadrowe(request, ocena, bledy))
+
+
+def _kontekst_kadrowe(request, ocena, bledy=None):
+    from .models import Pracownik
+    baza, opis_bazy = ocena.data_bazowa_szesciu_miesiecy()
+    return _kontekst(request, ocena) | {
+        "bledy_kadrowe": bledy or {},
+        "kandydaci": [p.user for p in Pracownik.objects.select_related("user").exclude(user__in=[ocena.oceniany, ocena.oceniajacy])],
+        "rodzaje_stanowisk": Pracownik.RODZAJE,
+        "podstawy_terminu": ocena.PODSTAWY_ZMIANY_TERMINU,
+        "baza_6m": baza, "opis_bazy_6m": opis_bazy,
+        "jest_kadrami": request.user.is_staff,
+    }
+
+
+@login_required
+def zawiadomienie(request, pk, zdarzenie_pk):
+    """§ 8: pisemne zawiadomienie ocenianego o nowym terminie; kopia do arkusza."""
+    ocena = _ocena_dla(request, pk)
+    z = get_object_or_404(ocena.zdarzenia_kadrowe, pk=zdarzenie_pk, rodzaj="zmiana_terminu")
+    return render(request, "oceny/zawiadomienie.html", {"ocena": ocena, "z": z, "urzad": Urzad.biezacy(),
+                                                         "stary": _data(z.dane.get("stary")), "nowy": _data(z.dane.get("nowy"))})

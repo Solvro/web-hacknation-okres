@@ -31,4 +31,5 @@
 {% include "oceny/_kryteria.html" %}
 {% if jest_oceniajacym or jest_ocenianym %}{% include "oceny/_obserwacje.html" %}{% endif %}
 {% include "oceny/_ocena.html" %}
+{% if jest_kadrami or jest_oceniajacym or jest_ocenianym %}{% include "oceny/_kadrowe.html" %}{% endif %}
 {% endblock %}

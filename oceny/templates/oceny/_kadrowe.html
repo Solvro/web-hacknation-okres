@@ -1,0 +1,42 @@
+<section id="kadrowe">
+  <h2>Sytuacje kadrowe</h2>
+  {% for pole, komunikat in bledy_kadrowe.items %}<p role="alert">{{ komunikat }}</p>{% endfor %}
+  {% with zdarzenia=ocena.zdarzenia_kadrowe.all %}
+    {% if zdarzenia %}<ul>{% for z in zdarzenia %}<li>{{ z.data|date:"d.m.Y" }} · <strong>{{ z.get_rodzaj_display }}</strong>: {{ z.opis }} <span class="cicho">({{ z.podstawa }})</span>
+      {% if z.rodzaj == "zmiana_terminu" %} · <a href="{% url 'oceny:zawiadomienie' ocena.pk z.pk %}">zawiadomienie (§ 8)</a>{% endif %}</li>{% endfor %}</ul>
+    {% else %}<p class="cicho">Brak zdarzeń kadrowych w tej sprawie.</p>{% endif %}
+  {% endwith %}
+  {% if not ocena.sporzadzona and not ocena.anulowana_powod %}
+    <p class="cicho">Próg „więcej niż 6 miesięcy” (art. 81 ust. 6 i 8) liczony od: {{ opis_bazy_6m }} ({{ baza_6m|date:"d.m.Y" }}).</p>
+    {% if jest_oceniajacym %}
+      <details><summary>Zmień termin oceny (art. 81 ust. 8)</summary>
+        <form hx-post="{% url 'oceny:zdarzenie_kadrowe' ocena.pk 'termin' %}" hx-target="#kadrowe" hx-swap="outerHTML">
+          <label>Podstawa <select name="podstawa">{% for k, v in podstawy_terminu.items %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></label>
+          <label>Nowy termin sporządzenia oceny <input type="date" name="nowy_termin" required></label>
+          <label>Uzasadnienie <input type="text" name="uzasadnienie"></label>
+          <button type="submit">Zmień termin i przygotuj zawiadomienie</button>
+        </form>
+      </details>
+    {% endif %}
+    {% if jest_kadrami %}
+      <details><summary>Zmiana oceniającego (§ 9 ust. 3)</summary>
+        <form hx-post="{% url 'oceny:zdarzenie_kadrowe' ocena.pk 'oceniajacy' %}" hx-target="#kadrowe" hx-swap="outerHTML">
+          <label>Nowy oceniający <select name="nowy">{% for u in kandydaci %}<option value="{{ u.pk }}">{{ u.get_full_name|default:u.username }}</option>{% endfor %}</select></label>
+          <label>Data zmiany <input type="date" name="data"></label>
+          <label>Powód <input type="text" name="powod" placeholder="np. zmiana podległości, zastępstwo"></label>
+          <button type="submit">Zapisz zmianę oceniającego</button>
+          <p class="cicho">Kryteria oceny pozostają bez zmian. Prywatne notatki poprzedniego oceniającego zostają u niego.</p>
+        </form>
+      </details>
+      <details><summary>Zmiana stanowiska z istotną zmianą obowiązków (art. 81 ust. 6, § 9)</summary>
+        <form hx-post="{% url 'oceny:zdarzenie_kadrowe' ocena.pk 'stanowisko' %}" hx-target="#kadrowe" hx-swap="outerHTML">
+          <label>Data zmiany stanowiska <input type="date" name="data_zmiany" required></label>
+          <label>Nowe stanowisko <input type="text" name="stanowisko"></label>
+          <label>Rodzaj stanowiska <select name="rodzaj_stanowiska"><option value="">bez zmian</option>{% for k, v in rodzaje_stanowisk %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></label>
+          <button type="submit">Zapisz i wylicz skutek</button>
+          <p class="cicho">Więcej niż 6 miesięcy: ocena między 7 dniami przed a 30 dniami po zmianie. Mniej: ponowne ustalenie kryteriów w 30 dni, termin oceny bez zmian.</p>
+        </form>
+      </details>
+    {% endif %}
+  {% endif %}
+</section>
