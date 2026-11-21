@@ -1,0 +1,8 @@
+{% if rachunek %}
+<ol class="rachunek">
+  {% for k in rachunek.kroki %}<li>{{ k.opis }}: <strong>{{ k.data|date:"d.m.Y" }}</strong>{% if k.podstawa %} <span class="cicho">({{ k.podstawa }})</span>{% endif %}</li>{% endfor %}
+</ol>
+<p>Termin: <strong>{{ rachunek.termin|date:"d.m.Y (l)" }}</strong>. Obliczenie deterministyczne, z pakietu reguł, bez udziału AI.</p>
+{% else %}
+<p>Brak danych do obliczenia terminu.</p>
+{% endif %}

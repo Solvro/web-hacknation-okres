@@ -2,6 +2,7 @@ from datetime import date
 
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.utils import timezone
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
@@ -12,12 +13,13 @@ def ustaw_zegar(d):
     ZegarDemo(data=d).save()
 
 
-@override_settings(DEBUG=True)
+@override_settings(OKRES_DEMO=True)
 class ZapoznanieSprzeciwTest(TestCase):
     def setUp(self):
         self.oceniany = User.objects.create_user("jan.testowy")
         self.oceniajacy = User.objects.create_user("anna.syntetyczna")
-        self.o = Ocena.objects.create(arkusz="C", oceniany=self.oceniany, oceniajacy=self.oceniajacy)
+        self.o = Ocena.objects.create(arkusz="C", oceniany=self.oceniany, oceniajacy=self.oceniajacy, poczatek_okresu=date(2025, 3, 17))
+        self.o.zatwierdz_kryteria(timezone.localdate())
         self.o.potwierdz_kryteria()
         ustaw_zegar(date(2026, 11, 2))  # poniedziałek
         self.komplet = {k: 5 for k in self.o.wszystkie_kryteria()}
@@ -75,7 +77,7 @@ class ZapoznanieSprzeciwTest(TestCase):
         r = self.client.get(reverse("oceny:szczegoly", args=[self.o.pk]))
         self.assertContains(r, "DEMO: zegar systemowy przesunięty")
 
-    @override_settings(DEBUG=False)
-    def test_zegar_ignorowany_poza_trybem_deweloperskim(self):
+    @override_settings(OKRES_DEMO=False)
+    def test_zegar_ignorowany_poza_trybem_demo(self):
         from . import zegar
         self.assertIsNone(zegar.przesunieta())

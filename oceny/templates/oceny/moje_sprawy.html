@@ -1,0 +1,27 @@
+{% extends "oceny/base.html" %}
+{% block tytul %}Moje sprawy{% endblock %}
+{% block tresc %}
+<h1>Moje sprawy</h1>
+<p>
+  {% if filtr == "moje" %}<a href="?">Pokaż wszystkie</a> · <strong>Wymaga mojego działania</strong>
+  {% else %}<strong>Wszystkie</strong> · <a href="?filtr=moje">Wymaga mojego działania</a>{% endif %}
+</p>
+<table>
+  <thead><tr><th>Oceniany</th><th>Arkusz</th><th>Etap</th><th>Następna czynność</th><th>Termin</th><th>Odpowiada</th></tr></thead>
+  <tbody>
+  {% for w in wiersze %}
+    <tr>
+      <td><a href="{% url 'oceny:szczegoly' w.ocena.pk %}">{{ w.ocena.oceniany.get_full_name|default:w.ocena.oceniany }}</a>
+        {% if w.ocena.oceniany.pracownik %}<br><span class="cicho">{{ w.ocena.oceniany.pracownik.stanowisko }}</span>{% endif %}</td>
+      <td>{{ w.ocena.arkusz }}</td>
+      <td>{{ w.ocena.etap_nazwa }}</td>
+      <td>{% if w.krok %}{{ w.krok.opis }}{% if w.krok.moj %} <span class="znacznik moj">Ty</span>{% endif %}{% else %}—{% endif %}</td>
+      <td>{{ w.krok.termin|date:"d.m.Y"|default:"—" }}</td>
+      <td>{{ w.krok.kto.get_full_name|default:"—" }}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="6">Brak spraw.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

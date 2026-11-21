@@ -1,5 +1,6 @@
 from datetime import date
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import Q
@@ -7,19 +8,62 @@ from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 
 from . import rules
-from .models import Ocena
+from .models import Ocena, Urzad, ZegarDemo
+
+
+def kontekst_globalny(request):
+    return {"okres_demo": settings.OKRES_DEMO, "urzad": Urzad.biezacy(), "demo_konta": demo_konta}
+
+
+def _sprawy_widoczne(user):
+    """Oceniany i oceniający widzą swoje sprawy, kadry wszystkie (art. 4 i § 12: akta osobowe)."""
+    if user.is_staff:
+        return Ocena.objects.all()
+    return Ocena.objects.filter(Q(oceniany=user) | Q(oceniajacy=user))
 
 
 def _ocena_dla(request, pk) -> Ocena:
-    # Wgląd mają tylko strony oceny; kadry korzystają z panelu admina.
-    return get_object_or_404(Ocena, Q(oceniany=request.user) | Q(oceniajacy=request.user), pk=pk)
+    return get_object_or_404(_sprawy_widoczne(request.user), pk=pk)
+
+
+@login_required
+def moje_sprawy(request):
+    sprawy = _sprawy_widoczne(request.user).select_related("oceniany__pracownik", "oceniajacy")
+    wiersze = []
+    for o in sprawy:
+        krok = o.nastepny_krok(request.user)
+        wiersze.append({"ocena": o, "krok": krok})
+    if request.GET.get("filtr") == "moje":
+        wiersze = [w for w in wiersze if w["krok"] and w["krok"]["moj"]]
+    wiersze.sort(key=lambda w: (not (w["krok"] and w["krok"]["moj"]), (w["krok"] or {}).get("termin") or date.max))
+    return render(request, "oceny/moje_sprawy.html", {"wiersze": wiersze, "filtr": request.GET.get("filtr", "")})
+
+
+@login_required
+def jak_obliczono(request, pk, rodzaj):
+    ocena = _ocena_dla(request, pk)
+    rachunek = ocena.rachunek_kryteriow() if rodzaj == "kryteria" else ocena.rachunek_oceny()
+    return render(request, "oceny/_rachunek.html", {"rachunek": rachunek})
+
+
+def _miejscowosc(user) -> str:
+    """Miejscowość pracy osoby, a gdy jej brak, siedziba urzędu (schemat pól KPRM)."""
+    p = getattr(user, "pracownik", None)
+    if p and p.miejscowosc_pracy:
+        return p.miejscowosc_pracy
+    urzad = Urzad.biezacy()
+    return urzad.miejscowosc if urzad else ""
 
 
 def _kontekst(request, ocena, bledy=()):
+    maks = rules.load(ocena.wersja_regul)["kryteria_dodatkowe"]["max"]
     return {
         "ocena": ocena,
         "wykaz": rules.extra_criteria(ocena.arkusz, ocena.wersja_regul),
-        "maks": rules.load(ocena.wersja_regul)["kryteria_dodatkowe"]["max"],
+        "obowiazkowe": rules.mandatory_criteria(ocena.arkusz, ocena.wersja_regul),
+        "maks": maks,
+        "sloty": (ocena.kryteria_dodatkowe + [""] * maks)[:maks],
+        "miejscowosc_domyslna": _miejscowosc(ocena.oceniajacy),
         "jest_oceniajacym": ocena.oceniajacy_id == request.user.id,
         "jest_ocenianym": ocena.oceniany_id == request.user.id,
         "bledy": bledy,
@@ -40,10 +84,28 @@ def ustaw_kryteria(request, pk):
         raise PermissionDenied("Kryteria wyznacza oceniający.")
     bledy = ()
     try:
-        ocena.ustaw_kryteria(request.POST.getlist("kryteria"))
+        ocena.ustaw_kryteria([k for k in request.POST.getlist("kryteria") if k])
     except ValidationError as e:
         bledy = e.messages
         ocena.refresh_from_db()
+    return render(request, "oceny/_kryteria.html", _kontekst(request, ocena, bledy))
+
+
+@login_required
+@require_POST
+def zatwierdz_kryteria(request, pk):
+    ocena = _ocena_dla(request, pk)
+    if ocena.oceniajacy_id != request.user.id:
+        raise PermissionDenied("Rozmowę i kryteria zatwierdza oceniający.")
+    try:
+        data_rozmowy = date.fromisoformat(request.POST.get("data_rozmowy", ""))
+    except ValueError:
+        data_rozmowy = None
+    bledy = ()
+    try:
+        ocena.zatwierdz_kryteria(data_rozmowy, request.POST.get("miejscowosc", ""))
+    except ValidationError as e:
+        bledy = e.messages
     return render(request, "oceny/_kryteria.html", _kontekst(request, ocena, bledy))
 
 
@@ -149,3 +211,29 @@ def zloz_sprzeciw(request, pk):
     except ValidationError as e:
         return _zapoznanie(request, ocena, {k: v[0] for k, v in e.message_dict.items()})
     return _zapoznanie(request, ocena)
+
+
+@require_POST
+def demo_zaloguj(request):
+    """Przełącznik ról na pokaz: tylko w trybie demo i tylko na konta utworzone przez seed_demo."""
+    from django.contrib.auth import login
+    from django.contrib.auth.models import User
+    from django.shortcuts import redirect
+
+    from .management.commands.seed_demo import LOGINY_DEMO
+
+    login_demo = request.POST.get("login", "")
+    if not settings.OKRES_DEMO or login_demo not in LOGINY_DEMO:
+        raise PermissionDenied("Szybkie logowanie działa tylko w trybie demo.")
+    login(request, get_object_or_404(User, username=login_demo), backend="django.contrib.auth.backends.ModelBackend")
+    return redirect("oceny:moje_sprawy")
+
+
+def demo_konta():
+    from django.contrib.auth.models import User
+
+    from .management.commands.seed_demo import LOGINY_DEMO
+
+    if not settings.OKRES_DEMO:
+        return []
+    return list(User.objects.filter(username__in=LOGINY_DEMO).select_related("pracownik").order_by("pk"))

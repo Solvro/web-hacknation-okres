@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Korekta, Ocena, Sprzeciw, ZegarDemo
+from .models import Korekta, Nieobecnosc, Ocena, Pracownik, Sprzeciw, Urzad, ZegarDemo
 
 
 class KorektaInline(admin.TabularInline):
@@ -21,9 +21,11 @@ class OcenaAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         # Pola zablokowane zmienia się tylko metodą korekty (z powodem i śladem), nie przez zwykły zapis formularza.
-        zawsze = ["srednia", "poziom", "pozytywna", "sporzadzona_at", "kryteria_potwierdzone_at", "wersja_regul"]
-        if obj and obj.kryteria_zablokowane:
-            zawsze += ["arkusz", "oceniany", "oceniajacy", "kryteria_dodatkowe"]
+        zawsze = ["srednia", "poziom", "pozytywna", "sporzadzona_at", "kryteria_potwierdzone_at", "wersja_regul",
+                  "kryteria_zatwierdzone_at", "data_zatwierdzenia_kryteriow", "data_potwierdzenia_kryteriow"]
+        if obj and obj.kryteria_zatwierdzone:
+            zawsze += ["arkusz", "oceniany", "kryteria_dodatkowe", "data_rozmowy_rozpoczynajacej", "miejscowosc_czesc_i",
+                       "poczatek_okresu", "podstawa_poczatku", "poprzednia"]
         if obj and obj.sporzadzona:
             zawsze += ["oceny_czastkowe", "data_rozmowy_oceniajacej", "uzasadnienie", "wnioski_iprz", "data_sporzadzenia"]
         if obj and obj.zapoznany:
@@ -53,3 +55,21 @@ class SprzeciwAdmin(admin.ModelAdmin):
 @admin.register(ZegarDemo)
 class ZegarDemoAdmin(admin.ModelAdmin):
     list_display = ("data",)
+
+
+class NieobecnoscInline(admin.TabularInline):
+    model = Nieobecnosc
+    extra = 1
+
+
+@admin.register(Pracownik)
+class PracownikAdmin(admin.ModelAdmin):
+    list_display = ("imie_nazwisko", "stanowisko", "komorka", "arkusz", "przelozony", "urzednik")
+    list_filter = ("rodzaj_stanowiska", "urzednik", "komorka")
+    search_fields = ("user__first_name", "user__last_name", "stanowisko", "komorka")
+    inlines = [NieobecnoscInline]
+
+
+@admin.register(Urzad)
+class UrzadAdmin(admin.ModelAdmin):
+    list_display = ("nazwa", "miejscowosc")

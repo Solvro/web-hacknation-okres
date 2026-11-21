@@ -1,0 +1,21 @@
+{% extends "oceny/base.html" %}
+{% block tytul %}Logowanie{% endblock %}
+{% block tresc %}
+<h1>Logowanie</h1>
+{% if form.errors %}<p role="alert">Nieprawidłowy login lub hasło.</p>{% endif %}
+<form method="post">{% csrf_token %}
+  <label>Login <input type="text" name="username" autocomplete="username" required autofocus></label>
+  <label>Hasło <input type="password" name="password" autocomplete="current-password" required></label>
+  <button type="submit">Zaloguj</button>
+</form>
+{% with konta=demo_konta %}{% if konta %}
+  <h2>Pokaz: wejdź w rolę</h2>
+  <p class="cicho">Konta syntetyczne, dostępne tylko w trybie demonstracyjnym.</p>
+  {% for k in konta %}
+    <form method="post" action="{% url 'demo_zaloguj' %}" style="display:inline-block;margin:.25rem">{% csrf_token %}
+      <input type="hidden" name="login" value="{{ k.username }}">
+      <button class="drugorzedny" type="submit">{{ k.get_full_name }}{% if k.pracownik %} · {{ k.pracownik.stanowisko }}{% endif %}</button>
+    </form>
+  {% endfor %}
+{% endif %}{% endwith %}
+{% endblock %}

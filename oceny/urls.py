@@ -4,6 +4,9 @@ from . import views
 
 app_name = "oceny"
 urlpatterns = [
+    path("", views.moje_sprawy, name="moje_sprawy"),
+    path("<int:pk>/termin/<str:rodzaj>/", views.jak_obliczono, name="jak_obliczono"),
+    path("<int:pk>/kryteria/zatwierdz/", views.zatwierdz_kryteria, name="zatwierdz_kryteria"),
     path("<int:pk>/", views.szczegoly, name="szczegoly"),
     path("<int:pk>/kryteria/", views.ustaw_kryteria, name="ustaw_kryteria"),
     path("<int:pk>/kryteria/potwierdz/", views.potwierdz_kryteria, name="potwierdz_kryteria"),

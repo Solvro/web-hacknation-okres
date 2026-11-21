@@ -1,0 +1,41 @@
+/* OKRES: typografia systemowa, bez zewnętrznych fontów (działa offline). Kontrasty w CONCEPT.md. */
+:root {
+  --tekst: #1A1F29; --tlo: #FFFFFF; --glowny: #0B3A6E; --link: #1A5DAB;
+  --potw-tekst: #4A5363; --potw-tlo: #ECEEF2; --blad: #B3122E; --blad-tlo: #FDECEF;
+  --hr: #0F6B6B; --hr-tlo: #E6F4F3; --demo: #8A4B00; --demo-tlo: #FFF3D6; --ai: #5B3FA0; --ai-tlo: #F1EDFA;
+  --ramka: #C9CED8;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--tekst); background: var(--tlo); }
+a { color: var(--link); }
+:focus-visible { outline: 3px solid var(--glowny); outline-offset: 2px; }
+.demo { background: var(--demo-tlo); color: var(--demo); padding: .4rem 1rem; font-weight: 600; border-bottom: 1px solid #E8C98A; }
+header.gora { display: flex; gap: 1.5rem; align-items: center; padding: .75rem 1rem; border-bottom: 1px solid var(--ramka); }
+header.gora .znak { font-weight: 800; letter-spacing: .12em; color: var(--glowny); text-decoration: none; font-size: 1.25rem; }
+header.gora nav { display: flex; gap: 1rem; flex: 1; }
+header.gora .kto { color: var(--potw-tekst); }
+main { max-width: 1100px; margin: 0 auto; padding: 1rem; }
+h1 { font-size: 1.6rem; margin: .5rem 0 1rem; }
+h2 { font-size: 1.25rem; margin-top: 2rem; }
+section { margin-bottom: 1.5rem; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid var(--ramka); vertical-align: top; }
+th { background: var(--potw-tlo); }
+button, .przycisk { background: var(--glowny); color: #fff; border: 0; padding: .55rem 1rem; border-radius: 4px; font: inherit; cursor: pointer; text-decoration: none; display: inline-block; }
+button.drugorzedny { background: var(--tlo); color: var(--glowny); border: 2px solid var(--glowny); }
+label { display: block; margin: .6rem 0; }
+input[type=text], input[type=date], input[type=password], select, textarea { font: inherit; padding: .4rem; border: 1px solid #8892A3; border-radius: 4px; width: 100%; max-width: 40rem; }
+fieldset { border: 1px solid var(--ramka); border-radius: 4px; }
+.potwierdzone { background: var(--potw-tlo); color: var(--potw-tekst); padding: .75rem 1rem; border-radius: 4px; }
+[role=alert], .blad { background: var(--blad-tlo); color: var(--blad); padding: .75rem 1rem; border-radius: 4px; }
+.hr { background: var(--hr-tlo); color: var(--hr); padding: .75rem 1rem; border-radius: 4px; }
+.ai { background: var(--ai-tlo); color: var(--ai); padding: .75rem 1rem; border-radius: 4px; }
+.znacznik { display: inline-block; padding: 0 .5rem; border-radius: 999px; background: var(--potw-tlo); color: var(--potw-tekst); font-size: .875rem; }
+.znacznik.moj { background: var(--glowny); color: #fff; }
+.naglowek-sprawy { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: .5rem 1.5rem; padding: 1rem; border: 1px solid var(--ramka); border-radius: 4px; }
+.naglowek-sprawy dt { color: var(--potw-tekst); font-size: .875rem; }
+.naglowek-sprawy dd { margin: 0; font-weight: 600; }
+details summary { cursor: pointer; color: var(--link); }
+.rachunek li { margin: .2rem 0; }
+.cicho { color: var(--potw-tekst); font-size: .875rem; }
+@media print { .demo, header.gora, button, form, details { display: none !important; } }

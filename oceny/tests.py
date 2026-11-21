@@ -3,6 +3,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from datetime import date, timedelta
 from fractions import Fraction
 
+from django.utils import timezone
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
 
@@ -14,7 +15,7 @@ class KryteriaDodatkoweTest(TestCase):
     def setUp(self):
         self.oceniany = User.objects.create_user("jan.testowy")
         self.oceniajacy = User.objects.create_user("anna.syntetyczna")
-        self.o = Ocena.objects.create(arkusz="C", oceniany=self.oceniany, oceniajacy=self.oceniajacy)
+        self.o = Ocena.objects.create(arkusz="C", oceniany=self.oceniany, oceniajacy=self.oceniajacy, poczatek_okresu=date(2025, 3, 17))
 
     def test_maks_trzy(self):
         self.o.ustaw_kryteria(["kreatywnosc", "negocjowanie", "wystapienia_publiczne"])
@@ -43,6 +44,7 @@ class KryteriaDodatkoweTest(TestCase):
 
     def test_blokada_po_potwierdzeniu(self):
         self.o.ustaw_kryteria(["kreatywnosc"])
+        self.o.zatwierdz_kryteria(timezone.localdate())
         self.o.potwierdz_kryteria()
         with self.assertRaises(PermissionDenied):
             self.o.ustaw_kryteria(["negocjowanie"])
@@ -64,17 +66,23 @@ class WidokiKryteriowTest(TestCase):
         self.oceniany = User.objects.create_user("jan.testowy")
         self.oceniajacy = User.objects.create_user("anna.syntetyczna")
         self.obcy = User.objects.create_user("obcy")
-        self.o = Ocena.objects.create(arkusz="C", oceniany=self.oceniany, oceniajacy=self.oceniajacy)
+        self.o = Ocena.objects.create(arkusz="C", oceniany=self.oceniany, oceniajacy=self.oceniajacy, poczatek_okresu=date(2025, 3, 17))
         self.url_ustaw = reverse("oceny:ustaw_kryteria", args=[self.o.pk])
         self.url_potwierdz = reverse("oceny:potwierdz_kryteria", args=[self.o.pk])
 
     def test_pelny_przebieg(self):
         self.client.force_login(self.oceniajacy)
-        r = self.client.post(self.url_ustaw, {"kryteria": ["kreatywnosc", "negocjowanie"]})
+        r = self.client.post(self.url_ustaw, {"kryteria": ["kreatywnosc", "negocjowanie", ""]})
         self.assertContains(r, "Kreatywność")
         self.client.force_login(self.oceniany)
+        self.assertEqual(self.client.post(self.url_potwierdz).status_code, 403)  # najpierw oceniający
+        self.client.force_login(self.oceniajacy)
+        r = self.client.post(reverse("oceny:zatwierdz_kryteria", args=[self.o.pk]),
+                             {"data_rozmowy": timezone.localdate().isoformat(), "miejscowosc": "Bydgoszcz"})
+        self.assertContains(r, "Oczekuje na potwierdzenie ocenianego")
+        self.client.force_login(self.oceniany)
         r = self.client.post(self.url_potwierdz)
-        self.assertContains(r, "Potwierdzone przez ocenianego")
+        self.assertContains(r, "Potwierdził oceniany")
         self.client.force_login(self.oceniajacy)
         r = self.client.post(self.url_ustaw, {"kryteria": ["wystapienia_publiczne"]})
         self.assertEqual(r.status_code, 403)
@@ -89,10 +97,12 @@ class WidokiKryteriowTest(TestCase):
         self.assertEqual(self.o.kryteria_dodatkowe, [])
 
     def test_role(self):
+        self.o.zatwierdz_kryteria(timezone.localdate())
         self.client.force_login(self.oceniany)
         self.assertEqual(self.client.post(self.url_ustaw, {"kryteria": ["kreatywnosc"]}).status_code, 403)
         self.client.force_login(self.oceniajacy)
         self.assertEqual(self.client.post(self.url_potwierdz).status_code, 403)
+        self.assertEqual(self.client.post(self.url_ustaw, {"kryteria": ["kreatywnosc"]}).status_code, 403)  # zatwierdzone
         self.client.force_login(self.obcy)
         self.assertEqual(self.client.get(reverse("oceny:szczegoly", args=[self.o.pk])).status_code, 404)
 
@@ -137,8 +147,9 @@ class SporzadzenieTest(TestCase):
     def setUp(self):
         self.oceniany = User.objects.create_user("jan.testowy")
         self.oceniajacy = User.objects.create_user("anna.syntetyczna")
-        self.o = Ocena.objects.create(arkusz="C", oceniany=self.oceniany, oceniajacy=self.oceniajacy)
+        self.o = Ocena.objects.create(arkusz="C", oceniany=self.oceniany, oceniajacy=self.oceniajacy, poczatek_okresu=date(2025, 3, 17))
         self.o.ustaw_kryteria(["kreatywnosc"])
+        self.o.zatwierdz_kryteria(timezone.localdate())
         self.o.potwierdz_kryteria()
         self.komplet = {k: 7 for k in self.o.wszystkie_kryteria()}
 
@@ -171,7 +182,7 @@ class SporzadzenieTest(TestCase):
             self.o.ustaw_kryteria([], korekta_przez=User.objects.create_user("k", is_staff=True), powod="x")
 
     def test_bez_potwierdzenia_kryteriow(self):
-        inna = Ocena.objects.create(arkusz="C", oceniany=self.oceniany, oceniajacy=self.oceniajacy)
+        inna = Ocena.objects.create(arkusz="C", oceniany=self.oceniany, oceniajacy=self.oceniajacy, poczatek_okresu=date(2025, 3, 17))
         komplet = {k: 5 for k in inna.wszystkie_kryteria()}
         self.assertIn("kryteria", inna.bledy_formalne(komplet, date.today(), "", "x"))
 
@@ -180,7 +191,8 @@ class WidokSporzadzeniaTest(TestCase):
     def setUp(self):
         self.oceniany = User.objects.create_user("jan.testowy")
         self.oceniajacy = User.objects.create_user("anna.syntetyczna")
-        self.o = Ocena.objects.create(arkusz="C", oceniany=self.oceniany, oceniajacy=self.oceniajacy)
+        self.o = Ocena.objects.create(arkusz="C", oceniany=self.oceniany, oceniajacy=self.oceniajacy, poczatek_okresu=date(2025, 3, 17))
+        self.o.zatwierdz_kryteria(timezone.localdate())
         self.o.potwierdz_kryteria()
         self.dane = {f"kryterium_{k}": "5" for k in self.o.wszystkie_kryteria()} | {
             "data_rozmowy": date.today().isoformat(), "uzasadnienie": "", "wnioski_iprz": "Kurs z analizy danych"}

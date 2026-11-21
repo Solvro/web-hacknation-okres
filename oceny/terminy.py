@@ -71,11 +71,59 @@ def dluzsza_niz(okres: Okres, miesiace: int) -> bool:
     return okres.do >= dodaj_miesiace(okres.od, miesiace)
 
 
-def termin_oceny(poczatek: date, nieobecnosci: list[Okres] = (), version: str = rules.DOMYSLNA_WERSJA) -> date:
+@dataclass(frozen=True)
+class Krok:
+    opis: str
+    data: date
+    podstawa: str = ""
+
+
+@dataclass(frozen=True)
+class Rachunek:
+    """Termin razem z krokami obliczenia, do pokazania kadrom („Jak obliczono termin?”)."""
+
+    termin: date
+    kroki: tuple[Krok, ...]
+
+
+def _z_przesunieciem(kroki: list[Krok], koniec: date) -> Rachunek:
+    roboczy = przesun_na_roboczy(koniec)
+    if roboczy != koniec:
+        kroki.append(Krok(f"{koniec:%d.%m.%Y} to dzień wolny od pracy, termin przesuwa się na najbliższy dzień roboczy", roboczy,
+                          "zasady liczenia terminów KPRM"))
+    return Rachunek(roboczy, tuple(kroki))
+
+
+def rachunek_terminu_oceny(poczatek: date, nieobecnosci: list[Okres] = (), version: str = rules.DOMYSLNA_WERSJA,
+                           opis_poczatku: str = "Początek okresu oceny") -> Rachunek:
     """Termin oceny okresowej z przedłużeniem o długotrwałe nieobecności (art. 81 ust. 1 i 7)."""
     cfg = rules.load(version)["terminy"]
-    koniec = dodaj_miesiace(poczatek, cfg["okres_oceny_miesiace"])
-    for o in scal_nieobecnosci(list(nieobecnosci)):
-        if o.od <= koniec and dluzsza_niz(o, cfg["nieobecnosc_przedluza_powyzej_miesiecy"]):
+    miesiace = cfg["okres_oceny_miesiace"]
+    koniec = dodaj_miesiace(poczatek, miesiace)
+    kroki = [Krok(opis_poczatku, poczatek), Krok(f"+ {miesiace} miesięcy", koniec, "art. 81 ust. 1 ustawy")]
+    prog = cfg["nieobecnosc_przedluza_powyzej_miesiecy"]
+    for o in scal_nieobecnosci([o for o in nieobecnosci if o.do >= poczatek]):
+        if o.od > koniec:
+            continue
+        if dluzsza_niz(o, prog):
             koniec += timedelta(days=o.dni)
-    return przesun_na_roboczy(koniec)
+            kroki.append(Krok(f"+ {o.dni} dni ciągłej nieobecności usprawiedliwionej {o.od:%d.%m.%Y}–{o.do:%d.%m.%Y} "
+                              f"(dłuższej niż {prog} mies.)", koniec, "art. 81 ust. 7 ustawy"))
+        else:
+            kroki.append(Krok(f"Nieobecność {o.od:%d.%m.%Y}–{o.do:%d.%m.%Y} ({o.dni} dni) nie przekracza {prog} mies., "
+                              "termin bez zmian", koniec, "art. 81 ust. 7 ustawy"))
+    return _z_przesunieciem(kroki, koniec)
+
+
+def rachunek_dniowy(zdarzenie: date, dni: int, opis_zdarzenia: str, podstawa: str) -> Rachunek:
+    koniec = zdarzenie + timedelta(days=dni)
+    return _z_przesunieciem([Krok(opis_zdarzenia, zdarzenie), Krok(f"+ {dni} dni (bez dnia zdarzenia)", koniec, podstawa)], koniec)
+
+
+def rachunek_miesieczny(poczatek: date, miesiace: int, opis_poczatku: str, podstawa: str) -> Rachunek:
+    koniec = dodaj_miesiace(poczatek, miesiace)
+    return _z_przesunieciem([Krok(opis_poczatku, poczatek), Krok(f"+ {miesiace} miesięcy", koniec, podstawa)], koniec)
+
+
+def termin_oceny(poczatek: date, nieobecnosci: list[Okres] = (), version: str = rules.DOMYSLNA_WERSJA) -> date:
+    return rachunek_terminu_oceny(poczatek, nieobecnosci, version).termin

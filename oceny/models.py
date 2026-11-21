@@ -8,13 +8,103 @@ from django.utils import timezone
 from . import punktacja, rules, terminy, zegar
 
 
+class Urzad(models.Model):
+    """Dane urzędu do nagłówka arkusza. Jeden wiersz (pk=1)."""
+
+    nazwa = models.CharField(max_length=300)
+    miejscowosc = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name = verbose_name_plural = "urząd"
+
+    def __str__(self):
+        return self.nazwa
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def biezacy(cls) -> "Urzad | None":
+        return cls.objects.filter(pk=1).first()
+
+
+class Pracownik(models.Model):
+    """Dane kadrowe członka korpusu służby cywilnej (bez danych o zdrowiu i przyczynach nieobecności)."""
+
+    RODZAJE = [
+        ("kierownik_urzedu", "kierownik urzędu (§ 3 ust. 2)"),
+        ("kierujacy", "bezpośrednie kierowanie pracownikami (§ 3 ust. 3)"),
+        ("pozostale", "pozostałe stanowiska (§ 3 ust. 4)"),
+    ]
+    ARKUSZ_DLA_RODZAJU = {"kierownik_urzedu": "A", "kierujacy": "B", "pozostale": "C"}
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="pracownik")
+    komorka = models.CharField("komórka organizacyjna", max_length=200, blank=True)
+    stanowisko = models.CharField(max_length=200)
+    rodzaj_stanowiska = models.CharField(max_length=20, choices=RODZAJE)
+    przelozony = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL, related_name="podwladni")
+    dyrektor_generalny = models.BooleanField(default=False, help_text="Rozpatruje sprzeciwy i widzi statystyki zbiorcze.")
+    urzednik = models.BooleanField("urzędnik służby cywilnej (mianowany)", default=False)
+    rok_mianowania = models.PositiveSmallIntegerField(null=True, blank=True)
+    stopien_sluzbowy = models.PositiveSmallIntegerField(null=True, blank=True)
+    data_stopnia = models.DateField("data przyznania stopnia", null=True, blank=True)
+    miejscowosc_pracy = models.CharField(max_length=100, blank=True)
+
+    class Meta:
+        verbose_name_plural = "pracownicy"
+
+    def __str__(self):
+        return self.imie_nazwisko
+
+    @property
+    def imie_nazwisko(self) -> str:
+        return self.user.get_full_name() or self.user.username
+
+    @property
+    def arkusz(self) -> str:
+        return self.ARKUSZ_DLA_RODZAJU[self.rodzaj_stanowiska]
+
+
+class Nieobecnosc(models.Model):
+    """Okres usprawiedliwionej nieobecności. Celowo bez przyczyny (np. danych o zdrowiu)."""
+
+    pracownik = models.ForeignKey(Pracownik, on_delete=models.CASCADE, related_name="nieobecnosci")
+    od = models.DateField()
+    do = models.DateField()
+
+    class Meta:
+        verbose_name = "nieobecność usprawiedliwiona"
+        verbose_name_plural = "nieobecności usprawiedliwione"
+        ordering = ["od"]
+
+    def clean(self):
+        if self.od and self.do and self.do < self.od:
+            raise ValidationError({"do": "Koniec nieobecności nie może poprzedzać jej początku."})
+
+
 class Ocena(models.Model):
     arkusz = models.CharField(max_length=1, choices=[("A", "A"), ("B", "B"), ("C", "C")])
     wersja_regul = models.CharField(max_length=20, default=rules.DOMYSLNA_WERSJA)
     oceniany = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="oceny_wlasne")
     oceniajacy = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="oceny_sporzadzane")
+    PODSTAWY_POCZATKU = [
+        ("zatrudnienie", "zatrudnienie na czas nieokreślony"),
+        ("mianowanie", "mianowanie"),
+        ("poprzednia_ocena", "poprzednia ocena okresowa"),
+    ]
+    poczatek_okresu = models.DateField("początek okresu oceny", null=True)
+    podstawa_poczatku = models.CharField(max_length=20, choices=PODSTAWY_POCZATKU, default="zatrudnienie")
+    poprzednia = models.OneToOneField("self", null=True, blank=True, on_delete=models.PROTECT, related_name="nastepna",
+                                      help_text="Poprzednia ocena, od której liczy się ten okres.")
     kryteria_dodatkowe = models.JSONField(default=list, blank=True)
+    # Część I: rozmowa z § 5 ust. 1, potwierdzenie oceniającego, potem ocenianego (§ 6)
+    data_rozmowy_rozpoczynajacej = models.DateField(null=True, blank=True)
+    kryteria_zatwierdzone_at = models.DateTimeField(null=True, blank=True)
+    data_zatwierdzenia_kryteriow = models.DateField(null=True, blank=True)
+    miejscowosc_czesc_i = models.CharField(max_length=100, blank=True)
     kryteria_potwierdzone_at = models.DateTimeField(null=True, blank=True)
+    data_potwierdzenia_kryteriow = models.DateField(null=True, blank=True)
 
     # Część II arkusza: {kod kryterium: punkty}
     oceny_czastkowe = models.JSONField(default=dict, blank=True)
@@ -39,8 +129,105 @@ class Ocena(models.Model):
     def __str__(self):
         return f"Ocena {self.pk} · arkusz {self.arkusz} · {self.oceniany}"
 
+    def save(self, *args, **kwargs):
+        # Arkusz wynika ze stanowiska (§ 3), chyba że kadry wskazały go jawnie.
+        if not self.arkusz and hasattr(self.oceniany, "pracownik"):
+            self.arkusz = self.oceniany.pracownik.arkusz
+        super().save(*args, **kwargs)
+
+    # Terminy cyklu (deterministyczne, z rachunkiem do wglądu)
+
+    @property
+    def po_negatywnej(self) -> bool:
+        return bool(self.poprzednia and self.poprzednia.pozytywna is False)
+
+    def rachunek_kryteriow(self) -> terminy.Rachunek | None:
+        cfg = rules.load(self.wersja_regul)["terminy"]
+        if self.po_negatywnej:
+            return terminy.rachunek_dniowy(self.poprzednia.data_sporzadzenia, cfg["kryteria_po_negatywnej_dni"],
+                                           "Sporządzenie oceny negatywnej", "§ 7 ust. 2 rozporządzenia")
+        if not self.poczatek_okresu:
+            return None
+        return terminy.rachunek_dniowy(self.poczatek_okresu, cfg["kryteria_dni"],
+                                       f"Początek okresu oceny ({self.get_podstawa_poczatku_display()})", "§ 7 ust. 1 rozporządzenia")
+
+    def rachunek_oceny(self) -> terminy.Rachunek | None:
+        cfg = rules.load(self.wersja_regul)["terminy"]
+        if self.po_negatywnej:
+            if not self.poprzednia.zapoznany:
+                return None
+            return terminy.rachunek_miesieczny(self.poprzednia.data_zapoznania, cfg["ponowna_po_negatywnej_miesiace"],
+                                               "Zapoznanie z oceną negatywną", "art. 81 ust. 9 ustawy")
+        if not self.poczatek_okresu:
+            return None
+        nieobecnosci = []
+        if hasattr(self.oceniany, "pracownik"):
+            nieobecnosci = [terminy.Okres(n.od, n.do) for n in self.oceniany.pracownik.nieobecnosci.all()]
+        return terminy.rachunek_terminu_oceny(self.poczatek_okresu, nieobecnosci, self.wersja_regul,
+                                              f"Początek okresu oceny ({self.get_podstawa_poczatku_display()})")
+
+    @property
+    def termin_oceny(self):
+        r = self.rachunek_oceny()
+        return r.termin if r else None
+
+    @property
+    def etap(self) -> str:
+        if not self.kryteria_zablokowane:
+            return "kryteria"
+        if not self.sporzadzona:
+            return "ocena"
+        if not self.zapoznany:
+            return "zapoznanie"
+        if self.sprzeciwy.exists():
+            return "sprzeciw"
+        if zegar.dzis() <= self.termin_sprzeciwu:
+            return "termin_sprzeciwu"
+        return "zakonczona"
+
+    ETAPY = {
+        "kryteria": "wyznaczenie kryteriów (część I)",
+        "ocena": "rozmowa oceniająca i ocena (część II)",
+        "zapoznanie": "zapoznanie z oceną",
+        "termin_sprzeciwu": "biegnie termin na sprzeciw",
+        "sprzeciw": "sprzeciw w rozpatrzeniu",
+        "zakonczona": "zakończona",
+    }
+
+    @property
+    def etap_nazwa(self) -> str:
+        return self.ETAPY[self.etap]
+
+    def nastepny_krok(self, user) -> dict | None:
+        """Najbliższa czynność w sprawie: opis, termin, kto odpowiada i czy to zadanie tego użytkownika."""
+        etap = self.etap
+        if etap == "kryteria":
+            r = self.rachunek_kryteriow()
+            termin = r.termin if r else None
+            if self.kryteria_zatwierdzone:
+                opis, kto = "Potwierdź rozmowę i zapoznanie z kryteriami", self.oceniany
+            else:
+                opis, kto = "Przeprowadź rozmowę i wyznacz kryteria", self.oceniajacy
+        elif etap == "ocena":
+            opis, kto, termin = "Przeprowadź rozmowę oceniającą i sporządź ocenę", self.oceniajacy, self.termin_oceny
+        elif etap == "zapoznanie":
+            opis, kto, termin = "Zapoznaj się z oceną", self.oceniany, None
+        elif etap == "termin_sprzeciwu":
+            opis, kto, termin = "Możliwość wniesienia sprzeciwu", self.oceniany, self.termin_sprzeciwu
+        elif etap == "sprzeciw":
+            opis, kto, termin = "Sprzeciw czeka na rozpatrzenie przez dyrektora generalnego", None, None
+        else:
+            return None
+        return {"opis": opis, "kto": kto, "termin": termin, "moj": kto is not None and kto.id == user.id}
+
+    @property
+    def kryteria_zatwierdzone(self) -> bool:
+        """Oceniający potwierdził rozmowę i kryteria; zwykła edycja kryteriów jest zamknięta."""
+        return self.kryteria_zatwierdzone_at is not None
+
     @property
     def kryteria_zablokowane(self) -> bool:
+        """Obie strony potwierdziły część I."""
         return self.kryteria_potwierdzone_at is not None
 
     @property
@@ -75,19 +262,40 @@ class Ocena(models.Model):
         if self.sporzadzona:
             raise PermissionDenied("Ocena została sporządzona; kryteriów nie można już zmienić.")
         przed = list(self.kryteria_dodatkowe)
-        if self.kryteria_zablokowane:
+        if self.kryteria_zatwierdzone:
             if korekta_przez is None:
-                raise PermissionDenied("Kryteria potwierdzone przez ocenianego; zmiana tylko w trybie korekty administratora.")
+                raise PermissionDenied("Kryteria zostały zatwierdzone; zmiana tylko w trybie korekty administratora.")
             self._zapisz_korekte(korekta_przez, "kryteria_dodatkowe", przed, list(kody), powod)
         self.kryteria_dodatkowe = list(kody)
         self.full_clean()
         self.save()
 
+    def zatwierdz_kryteria(self, data_rozmowy, miejscowosc: str = ""):
+        """Oceniający potwierdza przeprowadzenie rozmowy z § 5 ust. 1 i zapoznanie ocenianego z kryteriami."""
+        if self.kryteria_zatwierdzone:
+            raise PermissionDenied("Kryteria zostały już zatwierdzone.")
+        dzis = zegar.dzis()
+        if data_rozmowy is None:
+            raise ValidationError({"data_rozmowy": "Podaj datę rozmowy, w której omówiono kryteria (§ 5 ust. 1)."})
+        if data_rozmowy > dzis:
+            raise ValidationError({"data_rozmowy": "Rozmowa nie może mieć daty z przyszłości."})
+        if self.poczatek_okresu and data_rozmowy < self.poczatek_okresu:
+            raise ValidationError({"data_rozmowy": "Rozmowa nie może poprzedzać początku okresu oceny."})
+        self.data_rozmowy_rozpoczynajacej = data_rozmowy
+        self.miejscowosc_czesc_i = miejscowosc.strip()
+        self.kryteria_zatwierdzone_at = timezone.now()
+        self.data_zatwierdzenia_kryteriow = dzis
+        self.save()
+
     def potwierdz_kryteria(self):
+        """Oceniany potwierdza rozmowę i zapoznanie z kryteriami oraz terminem oceny (§ 6 ust. 2)."""
+        if not self.kryteria_zatwierdzone:
+            raise PermissionDenied("Oceniający nie zatwierdził jeszcze kryteriów.")
         if self.kryteria_zablokowane:
             raise PermissionDenied("Kryteria zostały już potwierdzone.")
         self.kryteria_potwierdzone_at = timezone.now()
-        self.save(update_fields=["kryteria_potwierdzone_at"])
+        self.data_potwierdzenia_kryteriow = zegar.dzis()
+        self.save(update_fields=["kryteria_potwierdzone_at", "data_potwierdzenia_kryteriow"])
 
     def podglad_wyniku(self, czastkowe: dict[str, int]) -> punktacja.Wynik | None:
         """Wynik dla kompletu ocen cząstkowych, inaczej None (podgląd nie zgaduje brakujących)."""
@@ -218,7 +426,7 @@ class Sprzeciw(models.Model):
 
 
 class ZegarDemo(models.Model):
-    """Przesunięta data systemowa, działa tylko przy DJANGO_DEBUG=1. Jeden wiersz (pk=1)."""
+    """Przesunięta data systemowa, działa tylko przy OKRES_DEMO=1. Jeden wiersz (pk=1)."""
 
     data = models.DateField(null=True, blank=True, help_text="Puste = data rzeczywista.")
 

@@ -1,4 +1,4 @@
-"""Data systemowa. W trybie deweloperskim kadry mogą ją przesunąć na potrzeby demo (oznaczone w UI)."""
+"""Data systemowa. W trybie demo kadry mogą ją przesunąć na potrzeby demo (oznaczone w UI)."""
 
 from datetime import date
 
@@ -7,7 +7,7 @@ from django.utils import timezone
 
 
 def przesunieta() -> date | None:
-    if not settings.DEBUG:
+    if not settings.OKRES_DEMO:
         return None
     from .models import ZegarDemo
 

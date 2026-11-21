@@ -1,23 +1,45 @@
 <section id="kryteria">
-  <h2>Kryteria dodatkowe (0–{{ maks }})</h2>
+  <h2>Część I · kryteria oceny i termin sporządzenia oceny</h2>
   {% if bledy %}<ul role="alert">{% for b in bledy %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
-  {% if ocena.kryteria_zablokowane %}
-    <p>Potwierdzone przez ocenianego {{ ocena.kryteria_potwierdzone_at|date:"d.m.Y H:i" }}. Zmiana tylko w trybie korekty administratora.</p>
-    <ul>{% for k in ocena.kryteria_dodatkowe %}<li>{% for kod, nazwa in wykaz.items %}{% if kod == k %}{{ nazwa }}{% endif %}{% endfor %}</li>{% empty %}<li>Bez kryteriów dodatkowych</li>{% endfor %}</ul>
-  {% elif jest_oceniajacym %}
-    <form hx-post="{% url 'oceny:ustaw_kryteria' ocena.pk %}" hx-target="#kryteria" hx-swap="outerHTML">
+  <h3>Kryteria obowiązkowe</h3>
+  <ul>{% for kod, nazwa in obowiazkowe.items %}<li>{{ nazwa }}</li>{% endfor %}</ul>
+  <h3>Kryteria dodatkowe wybrane przez oceniającego (nie więcej niż {{ maks }})</h3>
+  {% if not ocena.kryteria_zatwierdzone and jest_oceniajacym %}
+    <form hx-post="{% url 'oceny:ustaw_kryteria' ocena.pk %}" hx-target="#kryteria" hx-swap="outerHTML" hx-trigger="change">
+      {% for wybrane in sloty %}
+        <label>Kryterium dodatkowe {{ forloop.counter }}
+          <select name="kryteria">
+            <option value="">— brak —</option>
+            {% for kod, nazwa in wykaz.items %}
+              {% if kod == wybrane or kod not in ocena.kryteria_dodatkowe %}<option value="{{ kod }}" {% if kod == wybrane %}selected{% endif %}>{{ nazwa }}</option>{% endif %}
+            {% endfor %}
+          </select>
+        </label>
+      {% endfor %}
+      <noscript><button type="submit">Zapisz kryteria</button></noscript>
+    </form>
+    <form hx-post="{% url 'oceny:zatwierdz_kryteria' ocena.pk %}" hx-target="#kryteria" hx-swap="outerHTML">
       <fieldset>
-        <legend>Wybierz maksymalnie {{ maks }} kryteria z wykazu</legend>
-        {% for kod, nazwa in wykaz.items %}
-          <label><input type="checkbox" name="kryteria" value="{{ kod }}" {% if kod in ocena.kryteria_dodatkowe %}checked{% endif %}> {{ nazwa }}</label><br>
-        {% endfor %}
+        <legend>Potwierdzenie oceniającego (§ 5 ust. 1, § 6)</legend>
+        <p>W trakcie rozmowy omawia się: główne obowiązki z opisu stanowiska, kryteria obowiązkowe i dodatkowe, oczekiwania co do sposobu spełniania kryteriów oraz cele i sposób ich realizacji, jeśli ich wyznaczenie jest uzasadnione.</p>
+        <label>Data rozmowy <input type="date" name="data_rozmowy" required></label>
+        <label>Miejscowość <input type="text" name="miejscowosc" value="{{ miejscowosc_domyslna }}"></label>
+        <button type="submit">Potwierdzam przeprowadzenie rozmowy i zapoznanie ocenianego z kryteriami</button>
       </fieldset>
-      <button type="submit">Zapisz kryteria</button>
     </form>
   {% else %}
-    <ul>{% for k in ocena.kryteria_dodatkowe %}<li>{% for kod, nazwa in wykaz.items %}{% if kod == k %}{{ nazwa }}{% endif %}{% endfor %}</li>{% empty %}<li>Bez kryteriów dodatkowych</li>{% endfor %}</ul>
-    {% if jest_ocenianym %}
-      <button hx-post="{% url 'oceny:potwierdz_kryteria' ocena.pk %}" hx-target="#kryteria" hx-swap="outerHTML">Potwierdzam zapoznanie z kryteriami</button>
+    <ul>{% for kod in ocena.kryteria_dodatkowe %}<li>{% for k, nazwa in wykaz.items %}{% if k == kod %}{{ nazwa }}{% endif %}{% endfor %}</li>{% empty %}<li>brak</li>{% endfor %}</ul>
+  {% endif %}
+  {% if ocena.kryteria_zatwierdzone %}
+    <p class="potwierdzone">Rozmowa {{ ocena.data_rozmowy_rozpoczynajacej|date:"d.m.Y" }}. Potwierdził oceniający: {{ ocena.oceniajacy.get_full_name }}, {{ ocena.miejscowosc_czesc_i }} {{ ocena.data_zatwierdzenia_kryteriow|date:"d.m.Y" }}.
+      {% if ocena.kryteria_zablokowane %}<br>Potwierdził oceniany: {{ ocena.oceniany.get_full_name }}, {{ ocena.data_potwierdzenia_kryteriow|date:"d.m.Y" }}.{% endif %}
+      <br>Zmiana kryteriów możliwa tylko w trybie korekty administratora.</p>
+    {% if not ocena.kryteria_zablokowane %}
+      {% if jest_ocenianym %}
+        <button hx-post="{% url 'oceny:potwierdz_kryteria' ocena.pk %}" hx-target="#kryteria" hx-swap="outerHTML">Potwierdzam przeprowadzenie rozmowy i zapoznanie z kryteriami oraz terminem oceny</button>
+      {% else %}
+        <p>Oczekuje na potwierdzenie ocenianego.</p>
+      {% endif %}
     {% endif %}
   {% endif %}
 </section>

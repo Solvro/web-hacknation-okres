@@ -1,15 +1,20 @@
-{% load static %}<!doctype html>
-<html lang="pl">
-<head>
-  <meta charset="utf-8">
-  <title>Ocena okresowa · arkusz {{ ocena.arkusz }}</title>
-  <script src="{% static 'oceny/htmx.min.js' %}" defer></script>
-</head>
-<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-  {% if zegar_przesuniety %}<p role="status"><strong>DEMO: zegar systemowy przesunięty na {{ zegar_przesuniety|date:"d.m.Y" }}.</strong> Terminy liczone od tej daty.</p>{% endif %}
-  <h1>Ocena okresowa · arkusz {{ ocena.arkusz }}</h1>
-  <p>Oceniany: {{ ocena.oceniany.get_full_name|default:ocena.oceniany }} · Oceniający: {{ ocena.oceniajacy.get_full_name|default:ocena.oceniajacy }}</p>
-  {% include "oceny/_kryteria.html" %}
-  {% include "oceny/_ocena.html" %}
-</body>
-</html>
+{% extends "oceny/base.html" %}
+{% block tytul %}Ocena okresowa · {{ ocena.oceniany.get_full_name }}{% endblock %}
+{% block tresc %}
+<p><a href="{% url 'oceny:moje_sprawy' %}">← Moje sprawy</a></p>
+<h1>Ocena okresowa · arkusz {{ ocena.arkusz }}</h1>
+{% with p=ocena.oceniany.pracownik %}
+<dl class="naglowek-sprawy">
+  <div><dt>Oceniany</dt><dd>{{ ocena.oceniany.get_full_name|default:ocena.oceniany }}</dd></div>
+  <div><dt>Stanowisko</dt><dd>{{ p.stanowisko|default:"—" }}{% if p.komorka and ocena.arkusz != "A" %}, {{ p.komorka }}{% endif %}</dd></div>
+  <div><dt>Oceniający</dt><dd>{{ ocena.oceniajacy.get_full_name|default:ocena.oceniajacy }}</dd></div>
+  <div><dt>Etap</dt><dd>{{ ocena.etap_nazwa }}</dd></div>
+  <div><dt>Termin ustalenia kryteriów</dt><dd>{{ ocena.rachunek_kryteriow.termin|date:"d.m.Y"|default:"—" }}
+    <details hx-get="{% url 'oceny:jak_obliczono' ocena.pk 'kryteria' %}" hx-trigger="toggle once" hx-target="find .wyjasnienie"><summary>Jak obliczono termin?</summary><div class="wyjasnienie"></div></details></dd></div>
+  <div><dt>Termin sporządzenia oceny</dt><dd>{{ ocena.termin_oceny|date:"d.m.Y"|default:"—" }}
+    <details hx-get="{% url 'oceny:jak_obliczono' ocena.pk 'ocena' %}" hx-trigger="toggle once" hx-target="find .wyjasnienie"><summary>Jak obliczono termin?</summary><div class="wyjasnienie"></div></details></dd></div>
+</dl>
+{% endwith %}
+{% include "oceny/_kryteria.html" %}
+{% include "oceny/_ocena.html" %}
+{% endblock %}
