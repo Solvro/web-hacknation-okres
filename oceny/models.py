@@ -557,6 +557,26 @@ class Ocena(models.Model):
             wynik["ponowna_ocena"] = terminy.termin_miesieczny(self.data_zapoznania, cfg["ponowna_po_negatywnej_miesiace"])
         return wynik
 
+    def obligatoryjny_stopien(self) -> dict | None:
+        """Art. 89 ust. 2: dwie kolejne pozytywne oceny na jednym z dwóch najwyższych poziomów od ostatniego stopnia
+        → kolejny stopień w 30 dni od zapoznania. Zwraca termin i podstawę albo None."""
+        p = getattr(self.oceniany, "pracownik", None)
+        if not (p and p.urzednik and self.zapoznany and self.pozytywna and self.poprzednia):
+            return None
+        cfg = rules.load(self.wersja_regul)
+        najwyzsze = cfg["punktacja"]["dwa_najwyzsze_poziomy"]
+        poprz = self.poprzednia
+        if not (poprz.pozytywna and poprz.poziom in najwyzsze and self.poziom in najwyzsze):
+            return None
+        if p.data_stopnia and poprz.data_sporzadzenia and poprz.data_sporzadzenia < p.data_stopnia:
+            return None  # poprzednia ocena sprzed przyznania obecnego stopnia
+        if (p.stopien_sluzbowy or 0) >= 9:
+            return None
+        termin = terminy.termin_dniowy(self.data_zapoznania, cfg["terminy"]["obligatoryjny_stopien_dni"])
+        return {"termin": termin, "stopien": (p.stopien_sluzbowy or 0) + 1,
+                "uzasadnienie": f"oceny z {poprz.data_sporzadzenia:%d.%m.%Y} ({poprz.poziom}) i "
+                                f"{self.data_sporzadzenia:%d.%m.%Y} ({self.poziom})"}
+
     # Zdarzenia kadrowe (art. 81 ust. 6 i 8, §§ 8–9 rozporządzenia)
 
     def data_bazowa_szesciu_miesiecy(self) -> tuple:

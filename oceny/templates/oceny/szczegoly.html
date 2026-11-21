@@ -17,6 +17,12 @@
     <details hx-get="{% url 'oceny:jak_obliczono' ocena.pk 'ocena' %}" hx-trigger="toggle once" hx-target="find .wyjasnienie"><summary>Jak obliczono termin?</summary><div class="wyjasnienie"></div></details></dd></div>
 </dl>
 {% endwith %}
+{% if jest_oceniajacym or jest_ocenianym %}{% if not ocena.sporzadzona %}
+<p>Przygotuj się do rozmowy:
+  {% if not ocena.kryteria_zablokowane %}<a href="{% url 'oceny:przygotowanie' ocena.pk 'rozpoczynajaca' %}">rozmowa rozpoczynająca (§ 5)</a>
+  {% else %}<a href="{% url 'oceny:przygotowanie' ocena.pk 'oceniajaca' %}">rozmowa oceniająca (§ 10)</a>{% endif %}</p>
+{% endif %}{% endif %}
+{% with st=ocena.obligatoryjny_stopien %}{% if st %}<p class="hr" role="status"><strong>Art. 89 ust. 2:</strong> obowiązek przyznania {{ st.stopien }}. stopnia służbowego do {{ st.termin|date:"d.m.Y" }} ({{ st.uzasadnienie }}).</p>{% endif %}{% endwith %}
 {% if jest_oceniajacym and not ocena.sporzadzona %}
 <details><summary>Zaproszenie na rozmowę do kalendarza (.ics)</summary>
   <form method="get" action="{% url 'oceny:zaproszenie_ics' ocena.pk %}">

@@ -467,3 +467,23 @@ def zawiadomienie(request, pk, zdarzenie_pk):
     z = get_object_or_404(ocena.zdarzenia_kadrowe, pk=zdarzenie_pk, rodzaj="zmiana_terminu")
     return render(request, "oceny/zawiadomienie.html", {"ocena": ocena, "z": z, "urzad": Urzad.biezacy(),
                                                          "stary": _data(z.dane.get("stary")), "nowy": _data(z.dane.get("nowy"))})
+
+
+@login_required
+def przygotowanie(request, pk, rodzaj):
+    """Przygotowanie do rozmowy: agenda z przepisów, wskaźniki kryteriów, obserwacje, trudne sytuacje."""
+    ocena = _ocena_dla(request, pk)
+    if rodzaj not in ("rozpoczynajaca", "oceniajaca") or request.user.id not in (ocena.oceniany_id, ocena.oceniajacy_id):
+        raise PermissionDenied("Przygotowanie do rozmowy jest dla stron oceny.")
+    wykaz = rules.criteria(ocena.wersja_regul)
+    grupy = {kod: obs for kod, _, obs in ocena.obserwacje_wg_kryteriow(request.user)}
+    kryteria = [{"nazwa": nazwa, "wskazniki": wykaz[kod]["opis"], "obserwacje": grupy.get(kod, [])}
+                for kod, nazwa in (ocena.wszystkie_kryteria() if rodzaj == "oceniajaca"
+                                   else rules.mandatory_criteria(ocena.arkusz, ocena.wersja_regul)).items()]
+    cfg = rules.rozmowy()
+    return render(request, "oceny/przygotowanie.html", {
+        "ocena": ocena, "r": cfg[rodzaj], "rodzaj": rodzaj, "kryteria": kryteria,
+        "trudne": cfg["trudne_sytuacje"], "feedback": cfg["biezacy_feedback"],
+        "jest_oceniajacym": request.user.id == ocena.oceniajacy_id,
+        "dodatkowe_do_wyboru": rules.extra_criteria(ocena.arkusz, ocena.wersja_regul) if rodzaj == "rozpoczynajaca" else {},
+    })

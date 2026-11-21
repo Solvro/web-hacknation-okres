@@ -67,6 +67,19 @@ def przypomnienia_dla(ocena) -> int:
     return utworzone
 
 
+def przypomnienie_o_stopniu(ocena) -> int:
+    """UC-15: dyrektor generalny dostaje przypomnienie o obowiązku przyznania kolejnego stopnia."""
+    from .models import Pracownik
+
+    obowiazek = ocena.obligatoryjny_stopien()
+    dg = Pracownik.objects.filter(dyrektor_generalny=True).select_related("user").first()
+    if not (obowiazek and dg):
+        return 0
+    tresc = (f"Obowiązek przyznania {obowiazek['stopien']}. stopnia służbowego: {ocena.oceniany.get_full_name()} "
+             f"(art. 89 ust. 2; {obowiazek['uzasadnienie']}) — termin {obowiazek['termin']:%d.%m.%Y}")
+    return int(_przypomnij(ocena, dg.user, "stopien", obowiazek["termin"], tresc, 0))
+
+
 def zaloz_kolejna(ocena) -> Ocena | None:
     """UC-01 / UC-27: po sporządzeniu oceny zakłada kolejny okres oceny. Od razu, bo po ocenie negatywnej
     kryteria wyznacza się w 7 dni od sporządzenia (§ 7 ust. 2), a więc jeszcze w trakcie terminu na sprzeciw."""
@@ -86,7 +99,7 @@ def zaloz_kolejna(ocena) -> Ocena | None:
 def uruchom() -> dict:
     wynik = {"przypomnienia": 0, "nowe_sprawy": 0}
     for ocena in Ocena.objects.filter(anulowana_powod="").select_related("oceniany", "oceniajacy"):
-        wynik["przypomnienia"] += przypomnienia_dla(ocena)
+        wynik["przypomnienia"] += przypomnienia_dla(ocena) + przypomnienie_o_stopniu(ocena)
         if zaloz_kolejna(ocena):
             wynik["nowe_sprawy"] += 1
     return wynik

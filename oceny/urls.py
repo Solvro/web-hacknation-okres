@@ -23,4 +23,5 @@ urlpatterns = [
     path("<int:pk>/sprzeciw/rozpatrz/", views.rozpatrz_sprzeciw, name="rozpatrz_sprzeciw"),
     path("<int:pk>/kadrowe/<str:rodzaj>/", views.zdarzenie_kadrowe, name="zdarzenie_kadrowe"),
     path("<int:pk>/zawiadomienie/<int:zdarzenie_pk>/", views.zawiadomienie, name="zawiadomienie"),
+    path("<int:pk>/przygotowanie/<str:rodzaj>/", views.przygotowanie, name="przygotowanie"),
 ]

@@ -26,3 +26,8 @@ def extra_criteria(arkusz: str, version: str = DOMYSLNA_WERSJA) -> dict[str, str
     """Kryteria, które można wybrać jako dodatkowe: wykaz bez obowiązkowych danego arkusza."""
     obowiazkowe = load(version)["arkusze"][arkusz]["obowiazkowe"]
     return {k: v["nazwa"] for k, v in criteria(version).items() if k not in obowiazkowe}
+
+
+@cache
+def rozmowy() -> dict:
+    return yaml.safe_load((RULES_DIR / "rozmowy.yaml").read_text(encoding="utf-8"))

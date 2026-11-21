@@ -132,6 +132,7 @@ punktacja:  # § 11 ust. 1
     - {kod: powyzej, nazwa: powyżej oczekiwań, do: 8}
     - {kod: znacznie_powyzej, nazwa: znacznie powyżej oczekiwań, do: 9}
   poziomy_pozytywne: [na_poziomie, powyzej, znacznie_powyzej]  # pkt 3
+  dwa_najwyzsze_poziomy: [powyżej oczekiwań, znacznie powyżej oczekiwań]  # art. 89 ust. 2 ustawy
   czastkowa_wykluczajaca: 1  # pkt 3-4: choć jedna taka cząstkowa daje ocenę negatywną
   uzasadnienie_obowiazkowe_przy: negatywna  # § 11 ust. 3
   wnioski_iprz_obowiazkowe: true  # pkt 5
@@ -142,7 +143,8 @@ terminy:
   kryteria_po_negatywnej_dni: 7  # § 7 ust. 2
   sprzeciw_dni: 7  # art. 83 ust. 1 ustawy, od zapoznania
   rozpatrzenie_sprzeciwu_dni: 14  # art. 83 ust. 3, od wniesienia
-  odwolanie_do_sadu_dni: 14  # art. 83 ust. 5, od doręczenia decyzji albo upływu terminu rozpatrzenia
+  odwolanie_do_sadu_dni: 14
+  obligatoryjny_stopien_dni: 30  # art. 89 ust. 2, od zapoznania z oceną  # art. 83 ust. 5, od doręczenia decyzji albo upływu terminu rozpatrzenia
   ponowna_po_negatywnej_miesiace: 6  # art. 81 ust. 9, od zapoznania
   nieobecnosc_przedluza_powyzej_miesiecy: 1  # art. 81 ust. 7: usprawiedliwiona, ciągła, dłuższa niż miesiąc
 
