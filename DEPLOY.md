@@ -41,4 +41,4 @@ docker compose exec okres python manage.py scheduler
 
 ## Licencje dodanych zależności
 
-`gunicorn` (MIT), `whitenoise` (MIT), `dj-database-url` (BSD). Obrazy bazowe: `python:3.13.9-slim-bookworm` i `ghcr.io/astral-sh/uv:0.9.7`, z przypiętymi wersjami.
+`gunicorn` (MIT), `whitenoise` (MIT), `dj-database-url` (BSD-3-Clause). Obrazy bazowe: `python:3.13.9-slim-bookworm` i `ghcr.io/astral-sh/uv:0.9.7`, z przypiętymi wersjami.

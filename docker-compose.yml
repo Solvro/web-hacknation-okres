@@ -10,5 +10,20 @@ services:
       - okres-data:/app/data
     restart: unless-stopped
 
+  # Scheduler procesu: przypomnienia o terminach i zakładanie kolejnych okresów oceny, raz na dobę.
+  # Ten sam obraz i ta sama baza; alternatywnie cron hosta (DEPLOY.md).
+  scheduler:
+    build: .
+    env_file: .env
+    volumes:
+      - okres-data:/app/data
+    depends_on:
+      okres:
+        condition: service_healthy
+    command: ["sh", "-c", "while true; do python manage.py scheduler; sleep 86400; done"]
+    healthcheck:
+      disable: true
+    restart: unless-stopped
+
 volumes:
   okres-data:
