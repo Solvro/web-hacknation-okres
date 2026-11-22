@@ -31,4 +31,4 @@ Na pytania mamy przygotowane:
 - **Awaria laptopa:** nagranie pokazu z tej samej wersji i wydruki A/B/C zapisane do PDF przed pokazem.
 - **Zepsute dane w trakcie:** usuń wolumen (`docker compose down -v`) i uruchom ponownie. Seed wczyta się w kilka sekund.
 
-Cały scenariusz przeszedł 21.11.2026 automatycznie w przeglądarce (Chrome, 1280×720, Playwright) na świeżej bazie z seedem: bez błędów JS i odpowiedzi 5xx, daty i wyniki jak w tabeli (średnia 6,43, termin sprzeciwu 19.04.2027, kryteria nowego okresu do 19.04.2027, ponowna ocena 12.10.2027). Zegar przestawia się w panelu kadr (`/admin/` → Zegar demo). Przed pokazem trzeba jeszcze zrobić próbę z projektorem.
+Cały scenariusz przeszedł 21.11.2026 automatycznie w przeglądarce (Chrome, 1280×720, Playwright) na świeżej bazie z seedem: bez błędów JS i odpowiedzi 5xx, daty i wyniki jak w tabeli (średnia 6,14 przy dwóch kryteriach dodatkowych Jana, termin sprzeciwu 19.04.2027, kryteria nowego okresu do 19.04.2027, ponowna ocena 12.10.2027). Zegar przestawia się w panelu kadr (`/admin/` → Zegar demo). Przed pokazem trzeba jeszcze zrobić próbę z projektorem.
